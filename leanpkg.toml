@@ -1,0 +1,8 @@
+[package]
+name = "ontology3"
+version = "0.1"
+lean_version = "leanprover-community/lean:3.8.0"
+path = "src"
+
+[dependencies]
+mathlib = {git = "https://github.com/leanprover-community/mathlib", rev = "af27ee336c8f2565b391edbd9cd01dd33fda830b"}
