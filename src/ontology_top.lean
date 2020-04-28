@@ -2,33 +2,39 @@ import
     topology.bases
     topology.order 
     topology.homeomorph
+    topology.subset_properties
     data.real.basic
     topology.instances.real
     measure_theory.borel_space
     measure_theory.measure_space
     tactic.tidy
 universe u
-open set topological_space
+open set topological_space classical
+local attribute [instance] prop_decidable
 
 namespace ontology
 section ontology
--- An `ontology` is an inhabited topological space
+-- An `ontology` is an inhabited T0 topological space
 -- of possible worlds.
 parameters {world : Type u}
            [t : topological_space world]
            [ne : inhabited world]
-include t ne
+           [axiom₀ : t0_space world]
 
-section basic
- -- The default world is the actual world.
- -- We introduce a notation for it.
- local notation `ω₀` := default world
+
+-- The default world is the actual world.
+-- We introduce a notation for it.
+local notation `ω₀` := default world
+
+-- Events in an ontology are simply sets of worlds.
+@[reducible, alias]
+def event := set world
+
+include t ne axiom₀
+
+section particulars
  
  -- EVENTS
- 
-  -- Events in an ontology are simply sets of worlds.
-  @[reducible]
-  def event := set world
   
   -- An event (informally) `occurs` precisely in the worlds it contains,
   -- and it `obtains` if it occurs in the actual world.
@@ -41,9 +47,11 @@ section basic
   -- @[reducible]
   -- def event.closure  (e : event) := closure e
   @[reducible]
-  def event.dense    (e : event) := closure e = univ
+  def event.dense (e : event) := closure e = univ
   @[reducible]
-  def event.exterior (e : event) := interior (-e)
+  def event.exterior (e : event) : event := interior (-e)
+  @[reducible]
+  def event.regular (e : event) := e = e.exterior.exterior
   -- also called boundary
   -- @[reducible]
   -- def event.frontier (e : event) := frontier e
@@ -156,7 +164,6 @@ section basic
   def world.entities (w : world) := {e : entity | e ∈ w}
  
  -- SUBSTANCES
-
   -- DEFINITIONS
 
    -- Particular `substances` in the ontology are dense entities, every other entity is an `accident`.
@@ -323,7 +330,7 @@ section basic
           dunfold entity.inter,
           simp,
       let β : substance := ⟨α, h₂⟩,
-      have c₂ := @substance_of_substance_entails _ _ _ β a₁.val c₁,
+      have c₂ := @substance_of_substance_entails _ _ _ _ β a₁.val c₁,
       exact absurd c₂ a₁.property,
      end
   
@@ -436,7 +443,7 @@ section basic
    
    -- All accidents are simple
    lemma acc_simp :  ∀ a : accident, simple a.val := 
-   begin
+    begin
       intro a,
       simp [simple],
       dunfold entity.subsistents,
@@ -448,9 +455,80 @@ section basic
           have c₁ : ¬ perfect a.val := a.property,
           contradiction,
       contradiction,
-   end
+    end
+ -- ACCIDENTS
+  
+  -- regular accidents are called intrinsic
+  -- and irregular accidents are called extrinsic
+  @[reducible]
+  def intrinsic (a : accident) := a.val.exist.regular
+  @[reducible]
+  def extrinsic (a : accident) := ¬ a.val.exist.regular
+
+  -- A connected intrin sic accident is called a quality
+  structure quality :=
+    (exist : event)
+    (is_open : is_open exist)
+    (ne : exist.nonempty)
+    (imperfect : ¬ exist.dense)
+    (intrinsic : exist.regular)
+    (connected : is_preconnected exist)
  
- end basic
+  def quality.entity (q : quality) : entity := ⟨q.exist, q.is_open, q.ne⟩
+  def quality.acc (q : quality) : accident := ⟨q.entity, q.imperfect⟩
+
+  -- a disconnected intrinsic accident is a quantity
+--   structure quantity :=
+--     (acc : accident)
+--     (intrinsic : intrinsic acc)
+--     (is_disconnected : ¬ is_preconnected acc.val.exist)
+
+  lemma exterior_of_accident_is_accident : ∀ {a : accident}, 
+                                           is_open a.val.exist.exterior ∧
+                                           a.val.exist.exterior.nonempty ∧
+                                           ¬ a.val.exist.exterior.dense
+                                           :=
+    begin
+        intros a,
+        -- repeat{fsplit},
+        split, admit,
+        split, admit,
+        admit,
+    end
+  
+  def accident.exterior (a : accident) : accident := 
+    ⟨⟨a.val.exist.exterior, exterior_of_accident_is_accident.1, exterior_of_accident_is_accident.2.1⟩,exterior_of_accident_is_accident.2.2⟩  
+
+  lemma aux : ∀ (s : substance) (q : quality) 
+              (S : set (subtype s.val.exist)),
+              is_open S →
+              is_connected S → 
+              q.exist ⊆ subtype.val '' S →
+              q.acc ∈ s →
+              subtype.val '' S = q.exist :=
+    begin
+        intros s q S is_openS is_connectedS h₁ h₂,
+        simp [set.image, subtype.val],
+        ext, constructor; intros h; simp at *,
+            obtain ⟨h, elem⟩ := h,
+            have c : x ∈ q.exist ∪ q.exist.exterior,
+                simp [inheres, subsists] at h₂,
+                revert h₂,
+                dunfold quality.acc quality.entity,
+                -- simp,
+                intro h₂,
+                rw h₂,
+                exact h,
+            cases c,
+                assumption,
+            have c₁ : q.exist.exterior ⊆ s.val.exist,
+            repeat{admit},
+                -- apply subset_of_subsist q.entity s.val,
+            -- revert w,
+            -- simp [is_preconnected] at hs₁,
+    end
+
+ end particulars
  
 section states
  -- Substances have `states`, altough the states of metaphysical
@@ -479,13 +557,12 @@ section states
             rwa ←h₁ at h₂,
   end
 
- instance substance.state_setoid : setoid world :=
+ def substance.state_setoid : setoid world :=
  ⟨s.equiv, s.equiv_sound⟩
 
  
  -- The type of states of a substance
  @[reducible]
---  @[include]
  def substance.state := quotient s.state_setoid
  
  -- The quotient map from worlds to states,
@@ -615,7 +692,7 @@ section states
 
  -- We can also build a neighborhood for any state
  -- which is an aperfection in case the substance has
- -- accidents in that state and the whole space otherwise.instance
+ -- accidents in that state and the whole space otherwise.
 
  structure nhd {s : substance} (x : s.state) :=
     (U : s.event)
@@ -651,42 +728,106 @@ section states
         exact ⟨ha₂, rfl⟩,
     end
 
- -- Each substance has a bottom state. For a contingent substance
+ -- Each contingent substance has a bottom state. For a contingent substance
  -- this is the "state" in which the substance does not exist.
- -- For the necessary being it is its unique state.
+ 
+ --  lemma aux : contingent s → ∀ w, 
+ 
+ --  def aux (h : contingent s) : nonempty (subtype s.val.exist.compl) := sorry
+  
+ --  @[reducible]
+ --  noncomputable def state_bot (h : contingent s) : s.state :=
+ --      have c : ¬ ∀ x, x ∈ s.val.exist,
+ --         by {obtain ⟨⟨exist, is_open, nes⟩, perfect⟩ := s,
+ --             intro h',
+ --             replace h' := eq_univ_of_forall h',
+ --             simp [contingent, nb, nbe] at h,
+ --             simp at h',
+ --             contradiction,
+ --            },
+ --     --  φ $
+ --     --  classical.choice $
+ --     --  nonempty_of_exists $
+ --     --  not_forall.mp c
+ --     -- have d : nonempty (subtype s.val.exist.compl),
+ --     --     begin 
+ --     --         replace c := not_forall.mp c,
+ --     --         obtain ⟨x, hx⟩ := c,
+ --     --         constructor,
+ --     --         exact ⟨x, hx⟩,
+ --     --     end,
+ --     φ $
+ --     subtype.val $
+ --     choice $
+ --     aux h
+        
 
- noncomputable instance state_has_bot : has_bot s.state :=
-  begin
-    constructor,
-    classical,
-    by_cases contingent s,
-        obtain ⟨⟨exist, is_open, nes⟩, perfect⟩ := s,
-        simp [contingent, nb, nbe] at h,
-        set s : substance := ⟨⟨exist, is_open, nes⟩, perfect⟩,
-        have c : ¬ ∀ x, x ∈ exist,
-            intro h',
-            replace h' := eq_univ_of_forall h',
-            contradiction,
-        replace c := not_forall.mp c,
-        replace c := nonempty_of_exists c,
-        replace c := classical.choice c,
-        exact φ s c,
-    exact φ s (default world),
-  end
+
+
+ --   begin
+ --     classical,
+ --     obtain ⟨⟨exist, is_open, nes⟩, perfect⟩ := s,
+ --     simp [contingent, nb, nbe] at h,
+ --     set s : substance := ⟨⟨exist, is_open, nes⟩, perfect⟩,
+ --     have c : ¬ ∀ x, x ∈ exist,
+ --         intro h',
+ --         replace h' := eq_univ_of_forall h',
+ --         contradiction,
+ --     replace c := not_forall.mp c,
+ --     replace c := nonempty_of_exists c,
+ --     replace c := classical.choice c,
+ --     exact φ s c,
+ --   end
+
+ -- set_option trace.elaborator_detail true
+ --  lemma bot_no_accidents (h : contingent s) : (s.state_set (@quotient.out _ s.state_setoid (state_bot h))) = ∅ :=
+ --     begin
+ --         set elab_help := s.state_setoid,
+ --         simp [substance.state_set],
+ --         apply eq_empty_iff_forall_not_mem.2,
+ --         intro x,
+ --         simp,
+ --         -- simp [state_bot, ontology.φ],
+ --         intros h₂ h₃,
+ --         -- simp at h₃,
+ --         have d := sub_of_inheres x s h₂,
+ --         replace h₃ := d h₃,
+ --         -- simp [(choice (aux s h)).property] at h₃,
+ --         -- set c := subtype.val (choice (aux s h),
+ --         -- let c := quotient.mk_out ⟦(choice (aux s h)).val⟧,
+ --         -- simp [quotient.out],
+ --     end
 
  -- The bottom has no perfections.
  -- For the necessary being it is rather that
  -- we should consider it to have a single necessary
  -- informal "perfection" which is the set which 
  -- contains only the unique state of the nb.
- --  lemma state_bot_empty : perfections ⊥ = ∅ :=
- --   begin
- --     simp [perfections],
- --     apply eq_empty_of_subset_empty,
- --     intros p hp,
- --     simp at *,
- --     simp [has_bot.bot] at hp,
- --   end
+ --   lemma state_bot_empty : perfections ⊥ = ∅ :=
+ --    begin
+ --     classical,
+ --     set elab_help := s.state_setoid,
+ --      simp [perfections],
+ --      apply eq_empty_of_subset_empty,
+ --      intros p hp,
+ --      simp at *,
+ --      let e := quotient.mk⁻¹' p.exist,
+ --      let state := p.ne.some,
+ --      have c : is_open e ∧ e.nonempty,
+ --         constructor,
+ --         exact p.is_open,
+ --         simp [set.nonempty],
+ --         use state.out,
+ --         simp,
+ --         exact p.ne.some_mem,
+ --     let e₂ : entity := ⟨e, c.1, c.2⟩, 
+ --         -- apply mem_preimage.2,
+ --         -- exact p.ne,
+ --         -- focus {library_search},
+ --     --  by_cases contingent s;
+ --     --  simp [has_bot.bot, h, has_mem.mem] at hp,
+      
+ --    end
 
  -- Every state space is T0 but not T1, so that its specialization order
  -- has a botton element. For a contingent substance
@@ -738,109 +879,19 @@ section states
 
  end states
 
-section matter
- -- We can define virtual substances as products and coproducts of state spaces of real substances.
- -- These spaces so generated represent the would be state spaces of entities which perhaps are not possible to exist.
- 
- -- There are specifically two dual notions of `matter` that are obtained 
- -- by considering virtual entities as the totalities of both kinds of matter:
- 
- -- (1) From the point of view of the whole, 
- -- matter can be thought of as that which actively composes a thing, its substratum.
- 
- -- (2) From the point of view of matter itself,
- -- matter can be thought of as that which is in potency to a multiplicty of forms, in the sense of prime matter.
- -- Mathematically these two notions are dual, with the duality of Π and Σ types, respectively.
 
- -- Notice, in the first notion matter is actual, and in the second potential.
- 
- @[reducible]
- parameter {S : set substance}
- def pi_matter := Π (s : subtype S), s.val.state
- @[reducible]
- def sigma_matter := Σ (s : subtype S), s.val.state
- 
- @[reducible]
- def pi_virtual := topological_space (pi_matter)
- @[reducible]
- def sigma_virtual := topological_space (sigma_matter)
- @[reducible]
- def virtual := pi_virtual ⊕ sigma_virtual
- 
- -- The state space of a virtual, likely impossible, entity
- -- corresponding to an abstract and transcendent notion of matter.
- -- If the space construction were restricted to the set of all physical substances,
- -- the underlying concept would be that of prime mater.
- 
- instance transcendent_matter : sigma_virtual := 
-    ⨅x, coinduced (sigma.mk x) (by apply_instance)
-
- -- The state space of a virtual, likely possible, entity
- -- corresponding to a concrete and immanent notion of matter.
- -- This virtual is the mereological sum of the corresponding set of entities.
- instance abstract_whole : pi_virtual := 
-    ⨆x, induced (λf, f x) (by apply_instance)
-
- -- It is useful to consider finite product spaces of transcendent_matter spaces
- instance relative_matter (n : ℕ) : topological_space (vector sigma_matter n) :=
-    ⨆m : fin n, induced (λ f, f.nth m) transcendent_matter
-
- -- A virtual is said to be of the same kind as a real entity if it is homeomorphic to its state space.
- -- In which case we may consider it as a possible entity. This gives it a notion of self-adjointness.
- --  def grounded (v : virtual) :=
- --     match v with
- --     | (sum.inl τ) := ∃ x, τ ≅ x.state
- --     | (sum.inr τ) := ∃ x, τ ≅ x.state
- --     end
-
- end matter
-
-section metaphysics
-
- -- We call a substance `metaphysical`, or a `separate substance`, if it is simple.
- -- It is otherwise `physical`, or a `body`.
- @[reducible]
- def metaphysical (s : substance) := simple s.val
- @[reducible]
- def physical (s : substance) := composite s.val
- def separate := subtype {s : substance | metaphysical s}
- def body := subtype {s : substance | physical s}
- 
- -- A substance is purely actual if it has no passive potency
- -- to be different from what it is, i.e. if it has a single state.
- def purely_actual (s : substance) := nonempty (s.state ≃ unit)
- 
- -- Only the necessary being can be purely actual, 
- -- in which case platonism follows.
- -- def eq_nb_of_purely_actual : ∀ s, purely_actual s → s = nb :=
- -- begin
- --     intros s h,
- --     simp [purely_actual] at h,
- --     apply nonempty.elim h,
- --     intro iso,
- --     simp [substance.state, substance.state_setoid, quotient] at iso,
-     
- -- end
- 
- -- Platonism in the broad sense (greek theism) is the doctrine 
- -- that the necessary being is metaphysical
- def platonism := metaphysical nb
- 
- -- The admission of any metaphysical substance entails platonism
- lemma platonism_of_nonempty_separate : nonempty separate → platonism :=
- sorry
- 
- -- (Classical) Theism is an extension of Platonism which 
- -- furthermore claims that there is a possible world 
- -- in which the necessary being exists alone.
- def theism := platonism ∧ ∃ (w : world), world.entities w = {nb.val}
- 
- end metaphysics
 
 section universals
 
- -- Universals are virtual substances abstracted away from the state
- -- spaces of particulars substances and defined up to isomorphism.
+ -- We can define virtual substances as products, 
+ -- coproducts, subtypes and quotients of 
+ -- state spaces of real substances.
+ -- These spaces so generated represent the would be state spaces
+ -- of entities which perhaps are not possible to exist.
+
+ -- Concepts are virtual substances abstracted away from the state
+ -- spaces of particulars substances. 
+ -- Universals are concepts defined up to isomorphism.
 
  -- The process of abstraction, telling whether a Type has been
  -- abstracted away from particular substances.
@@ -849,12 +900,12 @@ section universals
  -- it is an abstraction of the space.
  class inductive abstraction : Π (α : Type u) [topological_space α], Type (u+1)
   | particular (s : substance) : abstraction s.state
-  | pi_matter    {I : Type u} (get : I → Type u)
+  | pi           {I : Type u} (get : I → Type u)
                  [get_top : Π i : I, topological_space (get i)]
                  (h : ∀ i : I, abstraction (get i) ) 
                  : abstraction (Π i : I, (get i))
  
-  | sigma_matter {I : Type u} (get : I → Type u)
+  | sigma        {I : Type u} (get : I → Type u)
                  [get_top : Π i : I, topological_space (get i)]
                  (h : ∀ i : I, abstraction (get i) ) 
                  : abstraction (Σ i : I, (get i))
@@ -869,48 +920,47 @@ section universals
                  (h : abstraction α)
                  : abstraction (quotient s)
 
-
  instance particular (s : substance) : abstraction s.state := abstraction.particular s 
 
--- CONCEPTS
+ -- CONCEPTS
 
- -- A concept for a Type is a topology
- -- for that Type that was abstracted away
- -- from the particular substances.
- -- It is a "concrete universal", an
- -- universal not defined up to isomorphism.
- inductive concept : Type (u+1)
+  -- A concept for a Type is a topology
+  -- for that Type that was abstracted away
+  -- from the particular substances.
+  -- It is a "concrete universal", an
+  -- universal not defined up to isomorphism.
+  inductive concept : Type (u+1)
   | mk   (state : Type u)
          [t : topological_space state]
          [abs : abstraction state]
          : concept
 
- def substance.concept (s : substance) : concept := ⟨s.state⟩
-
- def concept.state (c : concept) : Type u :=
+  def substance.concept (s : substance) : concept := ⟨s.state⟩
+ 
+  def concept.state (c : concept) : Type u :=
     by obtain ⟨state, _, _⟩ := c; exact state
 
- instance concept.t (c : concept) : topological_space c.state := 
+  instance concept.t (c : concept) : topological_space c.state := 
     by obtain ⟨_, t, _⟩ := c; exact t
  
- instance concept.abs (c : concept) : abstraction c.state := 
+  instance concept.abs (c : concept) : abstraction c.state := 
     by obtain ⟨_, _, abs⟩ := c; exact abs
 
- -- concepts are inhabited by the concept of a
- -- necessary being.
- instance concept_inhabited : inhabited concept := ⟨nb.concept⟩
-
- variable c : concept
-
- @[reducible]
- def concept.event := set c.state
+  -- concepts are inhabited by the concept of a
+  -- necessary being.
+  instance concept_inhabited : inhabited concept := ⟨nb.concept⟩
  
- -- Concepts can have world indexed states just as substances
- -- but the concept doesnt just make sense for just any concept,
- -- so occasionally we can associate a nonempty set of states to
- -- a concept and occasionally it will be empty 
- -- (namely, if the concept is defined as a subconcept of another concept).
- def concept.state_at (w : world) : c.event :=
+  variable c : concept
+ 
+  @[reducible]
+  def concept.event := set c.state
+  
+  -- Concepts can have world indexed states just as substances
+  -- but the concept doesnt just make sense for just any concept,
+  -- so occasionally we can associate a nonempty set of states to
+  -- a concept and occasionally it will be empty 
+  -- (namely, if the concept is defined as a subconcept of another concept).
+  def concept.state_at (w : world) : c.event :=
     begin
         cases c,
         induction c_abs,
@@ -928,24 +978,207 @@ section universals
         exact {x | x.val ∈ c_abs_ih},
         exact (@quotient.mk _ c_abs_s) '' c_abs_ih,
     end
-
-
-
-
- -- Since universals will 
- -- be equivalence classes of concepts, 
- -- we need to define a setoid of concepts.
-
- -- An abstract quality is the analogue for concepts
- -- of the perfections of substances.
- structure concept.quality :=
+  
+  -- Given this we can define the notion of
+ -- a map between state spaces preserving states.
+ def state_preserving {c₁ c₂ : concept} (f : c₁.state → c₂.state) :=
+    ∀ w, f '' (c₁.state_at w) ⊆ c₂.state_at w
+ 
+  -- An abstract quality is the analogue for concepts
+  -- of the perfections of substances.
+  structure concept.quality :=
     (exist : c.event)
     (is_open : is_open exist)
     (ne : exist.nonempty)
     (nuniv : exist ≠ univ)
 
- -- check whether an event is a quality
- def concept.is_quality (e : c.event):= is_open e ∧ e.nonempty ∧ e ≠ univ
+  -- check whether an event is a quality
+  def concept.is_quality (e : c.event):= is_open e ∧ e.nonempty ∧ e ≠ univ
+ 
+  -- We can generate the set of substances which grounds a concept
+  -- in reality. That is the set of substances from which the concept
+  -- was abstracted.
+  def concept.grounded (c : concept) : set substance :=
+    begin
+        cases c,
+        induction c_abs,
+            exact {c_abs},
+            repeat{exact ⋃ i, c_abs_ih i},
+            repeat{assumption},
+    end
+
+  -- Given a set of substances it is possible to
+  -- construct different types of wholes/totalities
+  -- which contain the set
+  def integral_whole (s : set substance) : concept :=
+  let get := λx : subtype s, x.val.state,
+      type := Π i : subtype s, (get i)
+  in begin
+    set abs := abstraction.pi get (by apply_instance),
+    exact @concept.mk type _ abs,
+  end
+
+  def abstract_whole (s : set substance) : concept :=
+  let get := λx : subtype s, x.val.state,
+      type := Σ i : subtype s, (get i)
+  in begin
+    set abs := abstraction.sigma get (by apply_instance),
+    exact @concept.mk type _ abs,
+  end 
+
+ -- UNIVERSALS
+
+  -- Since universals will 
+  -- be equivalence classes of concepts, 
+  -- we need to define a setoid of concepts.
+
+  -- Two concepts are equivalent if they are homeomorphic
+  @[reducible]
+  def concept_equiv (c₁ c₂ : concept) :=
+    nonempty (c₁.state ≃ₜ c₂.state)
+
+  instance concept_setoid : setoid concept :=
+  begin
+    fconstructor,
+        exact concept_equiv,
+    repeat{constructor};
+    simp [reflexive, symmetric, transitive],
+        intro x,
+        exact ⟨homeomorph.refl x.state⟩,
+    intros x y h,
+    constructor,
+    exact homeomorph.symm h,
+        intros x y z h₁ h₂,
+        constructor,
+        exact homeomorph.trans h₁ h₂,
+  end
+  
+  -- finally
+  def universal := quotient concept_setoid
+ 
+  -- In order to the define the concept of `essence` and that of
+  -- `definition` we require the definition of an invariant property.
+  @[reducible]
+  def property := concept → Prop
+  def property.invariant (p : property) :=
+    ∀ c₁ c₂ : concept, 
+    c₁ ≈ c₂ → (p c₁ ↔ p c₂)
+
+  -- The essence of an universal is a property which defines
+  -- its concepts up to homeomorphism.
+  def universal.is_essence (u : universal) (p : property) :=
+    p.invariant ∧
+    ∃ c₁, ⟦c₁⟧ = u ∧ p c₁ ∧
+    (∀ c₂, p c₂ → c₁ ≈ c₂)
+
+  @[reducible]
+  def universal.essence (u : universal) := subtype u.is_essence
+ 
+  -- every universal has an essence
+  theorem essentialism : ∀ u : universal, nonempty u.essence :=
+    begin
+        intro u,
+        -- Take a representative concept c,
+        -- then equivalence with c is the essence of u.
+        -- Do note however that this essence is noncomputable,
+        -- because u.out depends on classical.choice.
+        -- So even though we know that every universal has an
+        -- essence we do not know (in more concrete terms)
+        -- the essence of every universal.
+        -- Now, if instead we defined this in terms of concepts we
+        -- would be able to construct the essence, therefore it makes
+        -- more sense philosophically to only define essence for universals.
+        let c := u.out,
+        repeat{fconstructor},
+            exact (≈) c,
+            simp [property.invariant],
+                suffices h : ∀ (c₁ c₂ : concept), c₁ ≈ c₂ → (c ≈ c₁ → c ≈ c₂),
+                    intros c₁ c₂ h₂,
+                    have h₃ : c₂ ≈ c₁ := setoid.symm h₂,
+                    exact ⟨h c₁ c₂ h₂, h c₂ c₁ h₃⟩,
+                intros c₁ c₂ h₁ h₂,
+                exact setoid.trans h₂ h₁,
+            exact c,
+            simp [c],
+            simp,
+    end
+
+
+  -- In another sense u.out, for u an universal, might be considered to be
+  -- the essence of u, since it is an "abstract" representative of u.
+  -- In this sense we could consider (e.g.) "the" natural numbers 
+  -- to be an "essence" of sorts, because given the class of all models of
+  -- second order arithmetic, neither a particular model nor the class itself
+  -- appears to be a good candidate for "the" natural numbers, but an abstract
+  -- representative of the class appears to be it. In this sense we can
+  -- somewhat avoid the "up to isomorphism" restriction placed upon mathematical
+  -- concepts. A restriction which, if we were to be consistent with it, should
+  -- preclude us from talking about "the" natural numbers at all.
+ 
+  -- It appears to be the same thing for most purposes to either take
+  -- u.out as the essence or the relation of "being homeomorphic to u.out"
+  -- as the essence. Although it would look like the first point of view
+  -- is the traditional essentialist one, while the second appears to be
+  -- some form of similarity nominalism. Arguably even this similarity 
+  -- view is a pretty essentialistic one insofar as the representative u.out
+  -- is totally abstract and impossible to concretely construct or to.
+  -- concretely compare with anything except by means of essential invariant
+  -- properties which are necessarilly true for all instances of an universal.
+ 
+  -- In this the noncomputable nature of classical.choice can be given 
+  -- a philosophical interpretation, since we cannot compute or construct
+  -- abstract essences, otherwise they would be concrete.
+ 
+  -- The representation u.out also acts as a generic instance of the universal.
+  -- For any given invariant property, suffices to show that it is valid
+  -- for u.out to conclude it is valid for any representation.
+  -- An example of this is given below:
+ 
+  -- A concept is instantiable if it is homeomorphic to the state
+  -- space of a substance, so that it could be thought as being an
+  -- entity of the same species as that substance.
+  def concept.instantiable : property := λc, ∃ s : substance, s.concept ≈ c
+ 
+  -- Instantiability is of course an invariant
+  lemma concept_instantiable_invariant : concept.instantiable.invariant :=
+    begin
+        dunfold concept.instantiable property.invariant,
+        intros c₁ c₂ h,
+        suffices c : (∃ (s : substance), substance.concept s ≈ c₁) → ∃ (s : substance), substance.concept s ≈ c₂,
+            constructor,
+                exact c,
+            all_goals{
+                intro hs,
+                obtain ⟨s, hs⟩ := hs,
+                existsi s,
+            },
+            exact setoid.trans hs (setoid.symm h),
+        exact setoid.trans hs h,
+    end
+
+  -- Therefore we define instantiablity for universals via quotient.out
+  def universal.instantiable (u : universal) := u.out.instantiable
+ 
+  -- TODO: argue that Aquinas defended the u.out point of view in
+  -- De ente et essentia.
+ 
+  -- The nb as an universal.
+  @[reducible]
+  def nbu : universal := ⟦nb.concept⟧
+  instance universal_inhabited : inhabited universal := ⟨nbu⟩
+ 
+  -- A notion is a quality defined abstractly in the representation
+  def universal.notion (u : universal) := u.out.quality 
+
+
+ end universals
+section categories
+ 
+ -- A definition of the 10 Aristotelian Categories,
+ -- and of the subcategories Aristotle mentions in his work.
+ -- The Categories of Substance and Quality were already defined.
+
+ variable c : concept
 
  -- A quantity for a concept is a continuous
  -- map from states of the concept to the reals.
@@ -976,155 +1209,144 @@ section universals
     subtype {d : c.disposition | ∃ p : c.probability_measure, ∀ x : c.state, d.val x = p}
 
 
+ end categories
+section matter
+
+ -- We call any composite substance `physical`,
+ -- or a `body`.
  
-
-
--- UNIVERSALS
-
- -- Two concepts are equivalent if they are homeomorphic
  @[reducible]
- def concept_equiv (c₁ c₂ : concept) :=
-    nonempty (c₁.state ≃ₜ c₂.state)
+ def physical (s : substance) := composite s.val
+ def cosmos_set := {s : substance | physical s}
+ def body := subtype cosmos_set
+ 
+ -- The cosmos is the integral whole of all
+ -- composite (physical) substances.
+ def cosmos := integral_whole cosmos_set
 
- instance concept_setoid : setoid concept :=
-  begin
-    fconstructor,
-        exact concept_equiv,
-    repeat{constructor};
-    simp [reflexive, symmetric, transitive],
-        intro x,
-        exact ⟨homeomorph.refl x.state⟩,
-    intros x y h,
-    constructor,
-    exact homeomorph.symm h,
-        intros x y z h₁ h₂,
-        constructor,
-        exact homeomorph.trans h₁ h₂,
-  end
-  
- -- finally
- def universal := quotient concept_setoid
+ -- Prime matter is the abstract whole of all
+ -- composite (physical) substances.
+ def prime_matter := abstract_whole cosmos_set
+ 
+ -- There are specifically two dual notions of `matter` that are obtained 
+ -- by considering virtual substances (concepts) 
+ -- as the totalities of both kinds of matter:
+ 
+ -- (1) From the point of view of the whole, 
+ -- matter can be thought of as that which 
+ -- actively composes a thing, its substratum.
+ -- This sense we will only cover in the next
+ -- section, which is mereology.
+ 
+ -- (2) From the point of view of matter itself,
+ -- matter can be thought of as that which is in potency
+ -- to a multiplicty of forms, in the sense of prime matter.
+ -- Mathematically these two notions are dual, 
+ -- with the duality of Π and Σ types, respectively.
 
- -- In order to the define the concept of `essence` and that of
- -- `definition` we require the definition of an invariant property.
+ -- Notice, in the first notion matter is actual, 
+ -- and in the second potential.
+ 
+ -- Transcendent matter is the abstract whole of all
+ -- substances.
+ -- This is the virtual substance that is "in potency"
+ -- for becoming any other substance.
+ def transcendent_matter : concept := abstract_whole univ
+
+ -- The state space of a virtual, likely possible, substance
+ -- corresponding to a concrete and immanent notion of matter.
+ -- This virtual is the mereological sum of the set of all substances.
+ -- It is the whole of reality.
+ def reality : concept := integral_whole univ
+
+ -- Of course nothing in reality is an instance of
+ -- prime or transcendent matter.
+
+ end matter
+section mereology
+
+ -- A substance s₁ is an integral part of another
+ -- substance s₂ if there is a 
+ -- (necessarilly nonempty) set S of substances 
+ -- such that the integral whole of {s₁} ∪ S is
+ -- homeomorphic to the state space of s₂ by
+ -- means of a state-preserving homeomorphism
+ def substance.part_of (s₁ s₂ : substance) :=
+    -- s₁ ≠ s₂ ∧
+    ∃ S : set substance, 
+    S.nonempty ∧
+    s₁ ∉ S ∧
+    -- (∀ x ∈ S, x ≠ s₂) ∧
+    ∃ hom :
+        s₂.concept.state ≃ₜ
+        (integral_whole $ S ∪ {s₁}).state,
+    state_preserving hom.to_fun
+
+ -- This is to say that if we know the state of the
+ -- substance s₂ in a possible world w, then we
+ -- already know the state of each of its parts,
+ -- since there is a functional dependence between them.
+
+
+ --  lemma
+ 
+ --  @[trans]
+ --  lemma part_of_trans : ∀ s₁ s₂ s₃ : substance, 
+ --                        s₁.part_of s₂ →
+ --                        s₂.part_of s₃ →
+ --                        s₁.part_of s₃ :=
+ --     begin
+ --         intros s₁ s₂ s₃ h₁ h₂,
+ --         -- simp [substance.part_of] at *,
+ --         obtain ⟨S₁, ne₁, notin₁, hom₁, h₁⟩ := h₁,
+ --         obtain ⟨S₂, ne₂, notin₂, hom₂, h₂⟩ := h₂,
+ --         use S₁ ∪ S₂ ∪ {s₂},
+ --     end
+
+ end mereology
+section causality
+ end causality
+section metaphysics
+
+ -- We call a substance `metaphysical`, or a `separate substance`, if it is simple.
+ -- It is otherwise `physical`, or a `body`, as already mentioned.
  @[reducible]
- def property := concept → Prop
- def property.invariant (p : property) :=
-    ∀ c₁ c₂ : concept, 
-    c₁ ≈ c₂ → (p c₁ ↔ p c₂)
-
- -- The essence of an universal is a property which defines
- -- its concepts up to homeomorphism.
- def universal.is_essence (u : universal) (p : property) :=
-    p.invariant ∧
-    ∃ c₁, ⟦c₁⟧ = u ∧ p c₁ ∧
-    (∀ c₂, p c₂ → c₁ ≈ c₂)
-
- @[reducible]
- def universal.essence (u : universal) := subtype u.is_essence
-
- -- every universal has an essence
- theorem essentialism : ∀ u : universal, nonempty u.essence :=
-    begin
-        intro u,
-        -- Take a representative concept c,
-        -- then equivalence with c is the essence of u.
-        -- Do note however that this essence is noncomputable,
-        -- because u.out depends on classical.choice.
-        -- So even though we know that every universal has an
-        -- essence we do not know (in more concrete terms)
-        -- the essence of every universal.
-        -- Now, if instead we defined this in terms of concepts we
-        -- would be able to construct the essence, therefore it makes
-        -- more sense philosophically to only define essence for universals.
-        let c := u.out,
-        repeat{fconstructor},
-            exact (≈) c,
-            simp [property.invariant],
-                suffices h : ∀ (c₁ c₂ : concept), c₁ ≈ c₂ → (c ≈ c₁ → c ≈ c₂),
-                    intros c₁ c₂ h₂,
-                    have h₃ : c₂ ≈ c₁ := setoid.symm h₂,
-                    exact ⟨h c₁ c₂ h₂, h c₂ c₁ h₃⟩,
-                intros c₁ c₂ h₁ h₂,
-                exact setoid.trans h₂ h₁,
-            exact c,
-            simp [c],
-            simp,
-    end
-
-
- -- In another sense u.out, for u an universal, might be considered to be
- -- the essence of u, since it is an "abstract" representative of u.
- -- In this sense we could consider (e.g.) "the" natural numbers 
- -- to be an "essence" of sorts, because given the class of all models of
- -- second order arithmetic, neither a particular model nor the class itself
- -- appears to be a good candidate for "the" natural numbers, but an abstract
- -- representative of the class appears to be it. In this sense we can
- -- somewhat avoid the "up to isomorphism" restriction placed upon mathematical
- -- concepts. A restriction which, if we were to be consistent with it, should
- -- preclude us from talking about "the" natural numbers at all.
-
- -- It appears to be the same thing for most purposes to either take
- -- u.out as the essence or the relation of "being homeomorphic to u.out"
- -- as the essence. Although it would look like the first point of view
- -- is the traditional essentialist one, while the second appears to be
- -- some form of similarity nominalism. Arguably even this similarity 
- -- view is a pretty essentialistic one insofar as the representative u.out
- -- is totally abstract and impossible to concretely construct or to.
- -- concretely compare with anything except by means of essential invariant
- -- properties which are necessarilly true for all instances of an universal.
-
- -- In this the noncomputable nature of classical.choice can be given 
- -- a philosophical interpretation, since we cannot compute or construct
- -- abstract essences, otherwise they would be concrete.
-
- -- The representation u.out also acts as a generic instance of the universal.
- -- For any given invariant property, suffices to show that it is valid
- -- for u.out to conclude it is valid for any representation.
- -- An example of this is given below:
-
- -- A concept is instantiable if it is homeomorphic to the state
- -- space of a substance, so that it could be thought as being an
- -- entity of the same species as that substance.
- def concept.instantiable : property := λc, ∃ s : substance, s.concept ≈ c
-
- -- Instantiability is of course an invariant
- lemma concept_instantiable_invariant : concept.instantiable.invariant :=
-    begin
-        dunfold concept.instantiable property.invariant,
-        intros c₁ c₂ h,
-        suffices c : (∃ (s : substance), substance.concept s ≈ c₁) → ∃ (s : substance), substance.concept s ≈ c₂,
-            constructor,
-                exact c,
-            all_goals{
-                intro hs,
-                obtain ⟨s, hs⟩ := hs,
-                existsi s,
-            },
-            exact setoid.trans hs (setoid.symm h),
-        exact setoid.trans hs h,
-    end
-
- -- Therefore we define instantiablity for universals via quotient.out
- def universal.instantiable (u : universal) := u.out.instantiable
-
- -- TODO: argue that Aquinas defended the u.out point of view in
- -- De ente et essentia.
-
- -- The nb as an universal.
- @[reducible]
- def nbu : universal := ⟦nb.concept⟧
- instance universal_inhabited : inhabited universal := ⟨nbu⟩
-
- -- A notion is a quality defined abstractly in the representation
- def universal.notion (u : universal) := u.out.quality 
-
-
-
-
-
-
- end universals
-
+ def metaphysical (s : substance) := simple s.val
+ def separate := subtype {s : substance | metaphysical s}
+ 
+ -- A substance is purely actual if it has no passive potency
+ -- to be different from what it is, i.e. if it has a single state.
+ def purely_actual (s : substance) := nonempty (s.state ≃ unit)
+ 
+ -- Only the necessary being can be purely actual, 
+ -- in which case platonism follows.
+ -- def eq_nb_of_purely_actual : ∀ s, purely_actual s → s = nb :=
+ -- begin
+ --     intros s h,
+ --     simp [purely_actual] at h,
+ --     apply nonempty.elim h,
+ --     intro iso,
+ --     simp [substance.state, substance.state_setoid, quotient] at iso,
+     
+ -- end
+ 
+ -- Platonism in the broad sense (greek theism) is the doctrine 
+ -- that the necessary being is metaphysical
+ def platonism := metaphysical nb
+ 
+ -- The admission of any metaphysical substance entails platonism
+ lemma platonism_of_nonempty_separate : nonempty separate → platonism :=
+ sorry
+ end metaphysics
+section theology
+ 
+ -- (Classical) Theism is an extension of Platonism which 
+ -- furthermore claims that there is a possible world 
+ -- in which the necessary being exists alone.
+ def theism := platonism ∧ ∃ (w : world), world.entities w = {nb.val}
+ 
+ end theology
+section ethics
+ end ethics
 end ontology
 end ontology
