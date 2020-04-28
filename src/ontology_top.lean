@@ -1189,15 +1189,15 @@ section categories
  instance concept.borel : measurable_space c.state := borel c.state
  def concept.probability_measure := {μ : measure_theory.measure c.state | μ.measure_of univ = 1} 
 
- -- A disposition is a state-indexed probability measure for a concept
- -- such that the preimage of every probability measure is open
+ -- A disposition is a partly state-indexed probability measure for a concept
+ -- such that the preimage of every probability measure is either open or closed.
  def concept.disposition := 
-    subtype {f : c.state → c.probability_measure | ∀ p : c.probability_measure, is_open (f⁻¹' {p})}
+    subtype {f : c.state →. c.probability_measure | ∀ p : c.probability_measure, is_open (f⁻¹' {roption.some p}) ∨ is_closed (f⁻¹' {roption.some p})}
 
  -- A habit is a "permanent" disposition. We take this to mean that
  -- it is constant in a dense open set.
  def concept.habit := 
-    subtype {d : c.disposition | ∃ p : c.probability_measure,  closure (d.val⁻¹' {p}) = univ }
+    subtype {d : c.disposition | ∃ p : c.probability_measure,  closure (d.val⁻¹' {roption.some p}) = univ}
 
  -- a law of nature is a constant disposition, i.e. the same for every
  -- state. It is provably a habit as well. 
@@ -1206,7 +1206,7 @@ section categories
  -- they are contingent they are assumed to be habits.
 
  def concept.law := 
-    subtype {d : c.disposition | ∃ p : c.probability_measure, ∀ x : c.state, d.val x = p}
+    subtype {d : c.disposition | ∃ p : c.probability_measure, ∀ x : c.state, p ∈ d.val x}
 
 
  end categories
