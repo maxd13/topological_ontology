@@ -12,6 +12,99 @@ universe u
 open set topological_space classical
 local attribute [instance] prop_decidable
 
+/-! 
+
+# A topological formal ontology and foundation of philosophy
+
+The purpose of this work is to implement an 
+upper level ontology that minimizes the number of primitive terms and axioms,
+while maximizing explanatory power with regards to the interpretability of 
+philosophical concepts in the theory. We seek to give to the whole of philosophy the same sort
+of rigorous foundation that set theory gives to mathematics, in terms of possible entities and possible
+worlds.
+
+Among other things, we seek to precisely define in our theory the concepts of: substance, physical substance,
+metaphysical substance, accident, concept, universal, property, positive property, the process of abstraction,
+matter, form, the categories of being, the predicaments, essence and existence, causality, parthood, God, theism,
+atheism, physicalism, monism, pantheism, eleaticism, platonism, modal realism.
+We also seek to formalize theories of: causality, mereology,
+epistemology, ethics, philosophy of nature, metaphysics and natural theology. 
+All of it based on the foundation of possible worlds and possible entities.
+
+Pretty audacious, ain't it?
+
+I am actually undecided about whether I need a theory of counterfactuals. 
+But anyone should be able to create his own theory of counterfactuals based on these foundations,
+if he so wishes.
+
+## Ontologies and Events
+
+The fundamental concept on which all of our work is based upon, is the concept of an *ontology of possible worlds*.
+Which is to be comprised of a Type of possible worlds equipped with some fundamental topological structure, 
+the philosophical significance of which shall be made clear shortly.
+
+The notion of possible world is of course a primitive one, and you may interpret it as you will. 
+We take a possible world in our theory to be a point in the phase space of the whole of possible reality,
+a fully qualified description of a possible state of existence, 
+the outcomes of the most general random experiment one could possible make, etc...
+
+More importantly, given this primitive notion we can readily define the notion of an ontological 
+**Event** as simply a set of possible worlds; the notion should be familiar to those acquainted 
+with probability theory (probability spaces). An event is something that "happens" or "occurs", 
+precisely in the possible worlds which compose it, i.e. an event is the set of all possible worlds in which
+the event occurs. We would like to talk a little bit about events before delving into the mathematical definitions.
+
+Another way to see an event is as (the semantic content of) a proposition. 
+Not all events are necessarily propositions 
+(because we could have uncountably many events, but countably many propositions) 
+but every proposition is to be associated with an event: 
+the set of all possible worlds in which the proposition is true.
+For instance the proposition "Socrates exists" corresponds to the event {w : world | Socrates exists in w}.
+
+Now, it is quite clear that some propositions "talk about" or postulate one or more things existing, while others do not. 
+"Socrates exists" clearly postulates the existence of Socrates, just as "Humans exist" postulates the existence of 
+Human beings, and "Socrates and Plato exist" postulates the existence of both Plato and Socrates, etc... 
+On the other hand, "Unicorns do not exist", does not seem to postulate or "talk about" 
+the existence of anything, but merely about the *absence* of an existence. 
+So there is quite clearly a primitive notion of which propositions 
+talk about existence and which do not. 
+
+For the sake of generality we can take this notion to apply to all events regardless
+of whether they are proposition or not, and stop talking about propositions altogether.
+So an event will be **existential** or **open** 
+precisely when its occurrence postulates that one or more entities from a set of entities must exist,
+which is to say that the event can only occur in a possible world if those entities it postulates 
+do exist in that possible world.
+
+Now, as we have already exemplified, we should expect that arbitrary set unions of existential 
+events be existential events, since the event "(Some)Humans exist" is the union of all events of the form
+"X exists" for any possible human X. The same should apply for intersections, since "All possible humans exist" 
+is the intersection of "X exists" for any possible human X. An generally speaking, for any arbitrary family
+of existential events, we should exp
+
+
+
+Hence we define an ontology as a nonempty T0 Alexandroff topological space of possible worlds:
+
+-/
+
+#check opt_param
+
+structure pre_ontology : Type (u+1) :=
+    (world : Type u)
+    [ne : nonempty world . tactic.apply_instance]
+    [t : topological_space world . tactic.apply_instance]
+
+structure ontology extends pre_ontology  :=
+    [axiom₀ : t0_space world . tactic.apply_instance]
+
+/-!
+
+## Extension and intension
+
+-/
+
+
 namespace ontology
 section ontology
 -- An `ontology` is an inhabited T0 topological space
