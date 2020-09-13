@@ -1,65 +1,55 @@
-import order.complete_boolean_algebra tactic
-universe u
+import tactic
 
+universe u
 noncomputable theory
-local attribute [instance] classical.prop_decidable
+open set tactic classical
+local attribute [instance] prop_decidable
 
 namespace logic
-open set tactic classical
-
 section signature
 
--- The type of signatures, which defines a first-order language with modalities.
--- It has room for defining your
--- own preferred variable type.
-@[derive inhabited]
-structure signature : Type (u+1) :=
-    (modality : Type u := pempty)
-    (arity : modality → ℕ := λ_, 0)
-    (functional_symbol : set modality := ∅)
-    (relational_symbol : set modality := ∅)
-    (logical_symbol : set modality := ∅)
-    (necessary_symbol : set modality := ∅)
-    (essential_symbol : set modality := ∅)
-
-variable (σ : signature)
-
--- the type of functional symbols of arity n
-def signature.nary (σ : signature) (n : ℕ) := subtype {f : σ.functional_symbol | σ.arity f = n}
-
--- the type of relational symbols of arity n
-def signature.nrary (σ : signature) (n : ℕ) := subtype {r : σ.relational_symbol | σ.arity r = n}
-
--- the type of modal symbols of arity n
-def signature.nmary (n : ℕ) := subtype {r : σ.modality | σ.arity r = n}
-
--- the predicate defining, and the type of, constants
-def is_constant (f : σ.functional_symbol) := σ.arity f = 0
-def signature.const (σ : signature) := σ.nary 0
-
--- the type of formulas in the language
-inductive signature.formula 
-| var : ℕ → signature.formula
-| mod   {n : ℕ} (box : σ.nmary n) (v : fin n → signature.formula) :  signature.formula
-| all  :  ℕ →  signature.formula →  signature.formula
-| if_then  :  signature.formula →  signature.formula →  signature.formula
-| equation : signature.formula →  signature.formula →  signature.formula
-| false    :  signature.formula
-
-instance inh_formula : inhabited σ.formula := ⟨formula.var (default ℕ)⟩
--- @[reducible, simp]
-instance nat_coe_formula : has_coe ℕ σ.formula := ⟨formula.var⟩
-
-
--- modalities interpretation
-structure signature.structure (σ : signature) (ω : Type u) := 
-    (I : Π {n}, σ.nmary n → (fin n → set ω) → set ω)
-    (ne : nonempty ω)
-
--- variable interpretation/assignment
-def vasgn (ω : Type u) := ℕ → set ω
-
-end signature
+ -- The type of signatures, which defines a first-order language with modalities.
+ -- It has room for defining your
+ -- own preferred variable type.
+ @[derive inhabited]
+ structure signature : Type (u+1) :=
+     (modality : Type u := pempty)
+     (arity : modality → ℕ := λ_, 0)
+     (functional_symbol : set modality := ∅)
+     (relational_symbol : set modality := ∅)
+     (logical_symbol : set modality := ∅)
+     (necessary_symbol : set modality := ∅)
+     (essential_symbol : set modality := ∅)
+ 
+ variable (σ : signature)
+ 
+ -- the type of functional symbols of arity n
+ def signature.nary (σ : signature) (n : ℕ) := subtype {f : σ.functional_symbol | σ.arity f = n}
+ 
+ -- the type of relational symbols of arity n
+ def signature.nrary (σ : signature) (n : ℕ) := subtype {r : σ.relational_symbol | σ.arity r = n}
+ 
+ -- the type of modal symbols of arity n
+ def signature.nmary (n : ℕ) := subtype {r : σ.modality | σ.arity r = n}
+ 
+ -- the predicate defining, and the type of, constants
+ def is_constant (f : σ.functional_symbol) := σ.arity f = 0
+ def signature.const (σ : signature) := σ.nary 0
+ 
+ -- the type of formulas in the language
+ inductive signature.formula 
+ | var : ℕ → signature.formula
+ | mod   {n : ℕ} (box : σ.nmary n) (v : fin n → signature.formula) :  signature.formula
+ | all  :  ℕ →  signature.formula →  signature.formula
+ | if_then  :  signature.formula →  signature.formula →  signature.formula
+ | equation : signature.formula →  signature.formula →  signature.formula
+ | false    :  signature.formula
+ 
+ instance inh_formula : inhabited σ.formula := ⟨formula.var (default ℕ)⟩
+ -- @[reducible, simp]
+ instance nat_coe_formula : has_coe ℕ σ.formula := ⟨formula.var⟩
+ 
+ end signature
 
 section notations
 
@@ -146,101 +136,114 @@ section notations
 
  end notations
 
-variables {σ : signature} {ω : Type u}
+section semantics
 
--- bind the value of a variable to `S` in an assignment 
--- (generates a new assignment).
-def vasgn.bind (asg : vasgn ω) (x : ℕ) (S : set ω) : vasgn ω :=
-    λy, if y = x then S else asg y
+ -- modalities interpretation
+ structure signature.structure (σ : signature) (ω : Type u) := 
+     (I : Π {n}, σ.nmary n → (fin n → set ω) → set ω)
+     (ne : nonempty ω)
+ 
+ -- variable interpretation/assignment
+ def vasgn (ω : Type u) := ℕ → set ω
 
 
-def signature.structure.ref' (M : σ.structure ω) : σ.formula → vasgn ω → set ω
-| (formula.var x) asg := asg x
-| (@formula.mod _ 0 box v) asg := M.I box fin_zero_elim
-| (@formula.mod _ (n+1) box v) asg := M.I box (λ k, signature.structure.ref' (v k) asg)
-| (formula.all x φ) asg := ⋂ S : set ω, signature.structure.ref' φ (asg.bind x S)
-| (formula.if_then φ ψ) asg := -(signature.structure.ref' φ asg) ∪ (signature.structure.ref' ψ asg)
-| (formula.equation φ ψ) asg := if (signature.structure.ref' φ asg) = (signature.structure.ref' ψ asg) 
-                                then univ 
-                                else ∅
-| formula.false _ := ∅
+ variables {σ : signature} {ω : Type u}
 
-@[simp]
-def signature.structure.satisfies' (M : σ.structure ω) : ω → σ.formula → vasgn ω → Prop
-| w φ asg := w ∈ (M.ref' φ asg)
 
-@[simp]
-def signature.structure.satisfies (M : σ.structure ω) : ω → σ.formula → Prop
-| w φ := ∀ asg, M.satisfies' w φ asg
 
-@[simp]
-def signature.structure.valid' (M : σ.structure ω) : σ.formula → vasgn ω → Prop
-| φ asg := ∀ w, M.satisfies' w φ asg
+ -- bind the value of a variable to `S` in an assignment 
+ -- (generates a new assignment).
+ def vasgn.bind (asg : vasgn ω) (x : ℕ) (S : set ω) : vasgn ω :=
+     λy, if y = x then S else asg y
+ 
+ 
+ def signature.structure.ref' (M : σ.structure ω) : σ.formula → vasgn ω → set ω
+ | (formula.var x) asg := asg x
+ | (@formula.mod _ 0 box v) asg := M.I box fin_zero_elim
+ | (@formula.mod _ (n+1) box v) asg := M.I box (λ k, signature.structure.ref' (v k) asg)
+ | (formula.all x φ) asg := ⋂ S : set ω, signature.structure.ref' φ (asg.bind x S)
+ | (formula.if_then φ ψ) asg := -(signature.structure.ref' φ asg) ∪ (signature.structure.ref' ψ asg)
+ | (formula.equation φ ψ) asg := if (signature.structure.ref' φ asg) = (signature.structure.ref' ψ asg) 
+                                 then univ 
+                                 else ∅
+ | formula.false _ := ∅
+ 
+ @[simp]
+ def signature.structure.satisfies' (M : σ.structure ω) : ω → σ.formula → vasgn ω → Prop
+ | w φ asg := w ∈ (M.ref' φ asg)
+ 
+ @[simp]
+ def signature.structure.satisfies (M : σ.structure ω) : ω → σ.formula → Prop
+ | w φ := ∀ asg, M.satisfies' w φ asg
+ 
+ @[simp]
+ def signature.structure.valid' (M : σ.structure ω) : σ.formula → vasgn ω → Prop
+ | φ asg := ∀ w, M.satisfies' w φ asg
+ 
+ @[simp]
+ def signature.structure.possible' (M : σ.structure ω) : σ.formula → vasgn ω → Prop
+ | φ asg := ∃ w, M.satisfies' w φ asg
+ 
+ @[simp]
+ def signature.structure.valid (M : σ.structure ω) : σ.formula → Prop
+ | φ := ∀ w, M.satisfies w φ
+ 
+ @[simp]
+ def tautology (φ : σ.formula) : Prop := 
+     ∀ {ω : Type u} (M : σ.structure ω), M.valid φ
+ 
+ @[simp]
+ def logical (φ : σ.formula) : Prop :=
+     ∀ {ω : Type u} (M : σ.structure ω) asg, M.valid' φ asg ∨ M.valid' (-φ) asg
 
-@[simp]
-def signature.structure.possible' (M : σ.structure ω) : σ.formula → vasgn ω → Prop
-| φ asg := ∃ w, M.satisfies' w φ asg
-
-@[simp]
-def signature.structure.valid (M : σ.structure ω) : σ.formula → Prop
-| φ := ∀ w, M.satisfies w φ
-
-@[simp]
-def tautology (φ : σ.formula) : Prop := 
-    ∀ {ω : Type u} (M : σ.structure ω), M.valid φ
-
-@[simp]
-def logical (φ : σ.formula) : Prop :=
-    ∀ {ω : Type u} (M : σ.structure ω) asg, M.valid' φ asg ∨ M.valid' (-φ) asg
-
--- TODO: specify a free variable for quantification
-def signature.formula.isPworld (φ : σ.formula) : σ.formula := 
+ -- TODO: specify a free variable for quantification
+ def signature.formula.isPworld (φ : σ.formula) : σ.formula := 
     formula.all 0 $
     (↑0 ⟹' φ) ⟹ ↑0 ≡ ⊥
 
-variables {M : σ.structure ω} (φ ψ: σ.formula) (asg : vasgn ω)
-
--- lemma logical_pworld : logical φ.isPworld :=
---     begin
---         dunfold logical,
---         intros,
---         let r := M.ref' φ asg,
---         let r_singleton := ∃ w, {w} = r,
---         by_cases r_singleton,
---             left,
---             dunfold signature.structure.valid',
---             dunfold signature.structure.satisfies',
---             obtain ⟨w, h⟩ := h,
---             intro w',
-
---             dunfold signature.formula.isPworld,
---             dunfold signature.structure.ref',
---             simp,
---             intros,
---             simp [ signature.structure.ref'
---                  , coe
---                  , lift_t
---                  , has_lift_t.lift
---                  , coe_t
---                  , has_coe_t.coe
---                  , coe_b
---                  , has_neg.neg
---                  , vasgn.bind
---                  ],
---             by_cases c₀ : i = ∅, 
---                 simp [c₀],
---                 set r₂ := signature.structure.ref' M φ (λ (y : ℕ), ite (y = 0) ∅ (asg y)),
---                 have c₁ : (M.ref' (has_coe.coe 0) (λ (y : ℕ), ite (y = 0) ∅ (asg y))) = ∅ := sorry,
---                 simp [c₁],
---                 by_cases c₂ : ∅ = r₂; simp [c₂],
---             have c₁ : (M.ref' (has_coe.coe 0) (λ (y : ℕ), ite (y = 0) i (asg y))) = i := sorry,
---             set r₂ := signature.structure.ref' M φ (λ (y : ℕ), ite (y = 0) i (asg y)),
---             simp [c₁, c₀],
---             by_cases c₃ : compl i ∪ r₂ = univ; 
---             simp [c₃],
---                 admit,
-
---     end
+ variables {M : σ.structure ω} (φ ψ: σ.formula) (asg : vasgn ω)
+ 
+ -- lemma logical_pworld : logical φ.isPworld :=
+ --     begin
+ --         dunfold logical,
+ --         intros,
+ --         let r := M.ref' φ asg,
+ --         let r_singleton := ∃ w, {w} = r,
+ --         by_cases r_singleton,
+ --             left,
+ --             dunfold signature.structure.valid',
+ --             dunfold signature.structure.satisfies',
+ --             obtain ⟨w, h⟩ := h,
+ --             intro w',
+ 
+ --             dunfold signature.formula.isPworld,
+ --             dunfold signature.structure.ref',
+ --             simp,
+ --             intros,
+ --             simp [ signature.structure.ref'
+ --                  , coe
+ --                  , lift_t
+ --                  , has_lift_t.lift
+ --                  , coe_t
+ --                  , has_coe_t.coe
+ --                  , coe_b
+ --                  , has_neg.neg
+ --                  , vasgn.bind
+ --                  ],
+ --             by_cases c₀ : i = ∅, 
+ --                 simp [c₀],
+ --                 set r₂ := signature.structure.ref' M φ (λ (y : ℕ), ite (y = 0) ∅ (asg y)),
+ --                 have c₁ : (M.ref' (has_coe.coe 0) (λ (y : ℕ), ite (y = 0) ∅ (asg y))) = ∅ := sorry,
+ --                 simp [c₁],
+ --                 by_cases c₂ : ∅ = r₂; simp [c₂],
+ --             have c₁ : (M.ref' (has_coe.coe 0) (λ (y : ℕ), ite (y = 0) i (asg y))) = i := sorry,
+ --             set r₂ := signature.structure.ref' M φ (λ (y : ℕ), ite (y = 0) i (asg y)),
+ --             simp [c₁, c₀],
+ --             by_cases c₃ : compl i ∪ r₂ = univ; 
+ --             simp [c₃],
+ --                 admit,
+ 
+ --     end
 
             -- dunfold signature.structure.ref',
             -- simp,
@@ -281,7 +284,7 @@ variables {M : σ.structure ω} (φ ψ: σ.formula) (asg : vasgn ω)
         -- intros,
     -- end
 
-theorem necessity_logical : logical φ.necessary :=
+ theorem necessity_logical : logical φ.necessary :=
     begin
         simp,
         intros,
@@ -291,7 +294,7 @@ theorem necessity_logical : logical φ.necessary :=
         by_cases c₀ : r = univ; simp [c₀],
     end
 
-theorem possibility_logical : logical φ.possible :=
+ theorem possibility_logical : logical φ.possible :=
     begin
         simp,
         intros,
@@ -301,7 +304,7 @@ theorem possibility_logical : logical φ.possible :=
         by_cases c₀ : -r = univ; simp [c₀],
     end
 
-theorem definability_of_validity' : M.valid' φ asg ↔ M.valid' (□φ) asg :=
+ theorem definability_of_validity' : M.valid' φ asg ↔ M.valid' (□φ) asg :=
     begin
         simp,
         dunfold signature.structure.ref',
@@ -318,7 +321,7 @@ theorem definability_of_validity' : M.valid' φ asg ↔ M.valid' (□φ) asg :=
         contradiction,
     end
 
-theorem necessity_valid_iff_possible : M.valid' (□φ) asg ↔ M.possible' (□φ) asg :=
+ theorem necessity_valid_iff_possible : M.valid' (□φ) asg ↔ M.possible' (□φ) asg :=
     begin
         simp,
         dunfold signature.structure.ref',
@@ -330,7 +333,7 @@ theorem necessity_valid_iff_possible : M.valid' (□φ) asg ↔ M.possible' (□
         triv,
     end
 
-theorem necessity_T : tautology (□φ ⇒ φ) :=
+ theorem necessity_T : tautology (□φ ⇒ φ) :=
     begin
         simp,
         intros,
@@ -340,7 +343,7 @@ theorem necessity_T : tautology (□φ ⇒ φ) :=
         by_cases c₀ : r = univ; simp [c₀],
     end
 
-theorem necessity_K : tautology (□(φ ⇒ ψ) ⇒ □φ ⇒ □ψ) :=
+ theorem necessity_K : tautology (□(φ ⇒ ψ) ⇒ □φ ⇒ □ψ) :=
     begin
         simp,
         intros,
@@ -352,7 +355,7 @@ theorem necessity_K : tautology (□(φ ⇒ ψ) ⇒ □φ ⇒ □ψ) :=
         by_cases c₁ : r₂ = univ; simp [c₁],
     end
 
-theorem necessity_4 : tautology (□φ ⇒ □□φ) :=
+ theorem necessity_4 : tautology (□φ ⇒ □□φ) :=
     begin
         simp,
         intros,
@@ -362,7 +365,7 @@ theorem necessity_4 : tautology (□φ ⇒ □□φ) :=
         by_cases c₀ : r = univ; simp [c₀],
     end
 
-theorem necessity_5 : tautology (⋄φ ⇒ □⋄φ) :=
+ theorem necessity_5 : tautology (⋄φ ⇒ □⋄φ) :=
     begin
         simp,
         intros,
@@ -372,7 +375,7 @@ theorem necessity_5 : tautology (⋄φ ⇒ □⋄φ) :=
         by_cases c₀ : -r₁ = univ; simp [c₀],
     end
 
-theorem necessity_necessitation : tautology.{u} φ → tautology.{u} □φ :=
+ theorem necessity_necessitation : tautology.{u} φ → tautology.{u} □φ :=
     begin
         simp,
         intros,
@@ -387,8 +390,8 @@ theorem necessity_necessitation : tautology.{u} φ → tautology.{u} □φ :=
         contradiction,
     end
 
--- should be in the standard library but isn't.
-theorem Inter_eq_univ_iff : ∀ {α I} {s : set α} {f : I → set α}, ((⋂ i : I, f i) = univ) ↔ ∀ i, f i = univ :=
+ -- should be in the standard library but isn't.
+ theorem Inter_eq_univ_iff : ∀ {α I} {s : set α} {f : I → set α}, ((⋂ i : I, f i) = univ) ↔ ∀ i, f i = univ :=
     begin
         intros,
         constructor; intro h,
@@ -404,7 +407,7 @@ theorem Inter_eq_univ_iff : ∀ {α I} {s : set α} {f : I → set α}, ((⋂ i 
         triv,
     end
 
-theorem necessity_converse_barcan : ∀ x : ℕ, tautology (□formula.all x φ ⇒ formula.all x □φ) :=
+ theorem necessity_converse_barcan : ∀ x : ℕ, tautology (□formula.all x φ ⇒ formula.all x □φ) :=
     begin
         simp,
         intros,
@@ -418,5 +421,6 @@ theorem necessity_converse_barcan : ∀ x : ℕ, tautology (□formula.all x φ 
         assumption,
     end
 
-
+ end semantics
+ 
 end logic
