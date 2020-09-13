@@ -391,7 +391,7 @@ section semantics
     end
 
  -- should be in the standard library but isn't.
- theorem Inter_eq_univ_iff : ∀ {α I} {s : set α} {f : I → set α}, ((⋂ i : I, f i) = univ) ↔ ∀ i, f i = univ :=
+ theorem Inter_eq_univ_iff : ∀ {α I} {f : I → set α}, ((⋂ i : I, f i) = univ) ↔ ∀ i, f i = univ :=
     begin
         intros,
         constructor; intro h,
@@ -407,6 +407,24 @@ section semantics
         triv,
     end
 
+ theorem necessity_barcan : ∀ x : ℕ, tautology (formula.all x □φ ⇒ □formula.all x φ) :=
+    begin
+        simp,
+        intros,
+        dunfold signature.structure.ref',
+        simp,
+        by_cases c₀ : (⋂ (S : set ω), signature.structure.ref' M φ (vasgn.bind asg x S)) = univ;
+        simp [c₀],
+        have c₁ : ∃ i, M.ref' φ (asg.bind x i) ≠ univ,
+            by_contradiction h,
+            push_neg at h,
+            have c₂ := Inter_eq_univ_iff.2 h,
+            contradiction,
+        obtain ⟨i, h⟩ := c₁,
+        existsi i,
+        simp [h],
+    end
+
  theorem necessity_converse_barcan : ∀ x : ℕ, tautology (□formula.all x φ ⇒ formula.all x □φ) :=
     begin
         simp,
@@ -418,7 +436,6 @@ section semantics
         intro i,
         have c₁ := Inter_eq_univ_iff.mp c₀ i,
         simp [c₁],
-        assumption,
     end
 
  end semantics
