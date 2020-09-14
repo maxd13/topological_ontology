@@ -197,13 +197,67 @@ section semantics
      ∀ {ω : Type u} (M : σ.structure ω) asg, M.valid' φ asg ∨ M.valid' (-φ) asg
 
  -- TODO: specify a free variable for quantification
- def signature.formula.isPworld (φ : σ.formula) : σ.formula := 
-    formula.all 0 $
-    (↑0 ⟹' φ) ⟹ ↑0 ≡ ⊥
+--  @[simp]
+ def signature.formula.world (φ : σ.formula) : σ.formula := 
+    let x := (@formula.var σ 0) in
+    (φ ≢ ⊥) ⊓ (formula.all 0 $
+    (x ≢ ⊥) ⟹ ((φ ⟹ x) ⊔ (φ ⟹ -x)))
+
+-- should be in the standard library but isn't.
+ theorem Inter_eq_univ_iff : ∀ {α I} {f : I → set α}, ((⋂ i : I, f i) = univ) ↔ ∀ i, f i = univ :=
+    begin
+        intros,
+        constructor; intro h,
+            intro i,
+            ext, constructor; intro H, triv,
+            rw ←h at H,
+            simp at H,
+            exact H i,
+        ext, constructor; intro H, triv,
+        simp,
+        intro i,
+        rw h i,
+        triv,
+    end
 
  variables {M : σ.structure ω} (φ ψ: σ.formula) (asg : vasgn ω)
+
+ #check ({1} : set ℕ)
+
+--  lemma world_semantics : M.valid' φ.world asg ↔ ∃ w, M.ref' φ asg = {w} := 
+--     begin
+--         dunfold signature.formula.world,
+--         simp[signature.structure.ref'],
+--         dunfold signature.structure.ref',
+--         simp[vasgn.bind],
+--         constructor; intro h,
+--         swap,
+--             obtain ⟨w, h⟩ := h,
+--             rw h,
+--             intros,
+--             constructor,
+--                 admit,
+--             intros,
+--             set r := M.ref' φ (λ (y : ℕ), ite (y = 0) i (asg y)),
+--             by_cases c₀ : i = ∅; simp [c₀],
+--                 admit,
+--             -- TODO: prove this side by cases
+--             -- on the assumption 0 does not appear in φ,
+--             -- the cases are whether w ∈ i or not,
+--             -- by the assumption r is turned into a singleton
+--             -- via an auxiliary lemma about binding of variables
+--             -- that do not appear in a formula. Then the goal
+--             -- simplifies to true.
+--                 admit,
+        
+            
+--         obtain ⟨w⟩ := M.ne,
+--         obtain ⟨h₁, h₂⟩ := h w,
+
+--     end
+
  
- -- lemma logical_pworld : logical φ.isPworld :=
+ -- lemma logical_world : logical φ.world :=
  --     begin
  --         dunfold logical,
  --         intros,
@@ -216,7 +270,7 @@ section semantics
  --             obtain ⟨w, h⟩ := h,
  --             intro w',
  
- --             dunfold signature.formula.isPworld,
+ --             dunfold signature.formula.world,
  --             dunfold signature.structure.ref',
  --             simp,
  --             intros,
@@ -390,23 +444,6 @@ section semantics
         contradiction,
     end
 
- -- should be in the standard library but isn't.
- theorem Inter_eq_univ_iff : ∀ {α I} {f : I → set α}, ((⋂ i : I, f i) = univ) ↔ ∀ i, f i = univ :=
-    begin
-        intros,
-        constructor; intro h,
-            intro i,
-            ext, constructor; intro H, triv,
-            rw ←h at H,
-            simp at H,
-            exact H i,
-        ext, constructor; intro H, triv,
-        simp,
-        intro i,
-        rw h i,
-        triv,
-    end
-
  theorem necessity_barcan : ∀ x : ℕ, tautology (formula.all x □φ ⇒ □formula.all x φ) :=
     begin
         simp,
@@ -436,6 +473,18 @@ section semantics
         intro i,
         have c₁ := Inter_eq_univ_iff.mp c₀ i,
         simp [c₁],
+    end
+
+    theorem universal_entailment_logical : ∀ x : ℕ, logical (formula.all x φ ⟹ ψ) :=
+    begin
+        simp,
+        intros,
+        dunfold signature.structure.ref',
+        simp,
+        set r₁ := (-⋂ (S : set ω), M.ref' φ (asg.bind x S)),
+        set r₂ := M.ref' ψ asg,
+        by_cases c₀ : r₁ ∪ r₂ = univ;
+        simp [c₀],
     end
 
  end semantics
