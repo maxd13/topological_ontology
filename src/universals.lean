@@ -1,8 +1,4 @@
 import states
-       data.real.basic
-       topology.instances.real
-       measure_theory.borel_space
-       measure_theory.measure_space
 universe u
 open set topological_space classical
 local attribute [instance] prop_decidable
