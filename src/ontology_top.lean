@@ -1398,6 +1398,9 @@ section mereology
 
  end mereology
 section causality
+
+ def counterfactual_dependence (w : world) (e₁ e₂ : entity) : Prop := sorry
+
  end causality
 section metaphysics
 
