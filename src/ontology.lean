@@ -88,15 +88,26 @@ Hence we define an ontology as a nonempty T0 Alexandroff topological space of po
 
 -/
 
-#check opt_param
 
 structure pre_ontology : Type (u+1) :=
     (world : Type u)
     [ne : nonempty world . tactic.apply_instance]
     [t : topological_space world . tactic.apply_instance]
 
+instance pre_ontology_top  (ω : pre_ontology)  : topological_space ω.world := ω.t
+
+-- An `ontology` is a nonempty T0 topological space
+-- of possible worlds.
 structure ontology extends pre_ontology  :=
     [axiom₀ : t0_space world . tactic.apply_instance]
+
+instance ontology_t0  (ω : ontology)  : t0_space ω.world := ω.axiom₀
+
+-- TODO: define a stronger ontology type which assumes the space is Alexandroff
+-- uncountable, substantially finite and has the property that no world is disconnected
+-- in the specialization pre-order, in the sense that there must either be a world 
+-- below it or one above it. This depends on a previous module alexandroff_space.lean
+-- being defined.
 
 /-!
 
@@ -107,8 +118,6 @@ structure ontology extends pre_ontology  :=
 
 namespace ontology
 section ontology
--- An `ontology` is an inhabited T0 topological space
--- of possible worlds.
 parameters {world : Type u}
            [t : topological_space world]
            [ne : inhabited world]
