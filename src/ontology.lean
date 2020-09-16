@@ -637,12 +637,5 @@ section accident_lemmas
     end
 
 end accident_lemmas
- 
- 
- -- section causality
- 
- --  def counterfactual_dependence (w : world) (e₁ e₂ : entity) : Prop := sorry
- 
- --  end causality
 
 end ontology
