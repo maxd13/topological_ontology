@@ -1,9 +1,4 @@
-import 
-    topology.bases
-    topology.order 
-    topology.homeomorph
-    topology.subset_properties
-    tactic.tidy
+import alexandroff_space
 universe u
 open set topological_space classical
 local attribute [instance] prop_decidable
