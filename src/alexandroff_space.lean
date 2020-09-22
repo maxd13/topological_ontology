@@ -2,6 +2,7 @@ import topology.bases
        topology.order 
        topology.homeomorph
        topology.subset_properties
+       data.fintype.basic
        tactic.tidy
 universe u
 open set classical tactic
@@ -45,3 +46,5 @@ instance specialization_order [h : t0_space α] : partial_order α :=
 omit t
 
 end topological_space
+
+def uncountable (α : Type u) := infinite α ∧ ¬ nonempty (α ≃ ℕ)
