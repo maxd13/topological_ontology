@@ -1,4 +1,4 @@
-import alexandroff_space
+import math.alexandroff_space
 universe u
 open set topological_space classical
 local attribute [instance] prop_decidable

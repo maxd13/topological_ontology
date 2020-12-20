@@ -2,6 +2,7 @@ import topology.bases
        topology.order 
        topology.homeomorph
        topology.subset_properties
+       topology.instances.real
        data.fintype.basic
        tactic.tidy
 universe u
