@@ -1,4 +1,4 @@
-import states
+import abstraction.statespaces
 universe u
 open set topological_space classical
 local attribute [instance] prop_decidable
@@ -23,7 +23,7 @@ namespace ontology
   -- space could be abstracted from the particulars, i.e.
   -- it is an abstraction of the space.
   class inductive abstraction (ω : ontology) : Π (α : Type u) [topological_space α], Type (u+1)
-  | particular (s : ω.substance) : abstraction s.state
+  | particular (s : ω.substance) : abstraction s.State
   | pi           {I : Type u} (get : I → Type u)
   [get_top : Π i : I, topological_space (get i)]
   (h : ∀ i : I, abstraction (get i) ) 
@@ -44,7 +44,7 @@ namespace ontology
   (h : abstraction α)
   : abstraction (quotient s)
   
-  instance particular (s : ω.substance) : ω.abstraction s.state := abstraction.particular s 
+  instance particular (s : ω.substance) : ω.abstraction s.State := abstraction.particular s 
   
   -- CONCEPTS
   
@@ -55,10 +55,10 @@ namespace ontology
   -- universal not defined up to isomorphism.
   structure concept (ω : ontology) : Type (u+1) :=
     (state : Type u)
-    [t : topological_space state . tactic.apply_instance]
-    [abs : ω.abstraction state . tactic.apply_instance]
+    [t : topological_space state]
+    [abs : ω.abstraction state]
   
-  def substance.concept (s : ω.substance) : ω.concept := ⟨s.state⟩
+  def substance.concept (s : ω.substance) : ω.concept := ⟨s.State⟩
 
   instance concept_top (c : ω.concept) : topological_space c.state := c.t
   
@@ -82,7 +82,7 @@ namespace ontology
     begin
       cases c,
       induction c_abs,
-      exact {c_abs.state_at w},
+      exact {c_abs.State_at w},
       all_goals {
       dunfold concept.event concept.state,
       -- simp,
@@ -129,7 +129,7 @@ namespace ontology
   -- construct different types of wholes/totalities
   -- which contain the set
   def integral_whole (s : set ω.substance) : ω.concept :=
-    let get := λx : subtype s, x.val.state,
+    let get := λx : subtype s, x.val.State,
     type := Π i : subtype s, (get i)
     in begin
       set abs := @abstraction.pi ω _ get (by apply_instance) (by apply_instance),
@@ -137,7 +137,7 @@ namespace ontology
     end
   
   def abstract_whole (s : set ω.substance) : ω.concept :=
-    let get := λx : subtype s, x.val.state,
+    let get := λx : subtype s, x.val.State,
     type := Σ i : subtype s, (get i)
     in begin
       set abs := @abstraction.sigma ω _ get (by apply_instance) (by apply_instance),
