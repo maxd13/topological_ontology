@@ -748,7 +748,7 @@ instance property_inhabited : inhabited ω.property := ⟨ω.existence⟩
 @[reducible]
 def property.exemplifiable  : Prop := ∃ e, (p e).nonempty
 
--- an entity is said to possibly exemplify a property if it does some in some possible world
+-- an entity is said to possibly exemplify a property if it does so in some possible world
 @[reducible]
 def entity.pexemplifies (e : ω.entity) := (p e).nonempty 
 
