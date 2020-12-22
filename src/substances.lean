@@ -235,8 +235,9 @@ end subsistence
 -- We prove important lemmas about subsistence and inherence.
 section subsistence_lemmas
  
- variables (e e₁ e₂ : ω.entity) {a : ω.accident} {s s₁ s₂ : ω.substance}
+ variables {e e₁ e₂ : ω.entity} {a : ω.accident} {s s₁ s₂ : ω.substance}
    
+ @[simp]
  lemma subset_of_subsist : e₁.subsists e₂ → e₁.exist ⊆ e₂.exist :=
   begin
       intros h w hw,
@@ -245,13 +246,14 @@ section subsistence_lemmas
       simp [hw],
   end
  
- lemma sub_of_inheres : a.inheres s → a.val.exist ⊆ s.val.exist := 
-    by simp [accident.inheres]; exact subset_of_subsist a.val s.val
+ @[simp]
+ lemma subset_of_inheres : a.inheres s → a.val.exist ⊆ s.val.exist := 
+    by simp [accident.inheres]; exact subset_of_subsist
    
 
  
  -- An entity is a substance if and only if it subsists in itself.
- @[simp] lemma self_subsist {e : ω.entity} : e.perfect ↔ (e.subsists e) :=
+ @[simp] lemma self_subsist : e.perfect ↔ (e.subsists e) :=
   begin
       constructor; intro h,
           ext, constructor; intro h₂,
