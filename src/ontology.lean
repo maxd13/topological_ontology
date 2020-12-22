@@ -221,6 +221,10 @@ section entities
       (exist : ω.event)
       (is_open : is_open exist)
       (ne : exist.nonempty)
+
+ -- main extensionality lemma for entities.
+ @[ext]
+ lemma entity.ext {e₁ e₂ : ω.entity} (h : e₁.exist = e₂.exist) : e₁ = e₂ := sorry
   
  variables (e e₁ e₂ : ω.entity)
  

@@ -87,6 +87,11 @@ section substance_lemmas
         exact e.ne,
     end
 
+
+ -- main extensionality lemma for substances.
+ @[ext]
+ lemma substance.ext {s₁ s₂ : ω.substance} (h : s₁.val = s₂.val) : s₁ = s₂ := sorry
+
  lemma perfect_iff_nocontrary : ∀ e : ω.entity, e.nocontrary ↔ e.perfect :=
      begin
         intro e,
@@ -246,7 +251,7 @@ section subsistence_lemmas
 
  
  -- An entity is a substance if and only if it subsists in itself.
- lemma self_subsist : e.perfect ↔ (e.subsists e) :=
+ @[simp] lemma self_subsist {e : ω.entity} : e.perfect ↔ (e.subsists e) :=
   begin
       constructor; intro h,
           ext, constructor; intro h₂,
@@ -263,6 +268,9 @@ section subsistence_lemmas
       exact h,
   end
  
+ @[simp]
+ lemma sub_self_subsist : s.val.subsists s.val := self_subsist.mp s.property
+
   
  @[simp]
  lemma inheres_owner : a.inheres a.owner :=
@@ -288,6 +296,10 @@ section accidents
  def simple (e : ω.entity) := ∀ e' : ω.entity, e'.subsists e → e' = e 
  @[reducible]
  def composite (e : ω.entity) := ¬ simple e
+ @[reducible]
+ def substance.simple (s : ω.substance) := simple s.val
+ @[reducible]
+ def substance.composite (s : ω.substance) := ¬ simple s.val
 
   -- regular accidents are called intrinsic
   -- and irregular accidents are called extrinsic
@@ -347,7 +359,7 @@ section accident_lemmas
           simp [α],
           dunfold entity.inter,
           simp,
-      let β : ω.substance := ⟨α, h₂⟩,
+      let β : ω.substance := ⟨α, self_subsist.2 h₂⟩,
       have c₂ := @substance_of_substance_entails _ β a₁.val c₁,
       exact absurd c₂ a₁.property,
   end
