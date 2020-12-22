@@ -48,9 +48,9 @@ section divine_substances
       simp [nb, nbe],
       obtain ⟨y, hy⟩ := s.val.ne,
       specialize h x y,
-      replace hy := in_state_of_exists.mp hy,
+      replace hy := exists_iff_in_state.mp hy,
       rw ←h at hy,
-      exact hy,
+      exact exists_iff_in_state.2 hy,
   end
 
   

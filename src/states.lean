@@ -22,8 +22,6 @@ namespace ontology
   def substance.state (w : ω.world) : set ω.entity :=
   s.val.subsistents ∩ w.entities
  
-
-  @[simp]
   lemma exists_iff_in_state : ∀ {w : ω.world} {s : ω.substance}, w ∈ s.val.exist ↔ s.val ∈ s.state w :=
    begin
        intros,
@@ -32,8 +30,6 @@ namespace ontology
        exact h,
    end
 
-
-  @[simp]
   lemma exists_iff_nonempty_state : ∀ {w : ω.world} {s : ω.substance}, w ∈ s.val.exist ↔ (s.state w).nonempty := 
     begin 
         intros,
