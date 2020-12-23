@@ -25,7 +25,7 @@ section substances
  -- Particular `substances` in the ontology are dense entities, every other entity is an `accident`.
  -- We also call a dense entity a perfect entity.
  @[reducible]
- def entity.perfect (e : ω.entity) := e.exist.dense
+ def entity.perfect (e : ω.entity) := e.exists.dense
  @[reducible]
  def entity.imperfect (e : ω.entity) := ¬ e.perfect
  def substance (ω : ontology) := subtype {e : ω.entity | e.perfect}
@@ -76,15 +76,15 @@ section substance_lemmas
         revert h,
         dunfold entity.contrary,
         intro h,
-        let α := e.exist ∩ (s.val).exist,
+        let α := e.exists ∩ (s.val).exists,
         replace h : α = ∅,
-            rwa inter_comm (s.val).exist e.exist at h,
+            rwa inter_comm (s.val).exists e.exists at h,
         suffices c : α.nonempty,
             replace c := c.ne_empty,
             contradiction,
         apply dense_iff_inter_open.mp s.property,
-            exact e.is_open,
-        exact e.ne,
+            exact e.existential,
+        exact e.possible,
     end
 
 
@@ -106,8 +106,8 @@ section substance_lemmas
             apply dense_iff_inter_open.2,
             intros U h₁ h₂,
             replace h := h ⟨U, h₁, h₂⟩,
-            simp at h,
-            rwa inter_comm e.exist U at h,
+            simp [entity.exists] at h,
+            rwa inter_comm e.exists U at h,
             exact event_nonempty_of_ne_empty h,
         exact substance_nocontrary ⟨e, h⟩,
      end
@@ -118,10 +118,10 @@ section substance_lemmas
     begin
         intros s e h,
         simp [entity.perfect, event.dense],
-        have c₀ : closure (s.val.exist) = univ := s.property,
+        have c₀ : closure (s.val.exists) = univ := s.property,
         have c₁ := closure_mono h,
         rw c₀ at c₁,
-        have c₂ : closure (e.exist) ⊆ univ := subset_univ (closure (e.exist)),
+        have c₂ : closure (e.exists) ⊆ univ := subset_univ (closure (e.exists)),
         exact subset.antisymm c₂ c₁,
     end
 
@@ -134,13 +134,13 @@ section substance_lemmas
           exact h,
       simp [set_of, entity.perfect, event.dense, entity_Sup],
       let i := h.some,
-      have c : i.val.exist ⊆ (⋃ (i : ω.substance) (H : i ∈  s), i.val.exist),
+      have c : i.val.exists ⊆ (⋃ (i : ω.substance) (H : i ∈  s), i.val.exists),
           intros w h₂,
           simp,
           existsi i,
           exact ⟨h.some_mem,h₂⟩,
       replace c := closure_mono c,
-      have p : closure ((i.val).exist) = univ := i.property,
+      have p : closure ((i.val).exists) = univ := i.property,
       rw p at c,
       exact eq_univ_of_univ_subset c,
     end
@@ -150,24 +150,24 @@ section substance_lemmas
     begin
       fsplit,
           fsplit,
-              exact s₁.val.exist ∩ s₂.val.exist,
-          exact is_open_and s₁.val.is_open s₂.val.is_open,
-              apply dense_iff_inter_open.mp s₂.property s₁.val.exist,
-                  exact s₁.val.is_open,
-                  exact s₁.val.ne,
+              exact s₁.val.exists ∩ s₂.val.exists,
+          exact is_open_and s₁.val.existential s₂.val.existential,
+              apply dense_iff_inter_open.mp s₂.property s₁.val.exists,
+                  exact s₁.val.existential,
+                  exact s₁.val.possible,
       simp [set_of, entity.perfect, event.dense],
       apply dense_iff_inter_open.2,
       intros U H ne,
       apply event_nonempty_of_ne_empty,
       intro h,
-      let α := (U ∩ (s₁.val).exist) ∩ (s₂.val).exist,
+      let α := (U ∩ (s₁.val).exists) ∩ (s₂.val).exists,
       replace h : α = ∅,
           simp [α,inter_assoc, h],
       suffices c : α.nonempty,
           replace c := c.ne_empty,
           contradiction,
       apply dense_iff_inter_open.mp s₂.property,
-          exact is_open_inter H s₁.val.is_open,
+          exact is_open_inter H s₁.val.existential,
       exact dense_iff_inter_open.mp s₁.property U H ne,
     end
  instance substance.has_inter : has_inter ω.substance := ⟨substance.inter⟩
@@ -182,7 +182,7 @@ section subsistence
  -- if and only if the second can be written as the union of the first
  -- and its interior, or alternatively, as the complement of its boundary.
  @[reducible]
- def entity.subsists (e₁ e₂ : ω.entity) := e₁.exist ∪ e₁.exist.exterior = e₂.exist
+ def entity.subsists (e₁ e₂ : ω.entity) := e₁.exists ∪ e₁.exists.exterior = e₂.exists
  
  @[reducible]
  def entity.subsistents (e : ω.entity) := {x : ω.entity | x.subsists e}
@@ -206,19 +206,19 @@ section subsistence
       simp [closure_union, event.exterior],
       ext, constructor; intro h₂,
           trivial,
-      by_cases x ∈ closure (y.exist),
+      by_cases x ∈ closure (y.exists),
           simp [h],
       right,
       intro h₃,
-      have c : x ∈ closure (y.exist) := interior_subset h₃,
+      have c : x ∈ closure (y.exists) := interior_subset h₃,
       contradiction,
   end
 
  -- Every accident inheres in a single substance, 
  -- therefore we can construct the substance from the accident.
  def accident.owner (a : ω.accident) : ω.substance := 
-      let e : ω.entity := ⟨a.val.exist ∪ a.val.exist.exterior,
-                        event_union_exterior_open a.val.is_open,
+      let e : ω.entity := ⟨a.val.exists ∪ a.val.exists.exterior,
+                        event_union_exterior_open a.val.existential,
                         event_union_exterior_nonempty⟩ 
       in ⟨e, sub_support ⟨a.val, rfl⟩⟩
 
@@ -238,7 +238,7 @@ section subsistence_lemmas
  variables {e e₁ e₂ : ω.entity} {a : ω.accident} {s s₁ s₂ : ω.substance}
    
  @[simp]
- lemma subset_of_subsist : e₁.subsists e₂ → e₁.exist ⊆ e₂.exist :=
+ lemma subset_of_subsist : e₁.subsists e₂ → e₁.exists ⊆ e₂.exists :=
   begin
       intros h w hw,
       simp [entity.subsists] at h,
@@ -247,7 +247,7 @@ section subsistence_lemmas
   end
  
  @[simp]
- lemma subset_of_inheres : a.inheres s → a.val.exist ⊆ s.val.exist := 
+ lemma subset_of_inheres : a.inheres s → a.val.exists ⊆ s.val.exists := 
     by simp [accident.inheres]; exact subset_of_subsist
    
 
@@ -306,9 +306,9 @@ section accidents
   -- regular accidents are called intrinsic
   -- and irregular accidents are called extrinsic
   @[reducible]
-  def intrinsic (a : ω.accident) := a.val.exist.regular
+  def intrinsic (a : ω.accident) := a.val.exists.regular
   @[reducible]
-  def extrinsic (a : ω.accident) := ¬ a.val.exist.regular
+  def extrinsic (a : ω.accident) := ¬ a.val.exists.regular
 
   -- A connected intrinsic accident is called a quality
   structure quality (ω : ontology) :=
@@ -326,7 +326,7 @@ section accidents
  --   structure quantity :=
  --     (acc : accident)
  --     (intrinsic : intrinsic acc)
- --     (is_disconnected : ¬ is_preconnected acc.val.exist)
+ --     (is_disconnected : ¬ is_preconnected acc.val.exists)
 
 end accidents
 
@@ -357,7 +357,7 @@ section accident_lemmas
       simp [set_of, entity.imperfect],
       intro h₂,
       set α := a₁.val.inter a₂.val h,
-      have c₁ : α.exist ⊆ a₁.val.exist,
+      have c₁ : α.exists ⊆ a₁.val.exists,
           simp [α],
           dunfold entity.inter,
           simp,
@@ -368,9 +368,9 @@ section accident_lemmas
 
 
  lemma exterior_of_accident_is_accident : ∀ {a : ω.accident}, 
-                                           is_open a.val.exist.exterior ∧
-                                           a.val.exist.exterior.nonempty ∧
-                                           ¬ a.val.exist.exterior.dense
+                                           is_open a.val.exists.exterior ∧
+                                           a.val.exists.exterior.nonempty ∧
+                                           ¬ a.val.exists.exterior.dense
                                            :=
     begin
         intros a,
@@ -385,36 +385,36 @@ section accident_lemmas
     end
   
  def accident.exterior (a : ω.accident) : ω.accident := 
-    ⟨⟨a.val.exist.exterior, exterior_of_accident_is_accident.1, exterior_of_accident_is_accident.2.1⟩,exterior_of_accident_is_accident.2.2⟩  
+    ⟨⟨a.val.exists.exterior, exterior_of_accident_is_accident.1, exterior_of_accident_is_accident.2.1⟩,exterior_of_accident_is_accident.2.2⟩  
 
- lemma aux : ∀ (s : ω.substance) (q : ω.quality) 
-              (S : set (subtype s.val.exist)),
-              is_open S →
-              is_connected S → 
-              q.exist ⊆ subtype.val '' S →
-              q.acc.inheres s →
-              subtype.val '' S = q.exist :=
-    begin
-        intros s q S is_openS is_connectedS h₁ h₂,
-        simp [set.image, subtype.val],
-        ext, constructor; intros h; simp at *,
-            obtain ⟨h, elem⟩ := h,
-            have c : x ∈ q.exist ∪ q.exist.exterior,
-                simp [accident.inheres, entity.subsists] at h₂,
-                revert h₂,
-                dunfold quality.acc quality.entity,
-                -- simp,
-                intro h₂,
-                rw h₂,
-                exact h,
-            cases c,
-                assumption,
-            have c₁ : q.exist.exterior ⊆ s.val.exist,
-            repeat{admit},
+--  lemma aux : ∀ (s : ω.substance) (q : ω.quality) 
+--               (S : set (subtype s.val.exists)),
+--               is_open S →
+--               is_connected S → 
+--               q.exist ⊆ subtype.val '' S →
+--               q.acc.inheres s →
+--               subtype.val '' S = q.exist :=
+--     begin
+--         intros s q S is_openS is_connectedS h₁ h₂,
+--         simp [set.image, subtype.val],
+--         ext, constructor; intros h; simp at *,
+--             obtain ⟨h, elem⟩ := h,
+--             have c : x ∈ q.exist ∪ q.exist.exterior,
+--                 simp [accident.inheres, entity.subsists] at h₂,
+--                 revert h₂,
+--                 dunfold quality.acc quality.entity,
+--                 -- simp,
+--                 intro h₂,
+--                 rw h₂,
+--                 exact h,
+--             cases c,
+--                 assumption,
+--             have c₁ : q.exists.exterior ⊆ s.val.exists,
+--             repeat{admit},
                 -- apply subset_of_subsist q.entity s.val,
             -- revert w,
             -- simp [is_preconnected] at hs₁,
-    end
+    -- end
 
 end accident_lemmas
 

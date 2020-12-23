@@ -38,7 +38,7 @@ def event.independent : ω.event := -x.depends y ∩ -y.depends x
 
 -- the same relations recast for entities
 @[reducible]
-def entity.depends : ω.event := e₁.exist.depends e₂.exist
+def entity.depends : ω.event := e₁.exists.depends e₂.exists
 @[reducible]
 def entity.entangled : ω.event := e₁.depends e₂ ∩ e₂.depends e₁
 @[reducible]
@@ -48,42 +48,42 @@ def entity.independent : ω.event := -e₁.depends e₂ ∩ -e₂.depends e₁
 
 -- vertical causation 
 @[reducible]
-def substance.causes (s : ω.substance) (e : ω.event) : ω.event := e.sdepends s.val.exist
+def substance.causes (s : ω.substance) (e : ω.event) : ω.event := e.sdepends s.val.exists
 @[reducible]
 def entity.caused_by (e : ω.event) (s : ω.substance): ω.event := s.causes e
 
 
 -- efficient vertical causation
 def substance.ecauses (s : ω.substance) (e : ω.entity) : ω.event := 
-  s.causes e.exist ∩
+  s.causes e.exists ∩
   -s.part_of e.substance ∩
   -e.substance.part_of s
 
 
 -- compositional causation (we say s "compositionally causes" e)
 def substance.ccauses (s : ω.substance) (e : ω.entity) : ω.event := 
-  s.causes e.exist ∩
+  s.causes e.exists ∩
   s.part_of e.substance ∩
   -e.substance.part_of s
 
 -- formal causation
 def substance.forcauses (s : ω.substance) (e : ω.entity) : ω.event := 
   s.ccauses e ∩
-  s.causes e.substance.val.exist
+  s.causes e.substance.val.exists
 
 -- material causation
 def substance.mcauses (s : ω.substance) (e : ω.entity) : ω.event := 
   s.ccauses e ∩
-  -s.causes e.substance.val.exist
+  -s.causes e.substance.val.exists
 
 -- final causation
 def substance.fincauses (s : ω.substance) (e : ω.entity) : ω.event := 
-  s.causes e.exist ∩
+  s.causes e.exists ∩
   -s.part_of e.substance ∩
   e.substance.part_of s
 
 def entity.caused (e : ω.entity) : ω.event := 
-  {w | ∃ s : ω.substance, s.causes e.exist w }
+  {w | ∃ s : ω.substance, s.causes e.exists w }
 
 def entity.uncaused (e : ω.entity) : ω.event := -e.caused
 
@@ -102,7 +102,7 @@ def psr : Prop := ω.epsr = univ
 def epp : ω.event := 
   { w | ∀ e : ω.entity,
     e.caused w → ∃ s : ω.substance,
-    w ∈ s.val.uncaused ∩ s.causes e.exist
+    w ∈ s.val.uncaused ∩ s.causes e.exists
   }
 
 -- the platonic principle
@@ -120,7 +120,7 @@ def etpsr : Prop :=
   -- p s.val cast to an entity
   let r := (entity.mk (p s.val) 
            (by apply h₁.axiom₂; exact e) 
-           (by dunfold set.nonempty; use w; assumption))
+           (by dunfold event.possible set.nonempty; use w; assumption))
   in ∃ c : ω.substance, c.ecauses r w
 
 

@@ -46,7 +46,7 @@ section divine_substances
       simp [substance.purely_actual] at h,
       ext,
       simp [nb, nbe],
-      obtain ⟨y, hy⟩ := s.val.ne,
+      obtain ⟨y, hy⟩ := s.val.possible,
       specialize h x y,
       replace hy := exists_iff_in_state.mp hy,
       rw ←h at hy,

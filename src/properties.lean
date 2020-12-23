@@ -39,7 +39,7 @@ variable (p : ω.property)
 -- TODO: change this definition to use existential entailment notation when it becomes available.
 def property.lunivocal : ω.event := 
     { w |
-      ∀ e₁ e₂, w ∈ p e₁ ∩ p e₂ → ¬ e₁.exist ⊂ e₂.exist ∧ ¬ e₁.exist ⊃ e₂.exist
+      ∀ e₁ e₂, w ∈ p e₁ ∩ p e₂ → ¬ e₁.exists ⊂ e₂.exists ∧ ¬ e₁.exists ⊃ e₂.exists
     }
 @[reducible]
 def property.lhidden := -p.lunivocal
@@ -53,7 +53,7 @@ def property.hidden := p.lhidden.necessary
    aproperty: Being.
 -/
 
-def existence (ω : ontology) : ω.property := λe, e.exist
+def existence (ω : ontology) : ω.property := λe, e.exists
 
 -- In any possible world with at least 2 entities (hence at least one contingent entity) 
 -- existence is a hidden analogy.
@@ -72,7 +72,7 @@ def entity.pexemplifies (e : ω.entity) := (p e).nonempty
 
 -- a property is existential if an entity having the property implies its existence
 @[reducible]
-def property.existential := ∀ e, p e ⊆ e.exist
+def property.existential := ∀ e, p e ⊆ e.exists
 
 -- the common (sensical) properties
 structure property.common : Prop :=
@@ -87,9 +87,9 @@ structure property.positive extends property.common p : Prop :=
 -- a property is essential of an entity if the entity has that property in any and only the possible worlds
 -- in which it exists. Which is to say that the entity is in a sense a "fixed point" of the property
 @[reducible]
-def property.essential_of (e : ω.entity) := p e = e.exist
+def property.essential_of (e : ω.entity) := p e = e.exists
 @[reducible]
-def property.inessential_of (e : ω.entity) := p e ≠ e.exist
+def property.inessential_of (e : ω.entity) := p e ≠ e.exists
 
 -- a property is essential in itself if it is essential of all entities which may possibly exemplify it.
 @[reducible]

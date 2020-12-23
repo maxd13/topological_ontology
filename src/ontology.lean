@@ -243,30 +243,32 @@ section entities
      An entity is said to `exist` precisely at those worlds which are its elements. -/
  structure entity (ω : ontology) :=
       -- the event of the entity existing ("exists" is a reserved word)
-      (exist : ω.event)
-      (is_open : is_open exist)
-      (ne : exist.possible)
+      (exists_ : ω.event)
+      (existential_ : exists_.existential)
+      (possible_ : exists_.possible)
 
  -- TODO: rename exist to _exist and use entity.exists instead. 
  -- Also replace is_open with existential above, in both sides of the ':'. 
 
  /-- the event of the `entity` existing -/
  @[reducible]
- def entity.exists (e : ω.entity) := e.exist
+ def entity.exists (e : ω.entity) := e.exists_
+ lemma entity.existential (e : ω.entity) : e.exists.existential := e.existential_
+ lemma entity.possible (e : ω.entity) : e.exists.possible := e.possible_
 
  /-- main extensionality lemma for entities. -/
  @[ext]
- lemma entity.ext {e₁ e₂ : ω.entity} (h : e₁.exist = e₂.exist) : e₁ = e₂ := 
-    by casesm* ω.entity; simp at h; simpa
+ lemma entity.ext {e₁ e₂ : ω.entity} (h : e₁.exists = e₂.exists) : e₁ = e₂ := 
+    by casesm* ω.entity; simp [entity.exists] at h; simpa
   
  variables (e e₁ e₂ : ω.entity)
  
  -- Two entities are `contrary` if their intersection (as sets) is empty,
  -- they are otherwise `compatible`.
  @[reducible]
- def entity.contrary := e₁.exist ∩ e₂.exist = ∅
+ def entity.contrary := e₁.exists ∩ e₂.exists = ∅
  @[reducible]
- def entity.compatible := (e₁.exist ∩ e₂.exist).nonempty
+ def entity.compatible := (e₁.exists ∩ e₂.exists).nonempty
  
  -- Some very important entities have no contraries
  @[reducible]
@@ -278,7 +280,7 @@ section entities
  -- For this relation we use the subset notation.
  
  instance entity.has_subset : has_subset ω.entity := 
-      ⟨λ x y : ω.entity, x.exist ⊆ y.exist⟩
+      ⟨λ x y : ω.entity, x.exists ⊆ y.exists⟩
 
  -- The necessary being (entity) is the entity which exists in
  -- every possible world.
@@ -296,32 +298,32 @@ section entities
  def entity_Sup (s : set ω.entity) (h : s.nonempty) : ω.entity :=
    begin
       fsplit,
-          exact ⋃ i ∈ s, entity.exist i,
+          exact ⋃ i ∈ s, entity.exists i,
       apply is_open_bUnion,
       intros i H,
-      exact i.is_open,
+      exact i.existential,
           simp [set.nonempty],
 
       let i := h.some,
-      let w := i.ne.some,
+      let w := i.possible.some,
       existsi w,
       existsi i,
       constructor,
         exact h.some_mem,
-        exact i.ne.some_mem,
+        exact i.possible.some_mem,
    end
   
  -- Nonempty finite intersections of entities are entities
  def entity.inter (h : e₁.compatible e₂) : ω.entity :=
-      ⟨  e₁.exist ∩ e₂.exist
-      , is_open_inter e₁.is_open e₂.is_open
+      ⟨  e₁.exists ∩ e₂.exists
+      , is_open_inter e₁.existential e₂.existential
       , h
       ⟩
   
  -- We can also talk about an entity existing in a world
  -- as belonging to it, so we can use the notation e ∈ w.
  @[reducible]
- instance world.has_mem : has_mem ω.entity ω.world := ⟨λe w, w ∈ e.exist⟩
+ instance world.has_mem : has_mem ω.entity ω.world := ⟨λe w, w ∈ e.exists⟩
  @[reducible]
  def world.entities (w : ω.world) := {e : ω.entity | e ∈ w}
 
@@ -399,7 +401,7 @@ end basic
   type of intensional entities to events. These events will provably be extensional entities, as we shall
   see shortly.
 
-  TODO: prove in the interlude between the texts that ientity.exists lifts to an entity
+  TODO: prove in the interlude between the texts that ientity.existss lifts to an entity
   
   -/
 
@@ -418,7 +420,7 @@ end basic
     end 
  
   -- "up" is used for informal inheritance here
-  def ientity.up : Ω.entity := ⟨e.exists, iexists_possible e, iexists_existential e⟩
+  def ientity.up : Ω.entity := ⟨e.exists, iexists_existential e, iexists_possible e⟩
   
   /-!
   

@@ -28,10 +28,10 @@ namespace ontology
       -- But this cause would in a sense have to be a
       -- cause of something that is going on in the necessary
       -- being.
-      have c₂ : s.causes ω.nbe.exist w,
+      have c₂ : s.causes ω.nbe.exists w,
           admit,
       -- However the necessary being admits no causes.
-      have c₃ : ¬ ∃ s : ω.substance, s.causes ω.nbe.exist w,
+      have c₃ : ¬ ∃ s : ω.substance, s.causes ω.nbe.exists w,
           admit,
       push_neg at c₃,
       specialize c₃ s,

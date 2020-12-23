@@ -72,17 +72,17 @@ namespace ontology
  
  -- Accidents of a substance are perfections of the same substance.
  -- The most important step in this proof is to show that they are open.
- lemma state_open_of_accident : ∀ (a: ω.accident), a.inheres s → is_open (s.State_at '' a.val.exist) := sorry
+ lemma state_open_of_accident : ∀ (a: ω.accident), a.inheres s → is_open (s.State_at '' a.val.exists) := sorry
 --  begin
 --     intros a H,
 --     apply is_open_coinduced.2,
 --     simp [preimage],
---     let α := {x : ω.world | ∃ (x_1 : ω.world), x_1 ∈ (a.val).exist ∧ substance.equiv s x_1 x},
+--     let α := {x : ω.world | ∃ (x_1 : ω.world), x_1 ∈ (a.val).exists ∧ substance.equiv s x_1 x},
 --     suffices c : is_open α,
 --         exact c,
---     suffices c : α  = a.val.exist,
+--     suffices c : α  = a.val.exists,
 --         rw c,
---         exact a.val.is_open,
+--         exact a.val.existential,
 --     ext, constructor; intro h; simp at *,
 --         obtain ⟨y, h₁, h₂⟩ := h,
 --         simp [substance.equiv, substance.state] at h₂,
@@ -100,25 +100,25 @@ namespace ontology
 --  end
  
  -- It should then be easier to prove that it is not empty
- lemma state_ne_of_accident : ∀ (a: ω.accident), a.inheres s → (s.State_at '' a.val.exist).nonempty :=
+ lemma state_ne_of_accident : ∀ (a: ω.accident), a.inheres s → (s.State_at '' a.val.exists).nonempty :=
  begin
     intros a H,
     simp [preimage],
-    exact a.val.ne,
+    exact a.val.possible,
  end
  
  -- But it is a little bit harder to prove it is not univ
- lemma state_nuniv_of_accident : ∀ (a: ω.accident), a.inheres s → (s.State_at '' a.val.exist) ≠ univ := sorry
+ lemma state_nuniv_of_accident : ∀ (a: ω.accident), a.inheres s → (s.State_at '' a.val.exists) ≠ univ := sorry
 --  begin
 --     intros a H,
 --     simp [preimage, image, quotient.mk],
 --     intro h,
 --     -- This is a trick
 --     -- let ψ := (@quotient.mk world ontology.substance.State_setoid),
---     replace h : univ ⊆ {b : quotient s.State_setoid | ∃ (a_1 : ω.world), a_1 ∈ (a.val).exist ∧ s.State_at a_1 = b},
+--     replace h : univ ⊆ {b : quotient s.State_setoid | ∃ (a_1 : ω.world), a_1 ∈ (a.val).exists ∧ s.State_at a_1 = b},
 --         rw ←h,
 --         -- refl,
---     have c : s.val.exist = a.val.exist,
+--     have c : s.val.exists = a.val.exists,
 --     ext, constructor; intro h₁,--; simp at *,
 --         have c := @h (s.State_at x) _,
 --         simp at c,
@@ -134,15 +134,15 @@ namespace ontology
 --         revert x,
 --         apply sub_of_inheres,
 --         exact H,
---     have c₁ : s.val.exist.dense := s.property,
---     have c₂ : ¬ a.val.exist.dense := a.property,
+--     have c₁ : s.val.exists.dense := s.property,
+--     have c₂ : ¬ a.val.exists.dense := a.property,
 --     rw c at c₁,
 --     contradiction,
 --  end
  
  -- Finally we can construct the perfection.
  def substance.Perfection_of (a ∈ s.accidents) : s.Perfection :=
-    ⟨ s.State_at '' a.val.exist
+    ⟨ s.State_at '' a.val.exists
     , state_open_of_accident s a H
     , state_ne_of_accident s a H
     , state_nuniv_of_accident s a H
@@ -204,11 +204,11 @@ namespace ontology
  
  --  lemma aux : contingent s → ∀ w, 
  
- --  def aux (h : contingent s) : nonempty (subtype s.val.exist.compl) := sorry
+ --  def aux (h : contingent s) : nonempty (subtype s.val.exists.compl) := sorry
   
  --  @[reducible]
  --  noncomputable def state_bot (h : contingent s) : s.State :=
- --      have c : ¬ ∀ x, x ∈ s.val.exist,
+ --      have c : ¬ ∀ x, x ∈ s.val.exists,
  --         by {obtain ⟨⟨exist, is_open, nes⟩, perfect⟩ := s,
  --             intro h',
  --             replace h' := eq_univ_of_forall h',
@@ -220,7 +220,7 @@ namespace ontology
  --     --  classical.choice $
  --     --  nonempty_of_exists $
  --     --  not_forall.mp c
- --     -- have d : nonempty (subtype s.val.exist.compl),
+ --     -- have d : nonempty (subtype s.val.exists.compl),
  --     --     begin 
  --     --         replace c := not_forall.mp c,
  --     --         obtain ⟨x, hx⟩ := c,
@@ -282,11 +282,11 @@ namespace ontology
  --      apply eq_empty_of_subset_empty,
  --      intros p hp,
  --      simp at *,
- --      let e := quotient.mk⁻¹' p.exist,
+ --      let e := quotient.mk⁻¹' p.exists,
  --      let state := p.ne.some,
  --      have c : is_open e ∧ e.nonempty,
  --         constructor,
- --         exact p.is_open,
+ --         exact p.existential,
  --         simp [set.nonempty],
  --         use state.out,
  --         simp,
