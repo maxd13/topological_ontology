@@ -532,6 +532,34 @@ section ontology
 
 end ontology
 
+-- We discuss some properties of possible worlds
+section worlds
+  
+  -- extensionality principle for possible worlds
+  @[ext]
+  lemma world.ext {w₁ w₂ : ω.world} (h : w₁.entities = w₂.entities) : w₁ = w₂ :=
+    begin
+      by_contradiction contra,
+      have c₀ := ω.axiom₀.t0,
+      obtain ⟨U, U_open, ⟨hU₁, hU₂⟩|⟨hU₁, hU₂⟩⟩ := c₀ w₁ w₂ contra;
+      clear c₀;
+      have ne := nonempty_of_mem hU₁;
+      let e : ω.entity := ⟨U, U_open, ne⟩,
+      replace h : w₁.entities ⊆ w₂.entities, finish,
+      swap,
+      replace h : w₂.entities ⊆ w₁.entities, finish,
+      all_goals {
+        simp [world.entities, entity.exists] at h,
+        specialize h e,
+        simp [e, hU₁, hU₂] at h,
+        contradiction,
+      },
+    end 
+
+  variables (w₁ w₂ : ω.world)
+
+
+end worlds
 
 -- We now talk about analogical (fuzzy) events, or "avents".
 -- OBSERVATION: We could have called them aevents, which would be in keeping with our naming style.
