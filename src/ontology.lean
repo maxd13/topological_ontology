@@ -330,41 +330,39 @@ section entities
 end entities
 
 
-/-! 
+/-! # Intensionality and Extensionality
 
-# Intensionality and Extensionality
+  A fundamental question in any ontological theory is that of
+  whether the basic entities that the theory postulates have a clearly
+  defined identity criteria or whether their identity should be assumed 
+  to be a primitive relation. This amounts to asking whether the entities
+  in the theory admit an *extensionality* principle, such as the
+  one admitted for sets, or whether no such extensionality principle is admitted.
+  We can readily call the basic entities in an extensional ontological theory 
+  *extensional* entities, and likewise name the entities in an intensional theory
+  *intensional* entities.
 
-A fundamental question in any ontological theory is that of
-whether the basic entities that the theory postulates have a clearly
-defined identity criteria or whether their identity should be assumed 
-to be a primitive relation. This amounts to asking whether the entities
-in the theory admit an *extensionality* principle, such as the
-one admitted for sets, or whether no such extensionality principle is admitted.
-We can readily call the basic entities in an extensional ontological theory 
-*extensional* entities, and likewise name the entities in an intensional theory
-*intensional* entities.
+  As can be seen from the previous section, it is easy to turn our ontology into an extensional theory
+  by identifying non-empty existential events to be possible extensional entities. Their
+  extensionality principle is then naturally deduced from the extensionality
+  principle for sets. We will indeed be primarily focusing on these entities for much of our work,
+  but to demonstrate the generality of our theory we must 
+  also discuss shortly the introduction of primitive intensional entities via 
+  an intensional extension to our theory.
 
-As can be seen from the previous section, it is easy to turn our ontology into an extensional theory
-by identifying non-empty existential events to be possible extensional entities. Their
-extensionality principle is then naturally deduced from the extensionality
-principle for sets. We will indeed be primarily focusing on these entities for much of our work,
-but to demonstrate the generality of our theory we must 
-also discuss shortly the introduction of primitive intensional entities via 
-an intensional extension to our theory.
-
-It might indeed look somewhat controversial, to some,
-that we so readily move from existential events to "entities". 
-It may look like we are saying that entities, or at least our particular kind of
-"extensional" entities, are *nothing but* sets of possible worlds, or that nothing but
-sets of possible worlds are supposed to "exist" in our theory. This of course seems implausible
-among other things because sets are abstract mathematical objects, not concretely existing "things".
-This objection can however be resolved by understanding that, this being a mathematical theory,
-we are not really claiming that possible entities *are* nothing other than sets of possible worlds, 
-but only that these entities can be *represented* as the sets of possible worlds in which they exist.
-We are also not really committed to claiming that existence really just *is* a particular special case
-of the occurrence of events, but only that for all mathematical intents and purposes it can be so *represented*.
-We will look shortly into a way to make this representation formal by showing that any intensional ontological theory
-of possible entities naturally gives rise to our extensional topological theory in a mathematically well understood way.
+  It might indeed look somewhat controversial, to some,
+  that we so readily move from existential events to "entities". 
+  It may look like we are saying that entities, or at least our particular kind of
+  "extensional" entities, are *nothing but* sets of possible worlds, or that nothing but
+  sets of possible worlds are supposed to "exist" in our theory. This of course seems implausible
+  among other things because sets are abstract mathematical objects, not concretely existing "things".
+  This objection can however be resolved by understanding that, this being a mathematical theory,
+  we are not really claiming that possible entities *are* nothing other than sets of possible worlds, 
+  but only that these entities can be *represented* as the sets of possible worlds in which they exist.
+  We are also not really committed to claiming that existence really just *is* a particular special case
+  of the occurrence of events, but only that for all mathematical intents and purposes it can be so *represented*.
+  We will look shortly into a way to make this representation formal by showing that any intensional ontological theory
+  of possible entities naturally gives rise to our extensional topological theory in a mathematically well understood way.
 
 -/
 
@@ -378,131 +376,143 @@ structure iontology extends ontology :=
 
 namespace iontology
 
-section basic
+  section basic
 
-  variable (Ω : iontology)
+    variable (Ω : iontology)
 
-  def up := Ω.to_ontology
+    def up := Ω.to_ontology
 
-  /-- the `event` of an intensional entity existing -/
-  @[reducible]
-  def ientity.exists {Ω : iontology} (e : Ω.ientity) := Ω.map e
+    /-- the `event` of an intensional entity existing -/
+    @[reducible]
+    def ientity.exists {Ω : iontology} (e : Ω.ientity) := Ω.map e
 
-  -- extensional entities from the point of view of the intensional ontology
-  @[reducible]
-  def entity := Ω.up.entity
+    -- extensional entities from the point of view of the intensional ontology
+    @[reducible]
+    def entity := Ω.up.entity
 
-end basic
+  end basic
 
   /-!
-  
-  As can be seen, we can define an intensional ontology as a particular kind of ontology whose 
-  topological structure was generated as the least topology containing the image of a map from some
-  type of intensional entities to events. These events will provably be extensional entities, as we shall
-  see shortly.
 
-  TODO: prove in the interlude between the texts that ientity.existss lifts to an entity
-  
-  -/
-
-  variables {Ω : iontology} (e : Ω.ientity)
-  
-  lemma iexists_possible : e.exists.possible := Ω.axiom₁ e
-
-  lemma iexists_existential : e.exists.existential :=
-    begin
-      simp [event.existential, ientity.exists],
-      dunfold is_open ontology_top,
-      rw Ω.axiom₂,
-      dunfold generate_from, simp,
-      apply generate_open.basic,
-      use e,
-    end 
- 
-  -- "up" is used for informal inheritance here
-  def ientity.up : Ω.entity := ⟨e.exists, iexists_existential e, iexists_possible e⟩
-  
-  /-!
-  
-  Some philosophers might furthermore be skeptical with the prospect that, for example,
-  the existential event "human beings exist" 
-  corresponds to some particular, unique, "extensional entity"
-  which may possibly exist concretely in the world;
-  i.e. the (not necessarily Platonic) universal of "Man", or Humanity.
-  We make a concession to this sort of skepticism in order to make our
-  system more general, and we will admit that some such extensional entities might be,
-  in some sense, abstracta, figures of speech, concoctions of language, etc...
-  and these we will call **virtual** entities; all other entities we shall call **real** entities. 
-  Formally what will make a non-empty existential event a real entity is its belonging 
-  to the image of the representation function which maps intensional possible entities to 
-  their extensional representations.
-  
-  TODO: define real and virtual entities in the text interlude. Also define 
-  different notions prime entities and prove equivalences between this notion, the notion of belonging
-  to sub-basis, and the notion of reality. Leave absolute realism to be defined outside the iontology namespace.
+    As can be seen, we can define an intensional ontology as a particular kind of ontology whose 
+    topological structure was generated as the least topology containing the image of a map from some
+    type of intensional entities to events. These events will provably be extensional entities, as we
+    show bellow:
 
   -/
 
+    variables {Ω : iontology} (ie : Ω.ientity) (e : Ω.entity)
+    
+    lemma iexists_possible : ie.exists.possible := Ω.axiom₁ ie
+
+    lemma iexists_existential : ie.exists.existential :=
+      begin
+        simp [event.existential, ientity.exists],
+        dunfold is_open ontology_top,
+        rw Ω.axiom₂,
+        dunfold generate_from, simp,
+        apply generate_open.basic,
+        use ie,
+      end 
+  
+    -- "up" is used for informal inheritance here
+    def ientity.up : Ω.entity := ⟨ie.exists, iexists_existential ie, iexists_possible ie⟩
+    
   /-!
   
-  To give an example, the extensional entity "Socrates"
-  defined as the existential event "(the set of all possible worlds in which) Socrates exists"
-  is real because there is some possible intensional entity Socrates such that the event of 
-  this Socrates existing is precisely the same event which defines the extensional "Socrates".
-  However one could consistently hold that the event "Humans exist" does not represent some
-  distinct intensional entity over and above the individual intensional human beings from whose
-  representations it is constructed. In this case, the associated extensional entity, "Humanity",
-  would be a virtual entity. This is compatible with doctrines of mereological nihilism and such.
+    Some philosophers might furthermore be skeptical with the prospect that, for example,
+    the existential event "human beings exist" 
+    corresponds to some particular, unique, "extensional entity"
+    which may possibly exist concretely in the world;
+    i.e. the (not necessarily Platonic) universal of "Man", or Humanity.
+    We make a concession to this sort of skepticism in order to make our
+    system more general, and we will admit that some such extensional entities might be,
+    in some sense, abstracta, figures of speech, concoctions of language, etc...
+    and these we will call **virtual** entities; all other entities we shall call **real** entities. 
+    Formally what will make a non-empty existential event a real entity is its belonging 
+    to the image of the representation function which maps intensional possible entities to 
+    their extensional representations.
 
-  ---------------------------------------------------------------------------
-
-  We shall name the theory which claims that all extensional entities are real **algebraic realism**,
-  and we can also prove that both this theory and its denial are logically consistent. 
-  The theory is to be so called because it is realistic about the set theoretic constructions
-  of extensional entities (unions and intersections), which are algebraic constructions 
-  in a complete Heyting algebra, or topological frame. 
-  Because we are not committed to algebraic realism from the outset,
-  we intend our identification of existential events with extensional entities to be metaphysically neutral.
-
-  TODO: prove equivalence between "all extensional entities are real" and the definition given below.
-  
   -/
 
-
-  /-- **Algebraic realism** for intensional ontologies claims that all 
-  existential events are the events of some intensional entity existing.   
-  It is realist about the algebraic operations of topological frames. -/
-  class realist : Prop :=
-    (postulate₀ : Ω.t.is_open = (range Ω.map))-- ∪ {∅}) TODO: add the empty set
+    def entity.real : Prop := ∃ ie : Ω.ientity, ie.up = e
+    def entity.virtual : Prop := ¬ e.real
 
   /-!
   
-  Even though we are not assuming algebraic realism, our general intention is indeed to avoid talking about 
-  intensional entities as most as possible. If we completely abstract away talk of intensional entities from
-  our system, we will be left simply with a topological space of possible worlds from which the distinction 
-  between real and virtual entities cannot be defined. In order to define it we would at the very least have 
-  to equip the space with an additional sub-basis to stand in for the events which are used to represent the
-  intensional entities we intend to abstract, and then claim that an entity is real only if it belong to the sub-basis.
-  As such, in order to make the distinction we would need to introduce this sub-basis as a new unwanted and 
-  unneeded primitive concept to which our system would have to be committed. 
-  In order to eschew this primitive, we must say that the distinction between real and virtual entities is,
-  for the most part, not really useful in our system, and we have introduced it,
-  along with the discussion of intensional entities, only in order to anticipate some 
-  objections which might be leveled against our theory 
-  (e.g. that it is committed to algebraic realism, or to an universal extensionality principle for the most 
-  basic sort of possible entities). Because of this, in what follows we will simply be talking about 
-  extensional entities and will pay no attention to whether they are real or virtual unless 
-  it becomes important (and in general it won't be).
+    To give an example, the extensional entity "Socrates"
+    defined as the existential event "(the set of all possible worlds in which) Socrates exists"
+    is real because there is some possible intensional entity Socrates such that the event of 
+    this Socrates existing is precisely the same event which defines the extensional "Socrates".
+    However one could consistently hold that the event "Humans exist" does not represent some
+    distinct intensional entity over and above the individual intensional human beings from whose
+    representations it is constructed. In this case, the associated extensional entity, "Humanity",
+    would be a virtual entity. This is compatible with doctrines of mereological nihilism and such.
 
-  One actually important notion that will arise out of intensionality will be the property 
-  of an entity being absolutely real, i.e. real regardless of the underlying intensional ontology used
-  to generate the topology. This will allow us to think about intensional ontologies much in the same way 
-  that geometers think about a choice of "basis", or "chart", so that we, like them, shall be most interested in
-  proving only the results which do not depend on an arbitrary choice of intensional ontology. 
-  We shall formalize this shortly.
-  
+    We assume that talk of "virtual entities" is just a figure of speech for talk about 
+    existential events which talk about the existence of more than a single intensional entity,
+    and as such we can conclude that the jump from existential events to extensional entities
+    does not indeed commits us to any novel metaphysical thesis, nor to anything which could possibly
+    be controversial.
+
+    TODO: define different notions prime entities in the interlude 
+    and prove equivalences between this notion, the notion of belonging to sub-basis,
+    and the notion of reality. Leave absolute realism to be defined outside the iontology namespace.
+
   -/
 
+  section prime
+  end prime
+
+  section realism
+
+    /-!
+
+      We shall name the theory which claims that all extensional entities are real **algebraic realism**,
+      and we can also prove that both this theory and its denial are logically consistent. 
+      The theory is to be so called because it is realistic about the set theoretic constructions
+      of extensional entities (unions and intersections), which are algebraic constructions 
+      in a complete Heyting algebra, or topological frame. 
+      Because we are not committed to algebraic realism from the outset,
+      we intend our identification of existential events with extensional entities to be metaphysically neutral.
+  
+    -/
+
+    /-- **Algebraic realism** for intensional ontologies claims that all 
+    extensional entities are real.   
+    It is realist about the algebraic operations of topological frames. -/
+    class realist : Prop :=
+      (postulate₀ : ∀ e : Ω.entity, e.real)
+
+    /-!
+  
+      Even though we are not assuming algebraic realism, our general intention is indeed to avoid talking about 
+      intensional entities as most as possible. If we completely abstract away talk of intensional entities from
+      our system, we will be left simply with a topological space of possible worlds from which the distinction 
+      between real and virtual entities cannot be defined. In order to define it we would at the very least have 
+      to equip the space with an additional sub-basis to stand in for the events which are used to represent the
+      intensional entities we intend to abstract, and then claim that an entity is real only if it belong to the sub-basis.
+      As such, in order to make the distinction we would need to introduce this sub-basis as a new unwanted and 
+      unneeded primitive concept to which our system would have to be committed. 
+      In order to eschew this primitive, we must say that the distinction between real and virtual entities is,
+      for the most part, not really useful in our system, and we have introduced it,
+      along with the discussion of intensional entities, only in order to anticipate some 
+      objections which might be leveled against our theory 
+      (e.g. that it is committed to algebraic realism, or to an universal extensionality principle for the most 
+      basic sort of possible entities). Because of this, in what follows we will simply be talking about 
+      extensional entities and will pay no attention to whether they are real or virtual unless 
+      it becomes important (and in general it won't be).
+
+      One actually important notion that will arise out of intensionality will be the property 
+      of an entity being absolutely real, i.e. real regardless of the underlying intensional ontology used
+      to generate the topology. This will allow us to think about intensional ontologies much in the same way 
+      that geometers think about a choice of "basis", or "chart", so that we, like them, shall be most interested in
+      proving only the results which do not depend on an arbitrary choice of intensional ontology. 
+      We shall formalize this shortly.
+      
+    -/
+  
+  end realism
 
 end iontology
 
