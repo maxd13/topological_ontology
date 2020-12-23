@@ -1,5 +1,4 @@
 import math.alexandroff_space
-universe u
 open set topological_space classical
 local attribute [instance] prop_decidable
 
@@ -7,48 +6,65 @@ local attribute [instance] prop_decidable
 
 # A topological formal ontology and foundation of philosophy
 
-The purpose of this work is to implement an 
-upper level ontology that minimizes the number of primitive terms and axioms,
+The purpose of this work is to implement in the Lean Theorem Prover an 
+upper level ontology that minimizes the number of primitive concepts and axioms,
 while maximizing explanatory power with regards to the interpretability of 
 philosophical concepts in the theory. We seek to give to the whole of philosophy the same sort
-of rigorous foundation that set theory gives to mathematics, in terms of possible entities and possible
-worlds.
+of rigorous foundation that set/type theory gave to mathematics, without having to rely
+on the introduction of a primitive concept for almost every new concept of philosophy. 
+The most basic version of our theory admits of only two primitives: possible worlds and existential events,
+everything else being defined in terms of those, in much the same way that everything in mathematics can be
+defined in terms of the primitive notions of set and set-membership. 
+We name our theory simply as the **Topological Ontology**.
 
-Among other things, we seek to precisely define in our theory the concepts of: substance, physical substance,
-metaphysical substance, accident, concept, universal, property, positive property, the process of abstraction,
-matter, form, the categories of being, the predicaments, essence and existence, causality, parthood, God, theism,
-atheism, physicalism, monism, pantheism, eleaticism, platonism, modal realism.
-We also seek to formalize theories of: causality, mereology,
+Among other things, we seek to precisely define in our theory the concepts of: substance, simple substance, 
+composite substance, physical substance, metaphysical substance, accident, property, positive property,
+essence and existence, causality, parthood, God, theism,
+atheism, physicalism, monism, pantheism, eleaticism, platonism, modal realism, etc...
+We also seek to formalize theories of: causality, counterfactuals, mereology,
 epistemology, ethics, philosophy of nature, metaphysics and natural theology. 
-All of it based on the foundation of possible worlds and possible entities.
 
-Pretty audacious, ain't it?
+And in a higher order extension of our theory, we also seek to define: concept/abstract object, 
+the process of abstraction, universal, matter, form, the categories of being, the predicaments, etc...
 
-I am actually undecided about whether I need a theory of counterfactuals. 
-But anyone should be able to create his own theory of counterfactuals based on these foundations,
-if he so wishes.
+All of it based on the foundation of possible worlds and existential events. Pretty audacious, ain't it?
 
 ## Ontologies and Events
 
-The fundamental concept on which all of our work is based upon, is the concept of an *ontology of possible worlds*.
+The fundamental concept upon which all of our work is based, is the concept of an *ontology of possible worlds*.
 Which is to be comprised of a Type of possible worlds equipped with some fundamental topological structure, 
 the philosophical significance of which shall be made clear shortly.
 
 The notion of possible world is of course a primitive one, and you may interpret it as you will. 
 We take a possible world in our theory to be a point in the phase space of the whole of possible reality,
 a fully qualified description of a possible state of existence, 
-the outcomes of the most general random experiment one could possible make, etc...
+an outcome of the most general random experiment one could possible think of, etc... 
 
-More importantly, given this primitive notion we can readily define the notion of an ontological 
+For simplicity, we  will also consider that possible worlds are *atomic truth-indexers*. This is to say that 
+they are truth-indexers, i.e. things with respect to which propositions are said to be true or false 
+(*tertium non datur*) but which cannot be thought to be composed of further things which have this property. 
+In particular, our possible worlds will not have any intrinsic temporal or spatial structure, so it will simply
+*not make sense* at first to say that some event like "Socrates is sitting" will occur in 
+the future of a possible world `w`, it will not make sense to claim "Socrates will sit in the future" is true at `w`,
+at least initially. Later on, by equipping our topological space of possible worlds with additional temporal structure,
+we *will* be able to make sense of these claims by defining timelines in terms of continuous paths of possible worlds.
+In this manner we can think of possible worlds as being possible spatio-temporal locations in possible space-times
+rather than as being space-times themselves; since if they were space-times they could be thought to be composed 
+of points which would themselves be truth-indexers, and so our possible worlds would not be atomic truth-indexers. 
+This seems to be a much simpler foundation to build upon than assuming that, somehow,
+possible worlds should have some intrinsic temporal structure, which would be very hard 
+to define right from the start.  
+
+Perhaps more importantly, given this primitive notion we can readily define the notion of an ontological 
 **Event** as simply a set of possible worlds; the notion should be familiar to those acquainted 
-with probability theory (probability spaces). An event is something that "happens" or "occurs", 
-precisely in the possible worlds which compose it, i.e. an event is the set of all possible worlds in which
+with probability theory (probability spaces). An (not necessarily "random") event is something that "happens" or "occurs", 
+precisely in the possible worlds which are its elements, i.e. an event is the set of all possible worlds in which
 the event occurs. We would like to talk a little bit about events before delving into the mathematical definitions.
 
-Another way to see an event is as (the semantic content of) a proposition. 
-Not all events are necessarily propositions 
-(because we could have uncountably many events, but countably many propositions) 
-but every proposition is to be associated with an event: 
+Another way to see an event is as the semantic content of a proposition. 
+Not all events are necessarily propositions because,
+perhaps, we could have uncountably many events, but countably many propositions.
+However every proposition is to be associated with an event: 
 the set of all possible worlds in which the proposition is true.
 For instance the proposition "Socrates exists" corresponds to the event {w : world | Socrates exists in w}.
 
@@ -58,10 +74,14 @@ Human beings, and "Socrates and Plato exist" postulates the existence of both Pl
 On the other hand, "Unicorns do not exist", does not seem to postulate or "talk about" 
 the existence of anything, but merely about the *absence* of an existence. 
 So there is quite clearly a primitive notion of which propositions 
-talk about existence and which do not. 
+talk about existence and which do not. I would not want to reduce this notion
+to merely "using an existential quantifier in formal language X" because I do 
+not want to assume anything about the syntactical makeup of propositions in the first
+place.
 
-For the sake of generality we can take this notion to apply to all events regardless
-of whether they are proposition or not, and stop talking about propositions altogether.
+For the sake of generality, simplicity, and removing from our formal system the unnecessary concept of what a 
+"proposition" is supposed to be, we can take this notion to apply to all events regardless
+of whether they are propositions or not, and stop talking about propositions altogether.
 So an event will be **existential** or **open** 
 precisely when its occurrence postulates that one or more entities from a set of entities must exist,
 which is to say that the event can only occur in a possible world if those entities it postulates 
@@ -70,30 +90,82 @@ do exist in that possible world.
 Now, as we have already exemplified, we should expect that arbitrary set unions of existential 
 events be existential events, since the event "(Some)Humans exist" is the union of all events of the form
 "X exists" for any possible human X. The same should apply for intersections, since "All possible humans exist" 
-is the intersection of "X exists" for any possible human X. An generally speaking, for any arbitrary family
-of existential events, we should exp
+is the intersection of "X exists" for any possible human X. And generally speaking, regardless of the 
+particular notion of "existential event" that we adopt, we should expect the set of all existential events to be 
+closed by arbitrary unions and intersections. 
 
+However, although plausible,
+this amounts to assuming more than what we actually need to develop our theory. 
+For the purposes of our theory, we will only really be committed to the claim that 
+*finite* intersections of existential events are existential events, rather than
+claiming that this works for *arbitrarily large* intersections. 
+This latter assumption we will denominate, for very sound mathematical reasons, the **Alexandroff Postulate**,
+and we will neither affirm nor deny it, though we might occasionally derive some conclusions from its assumption.
+
+Furthermore, we should also assume that both the set of all possible worlds, i.e. the **necessary event**
+and the empty set of worlds, i.e. the **impossible event**, are both
+existential events. There are many ways to argue this point, the simplest one seems to consist in the
+consideration that the proposition "Something (whatsoever) exists" should be associated to the necessary event,
+and that the proposition "A squared-circle exists" should be associated to the impossible event. In that case,
+it is clear that these events postulate the existence of some things.
+
+It is however clear that we need not assume that the set complements of existential events are existential for, as we 
+have previously exemplified, "Unicorns do not exist" is not existential, even though it is the complement, or negation, of 
+"Unicorns exist", which is clearly existential.
+
+We are also going to assume, as the only real axiom in our theory, that there is an extensionality
+principle for possible worlds: possible worlds worlds in which exactly the same existential events occur
+are equal. This will allow us to think of possible worlds as the sets of possible entities which exist
+in that particular world, so that if two worlds are to be distinct, at least one entity would have to exist in one
+which does not exist in the other. This can be seen as the "identity of indiscernibles" principle
+applied to possible worlds. It might turn out however that for many applications we won't even need this axiom,
+so we might consider turning it into a postulate if the need arises, but as of now it looks like such a simple
+assumption that it makes sense to include it as an axiom.
+
+Now, we shall not explain here the mathematics involved, but 
+a competent mathematician should already be able to conclude that what
+we are assuming is that existential events constitute a T₀-topology of 
+possible worlds. 
+This leads us to the very first formal definitions of our theory:
 
 -/
 
--- An `ontology` is a nonempty T0 topological space
--- of possible worlds.
+/-- An `ontology` is a nonempty T₀ topological space
+of possible worlds. -/
 class ontology :=
     (world : Type*)
-    [wne : nonempty world . tactic.apply_instance]
-    [t : topological_space world . tactic.apply_instance]
+    [wne : nonempty world]
+    [t : topological_space world]
     -- identity of indiscernibles for possible worlds
-    [axiom₀ : t0_space world . tactic.apply_instance]
-
+    [axiom₀ : @t0_space world t]
 
 instance ontology_top  (ω : ontology)  : topological_space ω.world := ω.t
 instance ontology_ne  (ω : ontology)  : nonempty ω.world := ω.wne
 instance ontology_t0  (ω : ontology)  : t0_space ω.world := ω.axiom₀
 
--- Events in an ontology are simply sets of worlds.
--- Events (informally) are said to `occur` precisely in their element worlds.
-@[reducible, alias]
-def ontology.event (ω : ontology) := set ω.world 
+/-- **Events** in an ontology are simply sets of possible worlds.
+ Events (informally) are said to **occur** precisely in their element worlds. -/
+@[reducible]
+def ontology.event (ω : ontology) := set ω.world
+
+/-- **Existential** `events` in an ontology are open sets of possible worlds. -/
+@[reducible]
+def ontology.event.existential {ω : ontology} (e : ω.event) := is_open e
+
+/-! 
+
+# Intensionality and Extensionality
+
+A fundamental question in any ontological theory is that of
+whether the basic entities that the theory postulates have a clearly
+defined identity criteria or whether their identity should be assumed 
+to be a primitive concept. This amounts to asking whether the entities
+in the theory admit an *extensionality* principle, such as the
+one admitted for sets, or whether no such extensionality principle is admitted.
+We can readily call 
+
+-/
+
 
 -- intensional ontologies
 structure iontology extends ontology :=
@@ -126,7 +198,7 @@ section ontology
  def alexandroff_discrete := alexandroff_space ω.world
  
  class alexandroff extends common ω:=
-     (postulate₃ : alexandroff_discrete ω)
+     (postulate₃ : ω.alexandroff_discrete)
 
 --  -- ω is generated by the intensional map.
 -- class ontology.intensional (ω : ontology) (f : intensional_map) : Prop :=
@@ -151,7 +223,7 @@ section events
  
  variable (e : ω.event)
  
- -- We define the related topological notions for events.
+ -- We define the related topological notions for events:
  @[reducible]
  def event.interior := interior e
  @[reducible]
@@ -162,13 +234,18 @@ section events
  def event.exterior : ω.event := interior (-e)
  @[reducible]
  def event.regular := e = e.exterior.exterior
- -- also called boundary
+ /-- also called `boundary` -/
  @[reducible]
  def event.frontier := frontier e
 
- -- necessity and contingency
+ -- necessity, contingency, impossibility
+ @[reducible]
  def event.contingent := e ≠ univ
+ @[reducible]
  def event.necessary := e = univ
+ @[reducible]
+ def event.impossible := e = ∅
+
   
 end events
 
