@@ -242,20 +242,17 @@ section entities
      An entity is said to `exist` precisely at those worlds which are its elements. -/
  structure entity (ω : ontology) :=
       -- the event of the entity existing ("exists" is a reserved word)
-      (exists_ : ω.event)
-      (existential_ : exists_.existential)
-      (possible_ : exists_.possible)
+      («exists» : ω.event)
+      (existential : exists.existential)
+      (possible : exists.possible)
 
- /-- the event of the `entity` existing -/
- @[reducible]
- def entity.exists (e : ω.entity) := e.exists_
- lemma entity.existential (e : ω.entity) : e.exists.existential := e.existential_
- lemma entity.possible (e : ω.entity) : e.exists.possible := e.possible_
+  /-- the event of the `entity` existing -/
+  add_decl_doc entity.exists
 
  /-- main extensionality lemma for entities. -/
  @[ext]
  lemma entity.ext {e₁ e₂ : ω.entity} (h : e₁.exists = e₂.exists) : e₁ = e₂ := 
-    by casesm* ω.entity; simp [entity.exists] at h; simpa
+    by casesm* ω.entity; simp at h; simpa
   
  variables (e e₁ e₂ : ω.entity)
  
@@ -281,11 +278,16 @@ section entities
  -- The necessary being (entity) is the entity which exists in
  -- every possible world.
  def nbe (ω : ontology) : ω.entity := ⟨univ,is_open_univ, by simp [empty_ne_univ]⟩
- 
+
  -- An entity is `contingent` if it is not the necessary being.
+ -- TODO: revise whether mayber we shouldn't define this in terms of the definition for events.
+ -- and see if this change doesn't break anything.
  def entity.contingent := e ≠ ω.nbe
  -- And otherwise necessary
  def entity.necessary := e = ω.nbe
+
+ lemma nbe_unique : ∃! e : ω.entity, e.necessary := sorry
+
 
  -- Here are some definitions which look more like lemmas,
  -- these ones are more philosophical.
@@ -315,19 +317,21 @@ section entities
       , is_open_inter e₁.existential e₂.existential
       , h
       ⟩
-  
- -- We can also talk about an entity existing in a world
- -- as belonging to it, so we can use the notation e ∈ w.
- @[reducible]
- instance world.has_mem : has_mem ω.entity ω.world := ⟨λe w, w ∈ e.exists⟩
- @[reducible]
- def world.entities (w : ω.world) := {e : ω.entity | e ∈ w}
 
 end entities
 
 -- We discuss some properties of possible worlds
-section worlds
-  
+section worlds 
+
+  variables (w w₁ w₂ : ω.world)
+
+  -- We can also talk about an entity existing in a world
+  -- as belonging to it, so we can use the notation e ∈ w.
+  @[reducible]
+  instance world.has_mem : has_mem ω.entity ω.world := ⟨λe w, w ∈ e.exists⟩
+  @[reducible]
+  def world.entities := {e : ω.entity | e ∈ w}
+
   -- extensionality principle for possible worlds
   @[ext]
   lemma world.ext {w₁ w₂ : ω.world} (h : w₁.entities = w₂.entities) : w₁ = w₂ :=
@@ -347,9 +351,7 @@ section worlds
         simp [e, hU₁, hU₂] at h,
         contradiction,
       },
-    end 
-
-  variables (w₁ w₂ : ω.world)
+    end
 
 
 end worlds
@@ -454,6 +456,7 @@ namespace iontology
       end 
 
     -- "up" is used for informal inheritance here
+    /-- cast from `ientity` to `entity` -/
     def ientity.up : ω.entity := ⟨ie.exists, iexists_existential ie, iexists_possible ie⟩
 
   end ientity
@@ -482,8 +485,12 @@ section realism
 
   -/
 
-    def entity.real : Prop := ∃ ie : Ω.ientity, ie.up = e
-    def entity.virtual : Prop := ¬ e.real Ω
+  /-- An `entity` `e` is real with respect to an iontology `Ω` if there is an `Ω.ientity`
+      which exists in the same possible worlds as `e`  -/
+  def entity.real : Prop := ∃ ie : Ω.ientity, ie.up = e
+  /-- an `entity` is virtual with respect to an iontology `Ω` if its is not real with respect to `Ω` -/
+  @[reducible]
+  def entity.virtual : Prop := ¬ e.real Ω
 
   /-! **Example**
   
