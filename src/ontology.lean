@@ -1,4 +1,4 @@
-import math.alexandroff_space
+import math.alexandroff_space math.notation
 open set topological_space classical
 local attribute [instance] prop_decidable
 
@@ -159,39 +159,47 @@ variable {ω : ontology}
 -- We develop further the notion of events. 
 section events
  
- variable (e : ω.event)
+  variable (e : ω.event)
 
- @[reducible, simp]
- def event.occurs (w : ω.world) := w ∈ e
- 
- -- We define the related topological notions for events:
- @[reducible, simp]
- def event.interior := interior e
- @[reducible, simp]
- def event.closure  := closure e
- @[reducible, simp]
- def event.dense := closure e = univ
- @[reducible, simp]
- def event.exterior : ω.event := interior (-e)
- @[reducible, simp]
- def event.regular := e = e.exterior.exterior
- /-- also called `boundary` -/
- @[reducible, simp]
- def event.frontier := frontier e
- @[reducible, simp]
- def event.connected := is_connected e
+  @[reducible, simp]
+  def event.occurs (w : ω.world) := w ∈ e
 
- -- necessity, contingency, possibility, impossibility
- @[reducible, simp]
- def event.necessary := e = univ
- @[reducible, simp]
- def event.contingent := e ≠ univ
- @[reducible, simp]
- def event.possible := e.nonempty
- @[reducible, simp]
- def event.impossible := e = ∅
+  -- We define the related topological notions for events:
 
-  
+  /-- the **ground**, or *ontological counterpart* of an `event` is its interior -/
+  @[reducible, simp]
+  def event.ground : ω.event := interior e
+  @[reducible, simp]
+  def event.closure : ω.event := closure e
+  @[reducible, simp]
+  def event.dense : Prop := closure e = univ
+  @[reducible, simp]
+  def event.exterior : ω.event := interior (-e)
+  @[reducible, simp]
+  def event.regular : Prop := e = e.exterior.exterior
+  /-- also called `boundary` -/
+  @[reducible, simp]
+  def event.frontier : ω.event := frontier e
+  /-- also called `frontier` -/
+  @[reducible, simp, alias]
+  def event.boundary : ω.event := e.frontier
+  @[reducible, simp]
+  def event.connected : Prop := is_connected e
+
+  -- necessity, contingency, possibility, impossibility
+  @[reducible, simp]
+  def event.necessary := e = univ
+  @[reducible, simp]
+  def event.contingent := e ≠ univ
+  @[reducible, simp]
+  def event.possible := e.nonempty
+  @[reducible, simp]
+  def event.impossible := e = ∅
+
+  /-- An `event` is **groundable** if its ground is `possible` -/
+  @[reducible, simp]
+  def event.groundable := e.ground.possible
+
 end events
 
 -- And we prove some simple useful lemmas about them 
@@ -231,20 +239,23 @@ section event_lemmas
        contradiction,
     end
 
+  @[simp]
+  lemma existential_iff_self_grounded : e.existential ↔ e = e.ground := sorry
+
 end event_lemmas
 
 -- We define (extensional) possible entities to be particular kinds of events, so
 -- that existence is a special case of occurrence. 
 -- We defer full philosophical explanation to the "Intensionality and Extensionality" section.
-section entities 
+section entities
  
- /-- Particular (possible) `entities` in the ontology are nonempty open sets of worlds.
-     An entity is said to `exist` precisely at those worlds which are its elements. -/
- structure entity (ω : ontology) :=
-      -- the event of the entity existing ("exists" is a reserved word)
-      («exists» : ω.event)
-      (existential : exists.existential)
-      (possible : exists.possible)
+  /-- Particular (possible) `entities` in the ontology are nonempty open sets of worlds.
+      An entity is said to `exist` precisely at those worlds which are its elements. -/
+  structure entity (ω : ontology) :=
+    -- the event of the entity existing ("exists" is a reserved word)
+    («exists» : ω.event)
+    (existential : exists.existential)
+    (possible : exists.possible)
 
   /-- the event of the `entity` existing -/
   add_decl_doc entity.exists
@@ -321,7 +332,7 @@ section entities
 end entities
 
 -- We discuss some properties of possible worlds
-section worlds 
+section worlds
 
   variables (w w₁ w₂ : ω.world)
 
@@ -434,7 +445,7 @@ namespace iontology
     @[reducible]
     def ientity.exists := Ω.map ie
 
-    /-!
+    /-! **...**
 
       As can be seen, we can define an intensional ontology as a particular kind of ontology whose 
       topological structure was generated as the least topology containing the image of a map from some
@@ -522,6 +533,7 @@ section realism
 
   -/
 
+  /-- An `entity` is absolutely real if it is real regardless of the choice of iontology -/
   def entity.absolutely_real := ∀ Ω : ω.iontology, e.real Ω
 
   section algebraic_realism
