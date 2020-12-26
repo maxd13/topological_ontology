@@ -108,7 +108,7 @@ section substance_lemmas
             replace h := h ⟨U, h₁, h₂⟩,
             simp [entity.exists] at h,
             rwa inter_comm e.exists U at h,
-            exact event_nonempty_of_ne_empty h,
+            exact event_possible_of_ne_empty h,
         exact substance_nocontrary ⟨e, h⟩,
      end
 
@@ -158,7 +158,7 @@ section substance_lemmas
       simp [set_of, entity.perfect, event.dense],
       apply dense_iff_inter_open.2,
       intros U H ne,
-      apply event_nonempty_of_ne_empty,
+      apply event_possible_of_ne_empty,
       intro h,
       let α := (U ∩ (s₁.val).exists) ∩ (s₂.val).exists,
       replace h : α = ∅,
@@ -219,7 +219,7 @@ section subsistence
  def accident.owner (a : ω.accident) : ω.substance := 
       let e : ω.entity := ⟨a.val.exists ∪ a.val.exists.exterior,
                         event_union_exterior_open a.val.existential,
-                        event_union_exterior_nonempty⟩ 
+                        event_union_exterior_possible⟩ 
       in ⟨e, sub_support ⟨a.val, rfl⟩⟩
 
  -- entity cast to a substance if perfect, or the owner of the accident if imperfect.

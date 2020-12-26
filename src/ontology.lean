@@ -258,26 +258,24 @@ section event_lemmas
 
   -- For some reason in the standard library there is a lemma
   -- like this for finsets but not one for sets.
-  lemma event_nonempty_of_ne_empty : e ≠ ∅ → e.nonempty :=
+  lemma event_possible_of_ne_empty : e ≠ ∅ → ⋄e :=
     begin
         intro h,
         simp [set.nonempty],
-        classical,
         by_contradiction h₂,
-        replace h₂ := forall_not_of_not_exists h₂,
-        simp at h₂,
+        push_neg at h₂,
         replace h₂ := eq_empty_iff_forall_not_mem.2 h₂,
         contradiction,
     end
 
-  lemma event_union_exterior_nonempty : (e ∪ e.exterior).nonempty :=
+  lemma event_union_exterior_possible : ⋄(e ∪ ~e) :=
     begin
-        apply event_nonempty_of_ne_empty,
+        apply event_possible_of_ne_empty,
         intro h,
         simp at h,
         obtain ⟨h₁, h₂⟩ := h,
         rw h₁ at h₂,
-        simp [event.exterior] at h₂,
+        simp at h₂,
         have c := ω.wne,
         contradiction,
     end
