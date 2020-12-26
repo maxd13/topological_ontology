@@ -148,7 +148,7 @@ instance ontology_t0  (ω : ontology)  : t0_space ω.world := ω.axiom₀
 def ontology.event (ω : ontology) := set ω.world
 
 /-- **Existential** `events` in an ontology are open sets of possible worlds. -/
-@[reducible]
+@[reducible, simp]
 def ontology.event.existential {ω : ontology} (e : ω.event) := is_open e
 
 -- We will start developing the most basic conclusions of the theory:
@@ -166,7 +166,8 @@ section events
 
   -- We define the related topological notions for events:
 
-  /-- the **ground**, or *ontological counterpart* of an `event` is its interior -/
+  /-- the **ground**, or *ontological counterpart* of an `event e` is its interior, 
+      i.e. the largest existential event below `e` -/
   @[reducible, simp]
   def event.ground : ω.event := interior e
   @[reducible, simp]
@@ -186,36 +187,78 @@ section events
   @[reducible, simp]
   def event.connected : Prop := is_connected e
 
-  -- necessity, contingency, possibility, impossibility
+  -- necessity, possibility, impossibility, contingency
   @[reducible, simp]
   def event.necessary := e = univ
   @[reducible, simp]
-  def event.contingent := e ≠ univ
-  @[reducible, simp]
   def event.possible := e.nonempty
   @[reducible, simp]
-  def event.impossible := e = ∅
+  def event.impossible := ¬e.possible
+  @[reducible, simp]
+  def event.contingent := e.possible ∧ ¬e.necessary
 
   /-- An `event` is **groundable** if its ground is `possible` -/
   @[reducible, simp]
   def event.groundable := e.ground.possible
+
+  -- Setting up notation:
+
+  /-- Use `□e` for "`e` is necessary" -/
+  @[reducible, simp]
+  instance has_box_event : has_box ω.event := ⟨event.necessary⟩
+
+  /-- Use `◾e` for "the ground of `e`" -/
+  @[reducible, simp]
+  instance has_black_box_event : has_black_box ω.event := ⟨event.ground⟩
+
+  /-- Use `⋄e` for "`e` is possible" -/
+  @[reducible, simp]
+  instance has_diamond_event : has_diamond ω.event := ⟨event.possible⟩
+
+  /-- Use `✦e` for "the event of nothing precluding `e` from happening", or `-◾-e` -/
+  @[reducible, simp]
+  instance has_black_diamond_event : has_black_diamond ω.event := ⟨event.closure⟩
+
+  /-- Use `~e` for "the exterior of `e`" -/
+  @[reducible, simp]
+  instance has_tilde_event : has_tilde ω.event := ⟨event.exterior⟩
+
+  /-- Use `e₁ ⇒ e₂` instead of `e₁ ⊆ e₂`, replace with `⇒'` for `⊂` -/
+  @[reducible, simp]
+  instance has_entailment_event : has_entailment ω.event := ⟨set.subset⟩
+
+  /-- Use `e₁ ▹ e₂` instead of `-e₁ ∪ e₂` 
+      Use `e₁ ≡ e₂` instead of `(e₁ ▹ e₂) ∩ (e₂ ▹ e₁)`
+      Use `e₁ ≢ e₂` instead of `-(e₁ ≡ e₂)` -/
+  @[reducible, simp]
+  instance has_local_entailment_event : has_local_entailment ω.event := ⟨λ e₁ e₂, -e₁ ∪ e₂⟩
+
+  --tests:
+  -- variables (e₁ e₂ : ω.event)
+  -- #check □e
+  -- #check ◾e
+  -- #check ⋄e
+  -- #check ✦e
+  -- #check ~e
+  -- #check e₁ ⇒ e₂
+  -- #check e₁ ⇒' e₂
+  -- #check e₁ ▹ e₂
+  -- #check e₁ ≡ e₂
+  -- #check e₁ ≢ e₂
+  -- example : e.groundable ↔ ⋄◾e := by simp
 
 end events
 
 -- And we prove some simple useful lemmas about them 
 section event_lemmas
 
- variable {e : ω.event} 
- lemma event_union_exterior_open : is_open e → is_open (e ∪ e.exterior) :=
-    begin
-      intro h,
-      apply is_open_union h,
-      simp [event.exterior],
-    end
+  variable {e : ω.event} 
+  lemma event_union_exterior_open : e.existential → (e ∪ ~e).existential :=
+    by intro h; apply is_open_union h; simp
 
- -- For some reason in the standard library there is a lemma
- -- like this for finsets but not one for sets.
- lemma event_nonempty_of_ne_empty : e ≠ ∅ → e.nonempty :=
+  -- For some reason in the standard library there is a lemma
+  -- like this for finsets but not one for sets.
+  lemma event_nonempty_of_ne_empty : e ≠ ∅ → e.nonempty :=
     begin
         intro h,
         simp [set.nonempty],
@@ -227,20 +270,29 @@ section event_lemmas
         contradiction,
     end
 
- lemma event_union_exterior_nonempty : (e ∪ e.exterior).nonempty :=
+  lemma event_union_exterior_nonempty : (e ∪ e.exterior).nonempty :=
     begin
-       apply event_nonempty_of_ne_empty,
-       intro h,
-       simp at h,
-       obtain ⟨h₁, h₂⟩ := h,
-       rw h₁ at h₂,
-       simp [event.exterior] at h₂,
-       have c := ω.wne,
-       contradiction,
+        apply event_nonempty_of_ne_empty,
+        intro h,
+        simp at h,
+        obtain ⟨h₁, h₂⟩ := h,
+        rw h₁ at h₂,
+        simp [event.exterior] at h₂,
+        have c := ω.wne,
+        contradiction,
     end
 
   @[simp]
-  lemma existential_iff_self_grounded : e.existential ↔ e = e.ground := sorry
+  lemma existential_iff_ground_eq : e.existential ↔ e = e.ground := 
+    begin 
+      simp, 
+      symmetry, 
+      constructor; intros h,
+        symmetry' at h,
+        exact interior_eq_iff_open.mp h,
+      symmetry,
+      exact interior_eq_iff_open.2 h,
+    end
 
 end event_lemmas
 
