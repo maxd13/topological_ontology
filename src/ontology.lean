@@ -131,7 +131,7 @@ local attribute [instance] prop_decidable
 
 /-- An `ontology` is a nonempty T₀ topological space
 of possible worlds. -/
-class ontology :=
+structure ontology :=
     (world : Type*)
     [wne : nonempty world]
     [t : topological_space world]
@@ -299,13 +299,13 @@ end event_lemmas
 -- We defer full philosophical explanation to the "Intensionality and Extensionality" section.
 section entities
  
-  /-- Particular (possible) `entities` in the ontology are nonempty open sets of worlds.
-      An entity is said to `exist` precisely at those worlds which are its elements. -/
+  /-- Particular (possible, extensional) `entities` in the ontology are nonempty open sets of possible worlds.
+      An entity is said to `exist` precisely at the worlds which are its elements. -/
   structure entity (ω : ontology) :=
     -- the event of the entity existing ("exists" is a reserved word)
     («exists» : ω.event)
     (existential : exists.existential)
-    (possible : exists.possible)
+    (possible : ⋄«exists»)
 
   /-- the event of the `entity` existing -/
   add_decl_doc entity.exists
@@ -484,6 +484,7 @@ structure iontology (ω : ontology) :=
   (map : ientity → ω.event)
   (axiom₁ : ∀ ie, (map ie).possible)
   (axiom₂ : ω.t = (generate_from $ range map))
+  (axiom₃ : □ ⋃₀ range map)
 
 namespace iontology
 
