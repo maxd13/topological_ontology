@@ -8,7 +8,7 @@ namespace ontology
 
   -- The leibnizian version of a weakened version of Aquina's second way.
   -- Possibly the weakest argument anyone can give for the existence of God.
-  theorem weak_leibnitz2 : ω.epsr.nonempty → ω.theism :=
+  theorem weak_leibniz2 : ω.epsr.nonempty → ω.theism :=
     begin
       simp [set.nonempty, epsr],
       intros w psr,

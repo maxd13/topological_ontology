@@ -3,6 +3,7 @@ import topology.bases
        topology.homeomorph
        topology.subset_properties
        topology.instances.real
+       topology.constructions
        data.fintype.basic
        tactic.tidy
 universe u
