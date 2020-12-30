@@ -26,6 +26,8 @@ namespace ontology
 
   abbreviation quantity := ω.observable (option ℝ)
 
+section observables
+
   variables {ω} {α : Type*} [topological_space α] 
             [has_none α] (o : ω.observable α)
 
@@ -34,17 +36,13 @@ namespace ontology
   /- observables are coerced to their domain of definition -/
   instance has_coe_observable_event : has_coe (ω.observable α) ω.event := ⟨flip has_mem.mem⟩
 
-  open event
-  #check λ e : ω.event', existential e
+end observables
 
   -- We now talk about analogical (fuzzy) events, or "avents".
   -- OBSERVATION: We could have called them aevents, which would be in keeping with our naming style.
   -- But then since in Latin this just sounds like "events" we preferred to invent a new word.
-  section avents
+  abbreviation avent :=  ω.observable fuzzy
 
-    abbreviation avent :=  ω.observable fuzzy
-
-  end avents
 
 
 end ontology
