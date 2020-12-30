@@ -1,4 +1,4 @@
-import substances
+import substances observables
 universe u
 open set topological_space classical
 local attribute [instance] prop_decidable
@@ -6,19 +6,6 @@ local attribute [instance] prop_decidable
 namespace ontology
 
 variable {ω : ontology}
-
--- We now talk about analogical (fuzzy) events, or "avents".
--- OBSERVATION: We could have called them aevents, which would be in keeping with our naming style.
--- But then since in Latin this just sounds like "events" we preferred to invent a new word.
-section avents
-
-  -- [0, 1] interval
-  def I := Icc (0 : ℝ) 1
-
-  @[reducible, alias]
-  def avent (ω : ontology) :=  ω.world → I 
-
-end avents
 
 -- Next we must talk about properties
 section properties
