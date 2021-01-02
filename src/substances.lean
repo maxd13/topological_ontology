@@ -295,13 +295,13 @@ section accidents
 
  -- An entity is called `simple` if it has no accidents.
  @[reducible]
- def simple (e : ω.entity) := ∀ e' : ω.entity, e'.subsists e → e' = e 
+ def entity.simple (e : ω.entity) := ∀ e' : ω.entity, e'.subsists e → e' = e 
  @[reducible]
- def composite (e : ω.entity) := ¬ simple e
+ def entity.composite (e : ω.entity) := ¬ e.simple
  @[reducible]
- def substance.simple (s : ω.substance) := simple s.val
+ def substance.simple (s : ω.substance) := s.val.simple
  @[reducible]
- def substance.composite (s : ω.substance) := ¬ simple s.val
+ def substance.composite (s : ω.substance) := ¬ s.val.simple
 
   -- regular accidents are called intrinsic
   -- and irregular accidents are called extrinsic
