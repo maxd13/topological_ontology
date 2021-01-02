@@ -371,6 +371,9 @@ section entities
         exact h.some_mem,
         exact i.possible.some_mem,
    end
+
+   noncomputable instance has_Sup_entity : has_Sup ω.entity := 
+    ⟨λ s, if h : s.nonempty then entity_Sup s h else ω.nbe⟩
   
  -- Nonempty finite intersections of entities are entities
  def entity.inter (h : e₁.compatible e₂) : ω.entity :=
