@@ -19,7 +19,7 @@ section theism
   -- Classical Theism is an extension of theism which 
   -- furthermore claims that there is a possible world 
   -- in which the necessary being exists alone.
-  def ctheism := ∃ (w : ω.world), w.entities = {ω.nb.val}
+  def ctheism := ∃ (w : ω.world), ∀ e₁ e₂ : ω.entity, e₁.exists w → e₂.exists w → e₁ = e₂
 
   -- this is a not so trivial proof that if the nb exists alone,
   -- then it has no accidents, because accidents are contingent.
