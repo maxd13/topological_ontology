@@ -312,46 +312,50 @@ section entities
 
  /-- main extensionality lemma for entities. -/
  @[ext]
- lemma entity.ext {e₁ e₂ : ω.entity} (h : e₁.exists = e₂.exists) : e₁ = e₂ := 
+ lemma entity_ext {e₁ e₂ : ω.entity} (h : e₁.exists = e₂.exists) : e₁ = e₂ := 
     by casesm* ω.entity; simp at h; simpa
   
  variables (e e₁ e₂ : ω.entity)
  
  -- Two entities are `contrary` if their intersection (as sets) is empty,
  -- they are otherwise `compatible`.
- @[reducible]
+ @[reducible, simp]
  def entity.contrary := e₁.exists ∩ e₂.exists = ∅
- @[reducible]
- def entity.compatible := (e₁.exists ∩ e₂.exists).nonempty
+ @[reducible, simp]
+ def entity.compatible := ⋄(e₁.exists ∩ e₂.exists)
  
  -- Some very important entities have no contraries
- @[reducible]
+ @[reducible, simp]
  def entity.nocontrary := ¬ ∃ y, e.contrary y
  
- -- Entity x is said to existentially entail entity y,
- -- or to existentially depend on y,
- -- if in every possible world in which x exists, y exists.
- -- For this relation we use the subset notation.
- 
- instance entity.has_subset : has_subset ω.entity := 
+ /-- Entity e₁ is said to existentially entail entity e₂,
+     or to existentially depend on e₂,
+     if in every possible world in which x exists, y exists.
+     For this relation we use the ` ⇒ ` notation. -/
+ @[reducible, simp]
+ instance entity.has_entailment : has_entailment ω.entity := 
       ⟨λ x y : ω.entity, x.exists ⊆ y.exists⟩
 
- -- The necessary being (entity) is the entity which exists in
- -- every possible world.
- def nbe (ω : ontology) : ω.entity := ⟨univ,is_open_univ, by simp [empty_ne_univ]⟩
+ /-- The necessary being (entity) is the entity which exists in
+     every possible world. -/
+ def nbe (ω : ontology) : ω.entity := ⟨univ, is_open_univ, by simp [empty_ne_univ]⟩
+ instance entity_inhabited : inhabited ω.entity := ⟨ω.nbe⟩
 
- -- An entity is `contingent` if it is not the necessary being.
- -- TODO: revise whether mayber we shouldn't define this in terms of the definition for events.
- -- and see if this change doesn't break anything.
+ /-- An entity is `contingent` if it is not the necessary being. -/
+ @[reducible, simp]
  def entity.contingent := e ≠ ω.nbe
- -- And otherwise necessary
+ /-- An entity is `necessary` if it is the necessary being. -/
+ @[reducible, simp]
  def entity.necessary := e = ω.nbe
 
- lemma nbe_unique : ∃! e : ω.entity, e.necessary := sorry
+ /-- Use `□e` for "`e` is necessary" -/
+  @[reducible, simp]
+  instance has_box_entity : has_box ω.entity := ⟨entity.necessary⟩
+
+ lemma nbe_unique : ∃! e : ω.entity, □e := by use ω.nbe; simp
 
 
- -- Here are some definitions which look more like lemmas,
- -- these ones are more philosophical.
+ -- Here are some definitions which look more like lemmas:
  
  -- Arbitrary nonempty unions of entities are entities.
  def entity_Sup (s : set ω.entity) (h : s.nonempty) : ω.entity :=
@@ -372,11 +376,27 @@ section entities
         exact i.possible.some_mem,
    end
 
-   noncomputable instance has_Sup_entity : has_Sup ω.entity := 
-    ⟨λ s, if h : s.nonempty then entity_Sup s h else ω.nbe⟩
+   -- so are pairwise unions, obviously
+   def entity_sup (e₁ e₂ : ω.entity) : ω.entity := 
+    begin
+      fconstructor,
+        exact e₁.exists ∪ e₂.exists,
+      apply is_open_union,
+        exact e₁.existential,
+        exact e₂.existential,
+      simp, left,
+      exact e₁.possible,
+    end
+
+  @[reducible, simp]
+  noncomputable instance has_Sup_entity : has_Sup ω.entity := 
+  ⟨λ s, if h : s.nonempty then entity_Sup s h else ω.nbe⟩
+
+  @[reducible, simp]
+  instance has_sup_entity : has_sup ω.entity := ⟨entity_sup⟩
   
- -- Nonempty finite intersections of entities are entities
- def entity.inter (h : e₁.compatible e₂) : ω.entity :=
+  -- Nonempty finite intersections of entities are entities
+  def entity.inter (h : e₁.compatible e₂) : ω.entity :=
       ⟨  e₁.exists ∩ e₂.exists
       , is_open_inter e₁.existential e₂.existential
       , h
@@ -391,9 +411,9 @@ section worlds
 
   -- We can also talk about an entity existing in a world
   -- as belonging to it, so we can use the notation e ∈ w.
-  @[reducible]
+  @[reducible, simp]
   instance world.has_mem : has_mem ω.entity ω.world := ⟨λe w, w ∈ e.exists⟩
-  @[reducible]
+  @[reducible, simp]
   def world.entities := {e : ω.entity | e ∈ w}
 
   -- extensionality principle for possible worlds
@@ -425,10 +445,9 @@ section ontology
  
  variable (ω)
 
- -- However the least we should assume for an ontology to be worthy of consideration as being
- -- the true ontology is that we can add or remove entities from its worlds, therefore, we add
- -- the following definitions:
- 
+ /-- The least we should assume for an ontology to be worthy of consideration as being
+     the true ontology is that we can add or remove entities from its worlds.
+     A `viable` ontology is one satisfying this postulate. -/
  class viable : Prop :=
      (postulate₁ : ∀ w : ω.world, ∃ w', w < w' ∨ w' < w)
  
