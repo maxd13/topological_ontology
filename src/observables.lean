@@ -34,15 +34,22 @@ section observables
   abbreviation observable.perfect := continuous o
 
   /- observables are coerced to their domain of definition -/
-  instance has_coe_observable_event : has_coe (ω.observable α) ω.event := ⟨flip has_mem.mem⟩
+  instance has_coe_observable_event : has_coe (ω.observable α) ω.event := ⟨λ f x, f x ≠ has_none.none⟩
 
 end observables
 
-  -- We now talk about analogical (fuzzy) events, or "avents".
-  -- OBSERVATION: We could have called them aevents, which would be in keeping with our naming style.
-  -- But then since in Latin this just sounds like "events" we preferred to invent a new word.
-  abbreviation avent :=  ω.observable fuzzy
+  -- We now talk about analogical (fuzzy) events, or "aevents" TODO: revise this comment.
+  abbreviation aevent :=  ω.observable fuzzy
 
+namespace aevent
 
+  variables {ω} (ae : ω.aevent)
+
+  abbreviation aevent.possible := (↑ae : ω.event).possible 
+
+  /-- Use `⋄ae` for "`ae` is possible" -/
+  instance has_diamond_aevent : has_diamond ω.aevent := ⟨aevent.possible⟩
+
+end aevent
 
 end ontology
