@@ -20,6 +20,7 @@ p
 #check (infer_instance : linear_order fuzzy)
 #check (infer_instance : topological_space fuzzy)
 instance has_zero_fuzzy : has_zero fuzzy := ⟨⟨(0 : ℝ), by apply mem_Icc.2; norm_num⟩⟩
+instance has_one_fuzzy : has_one fuzzy := ⟨⟨(1 : ℝ), by apply mem_Icc.2; norm_num⟩⟩
 
 
 class has_none (α : Sort*) := 
@@ -30,8 +31,8 @@ instance has_none_bool : has_none bool := ⟨ff⟩
 instance has_none_fuzzy : has_none fuzzy := ⟨0⟩
 instance has_none_option (α) : has_none (option α) := ⟨none⟩ 
 instance has_none_roption (α) : has_none (roption α) := ⟨none⟩ 
-instance has_none_mem (α : Type*) (β : Type*) [has_none β] : has_mem α (α → β) :=
-  ⟨λ x f, f x ≠ has_none.none⟩
+-- instance has_none_mem (α : Type*) (β : Type*) [has_none β] : has_mem α (α → β) :=
+--   ⟨λ x f, f x ≠ has_none.none⟩
 
 
 -- The canonical topological space of option types, is simply
