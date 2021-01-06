@@ -330,11 +330,17 @@ section entities
  
  /-- Entity e₁ is said to existentially entail entity e₂,
      or to existentially depend on e₂,
-     if in every possible world in which x exists, y exists.
-     For this relation we use the ` ⇒ ` notation. -/
+     if in every possible world in which e₁ exists, e₂ exists.
+     For this relation we use the ` ⇒ ` notation.
+     This is defined via coercion to events and 
+     the `cross_entailment` typeclass instances. -/
  @[reducible, simp]
- instance entity.has_entailment : has_entailment ω.entity := 
-      ⟨λ x y : ω.entity, x.exists ⊆ y.exists⟩
+ instance has_coe_entity : has_coe ω.entity ω.event := ⟨entity.exists⟩
+
+  -- tests:
+  -- #reduce λ (e₁ : ω.entity) (e₂ : ω.entity), e₁ ⇒ e₂
+  -- #reduce λ (e₁ : ω.entity) (e₂ : ω.event), e₁ ⇒ e₂
+  -- #reduce λ (e₁ : ω.entity) (e₂ : ω.event), e₂ ⇒ e₁
 
  /-- The necessary being (entity) is the entity which exists in
      every possible world. -/
