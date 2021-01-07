@@ -1,6 +1,8 @@
 import math.alexandroff_space math.notation
 open set topological_space classical
+set_option pp.generalized_field_notation true
 local attribute [instance] prop_decidable
+noncomputable theory
 
 /-! 
 # A topological formal ontology and foundation of philosophy
@@ -125,6 +127,7 @@ local attribute [instance] prop_decidable
   a competent mathematician should already be able to conclude that what
   we are assuming is that existential events constitute a T₀-topology of 
   possible worlds. 
+  
   This leads us to the very first formal definitions of our theory:
 
 -/
@@ -137,6 +140,9 @@ structure ontology :=
     [t : topological_space world]
     -- identity of indiscernibles for possible worlds
     [axiom₀ : @t0_space world t]
+
+/-- identity of indiscernibles for possible worlds. -/
+add_decl_doc ontology.axiom₀
 
 instance ontology_top  (ω : ontology)  : topological_space ω.world := ω.t
 instance ontology_ne  (ω : ontology)  : nonempty ω.world := ω.wne
@@ -186,6 +192,8 @@ section events
   def event.boundary : ω.event := e.frontier
   @[reducible, simp]
   def event.connected : Prop := is_connected e
+  @[reducible, simp]
+  def event.clopen : Prop := is_clopen e
 
   -- necessity, possibility, impossibility, contingency
   @[reducible, simp]
@@ -300,7 +308,7 @@ end event_lemmas
 section entities
  
   /-- Particular (possible, extensional) `entities` in the ontology are nonempty open sets of possible worlds.
-      An entity is said to `exist` precisely at the worlds which are its elements. -/
+      An entity is said to **exist** precisely at the worlds which are its elements. -/
   structure entity (ω : ontology) :=
     -- the event of the entity existing ("exists" is a reserved word)
     («exists» : ω.event)
@@ -310,62 +318,77 @@ section entities
   /-- the event of the `entity` existing -/
   add_decl_doc entity.exists
 
- /-- main extensionality lemma for entities. -/
- @[ext]
- lemma entity_ext {e₁ e₂ : ω.entity} (h : e₁.exists = e₂.exists) : e₁ = e₂ := 
+  /-- main extensionality lemma for entities. -/
+  @[ext]
+  lemma entity_ext {e₁ e₂ : ω.entity} (h : e₁.exists = e₂.exists) : e₁ = e₂ := 
     by casesm* ω.entity; simp at h; simpa
-  
- variables (e e₁ e₂ : ω.entity)
- 
- -- Two entities are `contrary` if their intersection (as sets) is empty,
- -- they are otherwise `compatible`.
- @[reducible, simp]
- def entity.contrary := e₁.exists ∩ e₂.exists = ∅
- @[reducible, simp]
- def entity.compatible := ⋄(e₁.exists ∩ e₂.exists)
- 
- -- Some very important entities have no contraries
- @[reducible, simp]
- def entity.nocontrary := ¬ ∃ y, e.contrary y
- 
- /-- Entity e₁ is said to existentially entail entity e₂,
-     or to existentially depend on e₂,
-     if in every possible world in which e₁ exists, e₂ exists.
-     For this relation we use the ` ⇒ ` notation.
-     This is defined via coercion to events and 
-     the `cross_entailment` typeclass instances. -/
- @[reducible, simp]
- instance has_coe_entity : has_coe ω.entity ω.event := ⟨entity.exists⟩
+
+  @[simp]
+  lemma entity_ext_iff (e₁ e₂ : ω.entity) : e₁ = e₂ ↔ e₁.exists = e₂.exists := 
+    ⟨(λ h, by rw h), entity_ext⟩
+
+  variables (e e₁ e₂ : ω.entity)
+
+  /-- Two entities are said to be `contrary` if there is no possible world
+      in which both exist together.
+      they are otherwise said to be `compatible`. -/
+  @[reducible, simp]
+  def entity.contrary := e₁.exists ∩ e₂.exists = ∅
+  /-- Negation of `entity.contrary`. -/
+  @[reducible, simp]
+  def entity.compatible := ⋄(e₁.exists ∩ e₂.exists)
+
+  -- Some very important entities have no contraries
+  @[reducible, simp]
+  def entity.nocontrary := ¬ ∃ y, e.contrary y
+
+  /-- Entity e₁ is said to existentially entail entity e₂,
+      or to existentially depend on e₂,
+      if in every possible world in which e₁ exists, e₂ exists.
+      For this relation we use the ` ⇒ ` notation.
+      This is defined via coercion to events and 
+      the `cross_entailment` typeclass instances. -/
+  @[reducible, simp]
+  instance has_coe_entity : has_coe ω.entity ω.event := ⟨entity.exists⟩
 
   -- tests:
   -- #reduce λ (e₁ : ω.entity) (e₂ : ω.entity), e₁ ⇒ e₂
   -- #reduce λ (e₁ : ω.entity) (e₂ : ω.event), e₁ ⇒ e₂
   -- #reduce λ (e₁ : ω.entity) (e₂ : ω.event), e₂ ⇒ e₁
 
- /-- The necessary being (entity) is the entity which exists in
-     every possible world. -/
- def nbe (ω : ontology) : ω.entity := ⟨univ, is_open_univ, by simp [empty_ne_univ]⟩
- instance entity_inhabited : inhabited ω.entity := ⟨ω.nbe⟩
+  /-- The necessary being (entity) is the entity which exists in
+      every possible world. -/
+  def nbe (ω : ontology) : ω.entity := ⟨univ, is_open_univ, by simp [empty_ne_univ]⟩
+  instance entity_inhabited : inhabited ω.entity := ⟨ω.nbe⟩
 
- /-- An entity is `contingent` if it is not the necessary being. -/
- @[reducible, simp]
- def entity.contingent := e ≠ ω.nbe
- /-- An entity is `necessary` if it is the necessary being. -/
- @[reducible, simp]
- def entity.necessary := e = ω.nbe
+  /-- An entity is `contingent` if it is not the necessary being. -/
+  @[reducible, simp]
+  def entity.contingent := e ≠ ω.nbe
+  /-- An entity is `necessary` if it is the necessary being. -/
+  @[reducible, simp]
+  def entity.necessary := e = ω.nbe
 
- /-- Use `□e` for "`e` is necessary" -/
+  /-- Use `□e` for "`e` is necessary" -/
   @[reducible, simp]
   instance has_box_entity : has_box ω.entity := ⟨entity.necessary⟩
 
- lemma nbe_unique : ∃! e : ω.entity, □e := by use ω.nbe; simp
+  lemma nbe_unique : ∃! e : ω.entity, □e := by use ω.nbe; simp
 
+  /-- A contingent entity is said to be **complemented** if 
+      its existence is a clopen set.
+      Complemented entities `e` are such that the event
+      of their non-existence `-e.exists` is itself
+      just as much of an entity as `e`.
+      It can be proven that the possibility
+      of the existence of complemented
+      entities is logically equivalent to atheism. -/
+  def entity.complemented : Prop := e.contingent ∧ e.exists.clopen
 
- -- Here are some definitions which look more like lemmas:
- 
- -- Arbitrary nonempty unions of entities are entities.
- def entity_Sup (s : set ω.entity) (h : s.nonempty) : ω.entity :=
-   begin
+  -- Here are some definitions which look more like lemmas:
+
+  -- Arbitrary nonempty unions of entities are entities.
+  def entity_Sup (s : set ω.entity) (h : s.nonempty) : ω.entity :=
+    begin
       fsplit,
           exact ⋃ i ∈ s, entity.exists i,
       apply is_open_bUnion,
@@ -380,10 +403,10 @@ section entities
       constructor,
         exact h.some_mem,
         exact i.possible.some_mem,
-   end
+    end
 
-   -- so are pairwise unions, obviously
-   def entity_sup (e₁ e₂ : ω.entity) : ω.entity := 
+    -- so are pairwise unions, obviously
+    def entity_sup (e₁ e₂ : ω.entity) : ω.entity := 
     begin
       fconstructor,
         exact e₁.exists ∪ e₂.exists,
@@ -395,18 +418,35 @@ section entities
     end
 
   @[reducible, simp]
-  noncomputable instance has_Sup_entity : has_Sup ω.entity := 
+  instance has_Sup_entity : has_Sup ω.entity := 
   ⟨λ s, if h : s.nonempty then entity_Sup s h else ω.nbe⟩
 
   @[reducible, simp]
   instance has_sup_entity : has_sup ω.entity := ⟨entity_sup⟩
-  
+
   -- Nonempty finite intersections of entities are entities
   def entity.inter (h : e₁.compatible e₂) : ω.entity :=
       ⟨  e₁.exists ∩ e₂.exists
       , is_open_inter e₁.existential e₂.existential
       , h
       ⟩
+
+  /-- possibly_not_exists_of_contingent -/
+  lemma pnexists_of_contingent {e : ω.entity} : e.contingent → ⋄-e.exists :=
+    begin
+      intro h,
+      simp [nbe, entity_ext_iff] at h,
+      by_contradiction c,
+      simp [has_neg.neg, compl, set.nonempty] at c,
+      replace c := eq_univ_of_forall c,
+      contradiction,
+    end
+  
+  def entity.complement (h : e.complemented) : ω.entity :=
+    ⟨ -e.exists
+    , h.2.2
+    , pnexists_of_contingent h.1 
+    ⟩
 
 end entities
 
@@ -449,22 +489,25 @@ end worlds
 -- Here we discuss basic general properties of ontologies themselves.
 section ontology
  
- variable (ω)
+  variable (ω)
 
- /-- The least we should assume for an ontology to be worthy of consideration as being
-     the true ontology is that we can add or remove entities from its worlds.
-     A `viable` ontology is one satisfying this postulate. -/
- class viable : Prop :=
-     (postulate₁ : ∀ w : ω.world, ∃ w', w < w' ∨ w' < w)
- 
- -- common (sensical) ontologies
- class common extends viable ω : Prop :=
-     (postulate₂ : uncountable ω.world)
+  /-- The least we should assume for an ontology to be worthy of consideration as being
+      the true ontology is that we can add or remove entities from its worlds.
+      A `viable` ontology is one satisfying this postulate. -/
+  class viable : Prop :=
+      (postulate₁ : ∀ w : ω.world, ∃ w', w < w' ∨ w' < w)
 
- def alexandroff_discrete := alexandroff_space ω.world
- 
- class alexandroff extends common ω : Prop :=
+  -- common (sensical) ontologies
+  class common extends viable ω : Prop :=
+      (postulate₂ : uncountable ω.world)
+
+  def alexandroff_discrete := alexandroff_space ω.world
+
+  class alexandroff extends common ω : Prop :=
     (postulate₃ : ω.alexandroff_discrete)
+
+  /-- A complemented ontology supports complemented entities. -/
+  def complemented := ∃ e : ω.entity, e.complemented
 
 
 end ontology
