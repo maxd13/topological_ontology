@@ -8,25 +8,26 @@ class has_box (α : Type*) :=
 
 -- may change binding power in the future, depending on necessity
 -- currently has the same power as logical negation
-prefix `□`:40  := has_box.box
+prefix `□`:100  := has_box.box
 
 class has_black_box (α : Type*) :=
   (box : α → α)
 
 -- may change binding power in the future, depending on necessity
 -- currently has the same power as logical negation
-prefix `◾`:40  := has_black_box.box
+prefix `◾`:100  := has_black_box.box
 
 class has_diamond (α : Type*) :=
   (diamond : α → Prop)
 
-prefix `⋄`:40  := has_diamond.diamond
+prefix `⋄`:100  := has_diamond.diamond
 
 class has_black_diamond (α : Type*) :=
   (diamond : α → α)
 
-prefix `✦`:40  := has_black_diamond.diamond
+prefix `✦`:100  := has_black_diamond.diamond
 
+reserve prefix `~`:100
 class has_tilde (α : Type*) :=
   (tilde : α → α)
 
