@@ -20,9 +20,9 @@ namespace ontology
  -- The state of a substance at some 
  -- possible world is the set of its subsistents existing at the world.
   def substance.state (w : ω.world) : set ω.entity :=
-  s.val.subsistents ∩ w.entities
+  s.up.subsistents ∩ w.entities
  
-  lemma exists_iff_in_state : ∀ {w : ω.world} {s : ω.substance}, w ∈ s.val.exists ↔ s.val ∈ s.state w :=
+  lemma exists_iff_in_state : ∀ {w : ω.world} {s : ω.substance}, w ∈ s.exists ↔ s.up ∈ s.state w :=
    begin
        intros,
        constructor; intro h;
@@ -30,15 +30,16 @@ namespace ontology
        exact h,
    end
 
-  lemma exists_iff_nonempty_state : ∀ {w : ω.world} {s : ω.substance}, w ∈ s.val.exists ↔ (s.state w).nonempty := 
+  lemma exists_iff_nonempty_state : ∀ {w : ω.world} {s : ω.substance}, w ∈ s.exists ↔ (s.state w).nonempty := 
     begin 
         intros,
         convert exists_iff_in_state; try{assumption},
         simp, constructor; intro h, swap,
             exact nonempty_of_mem h,
         simp [set.nonempty, substance.state] at h,
-        obtain ⟨x, sx, wx⟩ := h,
-        have c := subset_of_subsist sx wx,
+        obtain ⟨e, se, we⟩ := h,
+        have c := entails_of_subsist se we,
+        unfold_coes at c,
         exact exists_iff_in_state.mp c,
     end
 
