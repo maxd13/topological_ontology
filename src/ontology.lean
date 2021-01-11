@@ -172,8 +172,10 @@ section events
 
   -- We define the related topological notions for events:
 
-  /-- the **ground**, or *ontological counterpart* of an `event e` is its interior, 
-      i.e. the largest existential event below `e` -/
+  /-- The **ground**, or *ontological counterpart* of an `event e` is its interior, 
+      i.e. the largest existential event below `e`.
+      This will be the event of some entity existing whose
+      existence necessitates the ocurrence of `e`. -/
   @[reducible, simp]
   def event.ground : ω.event := interior e
   @[reducible, simp]
@@ -193,7 +195,11 @@ section events
   @[reducible, simp]
   def event.connected : Prop := is_connected e
   @[reducible, simp]
+  def event.irreducible : Prop := is_irreducible e
+  @[reducible, simp]
   def event.clopen : Prop := is_clopen e
+  @[reducible, simp]
+  def event.compact : Prop := compact e
 
   -- necessity, possibility, impossibility, contingency
   @[reducible, simp]
@@ -205,7 +211,7 @@ section events
   @[reducible, simp]
   def event.contingent := e.possible ∧ ¬e.necessary
 
-  /-- An `event` is **groundable** if its ground is `possible` -/
+  /-- An `event` is **groundable** if its ground is `possible`. -/
   @[reducible, simp]
   def event.groundable := e.ground.possible
 
@@ -318,6 +324,10 @@ section entities
   /-- the event of the `entity` existing -/
   add_decl_doc entity.exists
 
+  /-- Any groundable event `e` can be cast to an entity, 
+      the existence of which is the ground of `e`. -/
+  def event.entity (e : ω.event) (h : ⋄◾e) : ω.entity := ⟨◾e, is_open_interior, h⟩
+
   /-- main extensionality lemma for entities. -/
   @[ext]
   lemma entity_ext {e₁ e₂ : ω.entity} (h : e₁.exists = e₂.exists) : e₁ = e₂ := 
@@ -424,8 +434,11 @@ section entities
   @[reducible, simp]
   instance has_sup_entity : has_sup ω.entity := ⟨entity_sup⟩
 
-  -- Nonempty finite intersections of entities are entities
-  def entity.inter (h : e₁.compatible e₂) : ω.entity :=
+  /-- Intersections of compatible entities are entities.
+      If `h` is a proof of the compatibility of the entities
+      `e₁` and `e₂`, then `h.inter` is the intersection of
+      `e₁` and `e₂`. -/
+  def entity.compatible.inter {e₁ e₂ : ω.entity} (h : e₁.compatible e₂) : ω.entity :=
       ⟨  e₁.exists ∩ e₂.exists
       , is_open_inter e₁.existential e₂.existential
       , h
@@ -708,6 +721,122 @@ end realism
 -- and prove equivalences between this notion, the notion of belonging to sub-basis,
 -- and the notion of reality.
 section prime
+
+  -- It is annoying that mathlib doesn't export this
+  -- sort of lemma using sets of sets instead of set families.
+  lemma event.compact.elim {e : ω.event} : e.compact → (∀ (S : set ω.event), 
+                                                         (∀ i ∈ S, is_open i) →
+                                                         e ⇒ ⋃₀ S →
+                                                         ∃ s : set ω.event, s ⊆ S ∧ finite s ∧ e ⇒ ⋃₀ s)
+                                                         :=
+    begin
+      intros h S hS he,
+      have c :=  @compact.elim_finite_subcover_image _ _ _ e S id h hS,
+      specialize c _, swap,
+        intros w hw,
+        simp,
+        specialize he hw,
+        simp at he,
+        exact he,
+      simp at c,
+      obtain ⟨s, h₁, h₂, h₃⟩ := c,
+      refine ⟨s, h₁, h₂, _⟩,
+      intros w hw,
+      specialize h₃ hw,
+      simp at h₃,
+      simp,
+      exact h₃,
+    end
+
+  lemma ecompact_elim {e : ω.entity} : e.exists.compact → (∀ {S : set ω.entity}, S.nonempty →
+                                                         e ⇒ Sup S →
+                                                         ∃ s : set ω.entity, s.nonempty ∧ s ⊆ S ∧ finite s ∧ e ⇒ Sup s)
+                                                         := sorry
+
+  variables (e : ω.entity) (b : set ω.entity)
+
+  /-- An entity `e` is said to be **meet prime** if 
+      for any entities `e₁, e₂` whose
+      nonempty conjunction entails `e`,
+      one of them must entail `e`. 
+      This is equivalent to the principal ideal of `e` in
+      the partial order of opens being prime. -/
+  def entity.mprime := 
+    ∀ {e₁ e₂ : ω.entity} {h : e₁.compatible e₂},
+    (h.inter ⇒ e) → (e₁ ⇒ e ∨ e₂ ⇒ e)
+
+  /-- An entity `e` is said to be **join prime** if 
+      for any entities `e₁, e₂` whose
+      disjunction is entailed by `e`,
+      `e` must entail one of them. 
+      This is equivalent to the principal filter of `e`
+      in the partial order of opens being prime. -/
+  def entity.jprime := ∀ ⦃e₁ e₂ : ω.entity⦄, (e ⇒ e₁ ⊔ e₂) → (e ⇒ e₁ ∨ e ⇒ e₂)
+
+  def entity.jprime.induction {e : ω.entity} : e.jprime → ∀ {S : set ω.entity}, S.nonempty →
+                               finite S → e ⇒ Sup S → ∃ e₂ ∈ S, e ⇒ e₂ :=
+  begin
+    intros h₀ S ne h₁,
+    revert ne,
+    apply h₁.induction_on,
+      simp, intro h,
+      simp [set.nonempty] at h,
+      contradiction,
+    intros e₂ s h₃ h₄ h₅ h₆ h₇,
+    simp [Sup, h₆] at *,
+    simp [has_entailment.entails] at *,
+    clear h₆,
+    by_cases c : s.nonempty, swap,
+      replace c := not_nonempty_iff_eq_empty.mp c,
+      simp [entity_Sup] at h₇,
+      rw c, rw c at h₇, simp at h₇,
+      exact ⟨e₂, by simp, h₇⟩,
+    specialize h₅ c,
+    simp [c] at h₅,
+    simp [entity.jprime, entity_sup] at h₀,
+    simp [has_entailment.entails] at h₀,
+    have aux : entity_Sup (insert e₂ s) h₆ = e₂ ⊔ entity_Sup s c, 
+      admit,
+    rw aux at h₇,
+    specialize h₀ h₇,
+    cases h₀, exact ⟨e₂, by simp, h₀⟩,
+    specialize h₅ h₀,
+    obtain ⟨x, hx₁, hx₂⟩ := h₅,
+    exact ⟨x, by simp [hx₁], hx₂⟩,
+  end
+
+  /-- An entity is **completely join prime** if it is join prime and compact. -/
+  def entity.cjprime := e.jprime ∧ e.exists.compact
+
+  /-- An entity is **absolutely basic** if it belongs to every topological basis
+      of open sets. -/
+  def entity.abasic := ∀ (B : set ω.event), is_topological_basis B → e.exists ∈ B
+
+  def entity.uncoverable := ∀ (S : set ω.entity), S.nonempty → e ⇒ Sup S → ∃ e₂ ∈ S, e ⇒ e₂
+
+  lemma cjprime_iff_uncoverable : e.cjprime ↔ e.uncoverable :=
+    begin
+      constructor; intro h,
+        obtain ⟨pe, ce⟩ := h,
+        intros S neS hS,
+        replace ce := ecompact_elim ce neS hS,
+        obtain ⟨s, sne, h₁, h₂, h₃⟩ := ce,
+        replace pe := pe.induction sne h₂ h₃,
+        obtain ⟨e₂, h₄, h₅⟩ := pe,
+        exact ⟨e₂, h₁ h₄, h₅⟩,
+      admit,
+        -- simp [image] at ce,
+
+    end
+
+  -- theorem abasic_iff_cjprime : e.abasic ↔ e.cjprime :=
+  --   begin
+  --     simp [entity.abasic, entity.cjprime],
+  --     constructor; intro h, swap,
+  --       intros B hB,
+  --   end
+
+
 end prime
 
 end ontology
