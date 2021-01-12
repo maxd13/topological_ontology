@@ -470,7 +470,7 @@ section accidents
   def accident.intrinsic := a.exists.regular
   /-- Negation of `accident.intrinsic`. -/
   @[reducible]
-  def accident.extrinsic := ¬ a.exists.regular
+  def accident.extrinsic := ¬ a.intrinsic
 
   @[simp]
   def accident.compatible := a.up.compatible e
@@ -480,8 +480,10 @@ end accidents
 -- And prove lemmas about them
 section accident_lemmas
 
+  variable (a : ω.accident)
+
   /-- All accidents are contingent. -/
-  lemma accident.contingent (a : ω.accident) : a.up.contingent := 
+  lemma accident.contingent : a.up.contingent := 
     begin
       simp [nbe],
       by_contradiction h,
@@ -492,7 +494,7 @@ section accident_lemmas
     end
 
   -- All accidents are simple
-  lemma accident.simple (a : ω.accident) : a.up.simple := 
+  lemma accident.simple : a.up.simple := 
     begin
       simp,
       intros e h,
@@ -546,6 +548,9 @@ section accident_lemmas
   /-- Use `~e` for "the exterior of `e`" -/
   instance has_tilde_accident : has_tilde ω.accident := ⟨accident.exterior⟩
 
+  @[simp]
+  lemma accident.lem : (a.up ⊔ (~a).up) = a.owner := sorry
+
   lemma compl_iff_inheres_nb {a : ω.accident} : a.inheres ω.nb ↔ a.up.complemented :=
     begin
       simp [accident.inheres],
@@ -558,25 +563,62 @@ section accident_lemmas
       exact h.2,
     end
 
-  def accident.extrinsic.internalize {a : ω.accident} (h : a.extrinsic) : ω.accident :=
-    begin
-      have h₂ := a.owner.compatible (~a).up,
-      refine ⟨h₂.inter, _⟩,
-      by_contradiction c,
-      simp [entity.imperfect, -self_subsist] at c,
-      let s : ω.substance := ⟨h₂.inter,c⟩,
-      suffices h : (~a).up.perfect,
-        have absurdity := (~a).imperfect,
-        contradiction,
-      apply @perfect_of_substance_entails _ s,
-      intro w, unfold_coes,
-      intro hw,
-      simp [s, entity.compatible.inter] at hw,
-      exact hw.2,
-    end
+  section extrinsic
+  
+    variables {a} (h : a.extrinsic)
+    include h
 
-  lemma intrinsic_of_inheres_nb {a : ω.accident} : a.inheres ω.nb → a.intrinsic := sorry
+    def accident.extrinsic.internalize : ω.accident :=
+      begin
+        have h₂ := a.owner.compatible (~a).up,
+        refine ⟨h₂.inter, _⟩,
+        by_contradiction c,
+        simp [entity.imperfect, -self_subsist] at c,
+        let s : ω.substance := ⟨h₂.inter,c⟩,
+        suffices h : (~a).up.perfect,
+          have absurdity := (~a).imperfect,
+          contradiction,
+        apply @perfect_of_substance_entails _ s,
+        intro w, unfold_coes,
+        intro hw,
+        simp [s, entity.compatible.inter] at hw,
+        exact hw.2,
+      end
 
+    def accident.extrinsic.internalize_inheres : h.internalize.inheres a.owner := sorry
+    def accident.extrinsic.internalize_intrinsic : h.internalize.intrinsic := sorry
+
+  end extrinsic
+
+  section intrinsic
+
+    variables {a} (h : a.intrinsic)
+    include h
+
+    lemma accident.intrinsic.exterior : (~a).intrinsic := sorry
+    lemma accident.intrinsic.exterior_inheres : (~a).inheres a.owner := sorry
+
+    omit h
+    lemma intrinsic_of_inheres_nb : a.inheres ω.nb → a.intrinsic := sorry
+  end intrinsic
+
+  section localize
+
+    variable (a)
+    include a
+
+    def accident.localize (w : ω.world) : ω.accident :=
+      if a.exists w then a else 
+      if h : a.intrinsic then ~a else
+      accident.extrinsic.internalize h
+
+    def accident.localize_exists {w : ω.world} : a.owner.exists w → (a.localize w).exists w := sorry
+    def accident.localize_inheres {w : ω.world} : (a.localize w).inheres a.owner := sorry
+    def accident.localize_intrinsic (w : ω.world) : (a.localize w).intrinsic := sorry
+
+  
+
+  end localize
 
 
 end accident_lemmas
