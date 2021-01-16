@@ -48,7 +48,7 @@ def entity.independent : ω.event := -e₁.depends e₂ ∩ -e₂.depends e₁
 
 -- vertical causation 
 @[reducible]
-def substance.causes (s : ω.substance) (e : ω.event) : ω.event := e.sdepends s.val.exists
+def substance.causes (s : ω.substance) (e : ω.event) : ω.event := e.sdepends s.exists
 @[reducible]
 def entity.caused_by (e : ω.event) (s : ω.substance): ω.event := s.causes e
 
@@ -69,12 +69,12 @@ def substance.ccauses (s : ω.substance) (e : ω.entity) : ω.event :=
 -- formal causation
 def substance.forcauses (s : ω.substance) (e : ω.entity) : ω.event := 
   s.ccauses e ∩
-  s.causes e.substance.val.exists
+  s.causes e.substance.exists
 
 -- material causation
 def substance.mcauses (s : ω.substance) (e : ω.entity) : ω.event := 
   s.ccauses e ∩
-  -s.causes e.substance.val.exists
+  -s.causes e.substance.exists
 
 -- final causation
 def substance.fincauses (s : ω.substance) (e : ω.entity) : ω.event := 
@@ -102,7 +102,7 @@ def psr : Prop := ω.epsr = univ
 def epp : ω.event := 
   { w | ∀ e : ω.entity,
     e.caused w → ∃ s : ω.substance,
-    w ∈ s.val.uncaused ∩ s.causes e.exists
+    w ∈ s.up.uncaused ∩ s.causes e.exists
   }
 
 -- the platonic principle
@@ -110,17 +110,17 @@ def pp : Prop := ω.epp = univ
 
 -- the thomistic principle of sufficent reason/causality
 def tpsr : Prop := 
-  ∀ (s : ω.substance) (p : ω.property) (h₁ : p.proper) (h₂ : ¬ p.essential_of s.val) (w ∈ p s.val), 
-  ∃ c : ω.substance, c.causes (p s.val) w
+  ∀ (s : ω.substance) (p : ω.predicate) (h₁ : p.proper) (h₂ : ¬ p.dere_of s.up) (w ∈ p s.up), 
+  ∃ c : ω.substance, c.causes (p s.up) w
 
 -- the efficient version of tpsr
 -- the thomistic principle of sufficent reason/causality
 def etpsr : Prop := 
-  ∀ (s : ω.substance) (p : ω.property) (h₁ : p.proper) (h₂ : ¬ p.essential_of s.val) (w ∈ p s.val),
-  -- p s.val cast to an entity
-  let r := (entity.mk (p s.val) 
+  ∀ (s : ω.substance) (p : ω.predicate) (h₁ : p.proper) (h₂ : ¬ p.dere_of s.up) (w ∈ p s.up),
+  -- p s.up cast to an entity
+  let r := (entity.mk (p s.up) 
            (by apply h₁.axiom₂; exact e) 
-           (by dunfold event.possible set.nonempty; use w; assumption))
+           (by use w; assumption))
   in ∃ c : ω.substance, c.ecauses r w
 
 
