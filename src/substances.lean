@@ -229,7 +229,7 @@ section substance_lemmas
   --TODO: This proof requires some lemmas about the specialization order.
   /-- Any possible world in which a substance does not exist can be enlarged
       so as to contain the substance. -/
-  lemma substance.addable (s : ω.substance) : -s.exists ⇒ s.up.addable := sorry
+  -- lemma substance.addable (s : ω.substance) : -s.exists ⇒ s.up.addable := sorry
 
 end substance_lemmas
 
@@ -489,6 +489,29 @@ section accidents
   @[reducible]
   def accident.extrinsic := ¬ a.intrinsic
 
+  /-- An entity is called **Intrinsically Simple** if it has no `intrinsic` accidents. -/
+  @[reducible, simp]
+  def entity.isimple := ∀ e' : ω.entity, e'.subsists e → e' = e ∨ ¬ e'.exists.regular
+  /-- Negation of `entity.isimple`. -/
+  @[reducible, simp]
+  def entity.icomposite := ¬ e.isimple
+  /-- A substance is called **Intrinsically Simple** if it has no `intrinsic` accidents. -/
+  @[reducible, simp]
+  def substance.isimple := ¬ ∃ a : ω.accident, a.intrinsic ∧ a.inheres s
+  /-- Negation of `substance.isimple`. -/
+  @[reducible]
+  def substance.icomposite := ∃ a : ω.accident, a.intrinsic ∧ a.inheres s
+
+
+  /-- A substance is called `intrinsic` if in case it is composite it has intrinsic accidents.
+      It is otherwise called `extrinsic`.
+      Simple substances are all intrinsic. -/
+  @[reducible]
+  def substance.intrinsic := s.composite → s.icomposite
+  /-- Negation of `substance.intrinsic`. -/
+  @[reducible]
+  def substance.extrinsic := ¬ s.intrinsic
+
   @[simp]
   def accident.compatible := a.up.compatible e
 
@@ -566,7 +589,13 @@ section accident_lemmas
   instance has_tilde_accident : has_tilde ω.accident := ⟨accident.exterior⟩
 
   @[simp]
-  lemma accident.lem : (a.up ⊔ (~a).up) = a.owner := sorry
+  lemma accident.lem : (a.up ⊔ (~a).up) = a.owner :=
+    begin
+      unfold_coes,
+      simp [entity_sup, accident.owner],
+      congr,
+      simp [has_tilde.tilde, accident.exterior],
+    end
 
   lemma compl_iff_inheres_nb {a : ω.accident} : a.inheres ω.nb ↔ a.up.complemented :=
     begin
@@ -585,25 +614,30 @@ section accident_lemmas
     variables {a} (h : a.extrinsic)
     include h
 
-    def accident.extrinsic.internalize : ω.accident :=
-      begin
-        have h₂ := a.owner.compatible (~a).up,
-        refine ⟨h₂.inter, _⟩,
-        by_contradiction c,
-        simp [entity.imperfect, -self_subsist] at c,
-        let s : ω.substance := ⟨h₂.inter,c⟩,
-        suffices h : (~a).up.perfect,
-          have absurdity := (~a).imperfect,
-          contradiction,
-        apply @perfect_of_substance_entails _ s,
-        intro w, unfold_coes,
-        intro hw,
-        simp [s, entity.compatible.inter] at hw,
-        exact hw.2,
-      end
 
-    def accident.extrinsic.internalize_inheres : h.internalize.inheres a.owner := sorry
-    def accident.extrinsic.internalize_intrinsic : h.internalize.intrinsic := sorry
+    -- TODO: this doesn't really work because there will probably 
+    -- be examples of ontologies in which some composite substance
+    -- is not intrinsically composite. You can still
+    -- use this extrinsic section for something though, when you
+    -- do, delete this code.
+    -- def accident.extrinsic.internalize : ω.accident :=
+    --   begin
+    --     have h₂ := a.owner.compatible (~a).up,
+    --     refine ⟨h₂.inter, _⟩,
+    --     by_contradiction c,
+    --     simp [entity.imperfect, -self_subsist] at c,
+    --     let s : ω.substance := ⟨h₂.inter,c⟩,
+    --     suffices h : (~a).up.perfect,
+    --       have absurdity := (~a).imperfect,
+    --       contradiction,
+    --     apply @perfect_of_substance_entails _ s,
+    --     intro w, unfold_coes,
+    --     intro hw,
+    --     simp [s, entity.compatible.inter] at hw,
+    --     exact hw.2,
+    --   end
+    -- def accident.extrinsic.internalize_inheres : h.internalize.inheres a.owner := sorry
+    -- def accident.extrinsic.internalize_intrinsic : h.internalize.intrinsic := sorry
 
   end extrinsic
 
@@ -612,50 +646,104 @@ section accident_lemmas
     variables {a} (h : a.intrinsic)
     include h
 
-    lemma accident.intrinsic.exterior : (~a).intrinsic := sorry
-    lemma accident.intrinsic.exterior_inheres : (~a).inheres a.owner := sorry
+    lemma accident.intrinsic.exterior : (~a).intrinsic := 
+      begin
+        simp [has_tilde.tilde, accident.exterior],
+        simp [accident.intrinsic] at *,
+        rwa ←h,
+      end
+    
+    lemma accident.intrinsic.exterior_inheres : (~a).inheres a.owner :=
+      begin
+        simp [has_tilde.tilde, accident.exterior],
+        simp [accident.inheres, accident.owner, entity.subsists],
+        simp [accident.intrinsic] at h,
+        rw ←h,
+        exact sup_comm,
+      end
+    
 
     omit h
-    lemma intrinsic_of_inheres_nb : a.inheres ω.nb → a.intrinsic := sorry
+    def accident.localize (a : ω.accident) (w : ω.world) : ω.accident :=
+      if a.exists w then a else ~a
+    
+    lemma accident.localize_exists (a : ω.accident) {w : ω.world} : a.owner.exists w → (a.localize w).exists w :=
+      begin
+        intro h,
+        by_cases c : a.exists w;
+          simp [accident.localize, c],
+        have lem := a.lem, unfold_coes at lem, simp at lem,
+        rw ←lem at h, clear lem,
+        simp [entity_sup] at h,
+        cases h, contradiction,
+        exact h,
+      end
+    
+
+    include h
+
+    lemma accident.intrinsic.localize_inheres (w : ω.world) : (a.localize w).inheres a.owner :=
+      begin
+        by_cases c : a.exists w;
+          simp [accident.localize, c],
+        exact h.exterior_inheres,
+      end
+    lemma accident.intrinsic.localize_intrinsic (w : ω.world) : (a.localize w).intrinsic := 
+        begin
+          by_cases c : a.exists w;
+            simp [accident.localize, c],
+            assumption,
+          exact h.exterior,
+        end
+
+    omit h
+    lemma intrinsic_of_inheres_nb : a.inheres ω.nb → a.intrinsic :=
+      begin
+        simp [accident.inheres, accident.intrinsic, entity.subsists, nb, nbe],
+        intro h,
+        have c : closure a.exists = a.exists,
+          simp [ext_iff] at *,
+          intro w, constructor; 
+          intro h₀; specialize h w,
+            simp [h₀] at h,
+            assumption,
+          exact subset_closure h₀,
+        rw c,
+        symmetry,
+        apply interior_eq_of_open,
+        exact a.existential,
+      end
+    lemma nb_intrinsic : ω.nb.intrinsic :=
+      begin
+        intro h,
+        obtain ⟨a, ha⟩ := h,
+        simp at ha,
+        have c := intrinsic_of_inheres_nb ha,
+        use a, constructor;
+        assumption,
+      end
+
+    /-- Any icomposite substance has an accident in any possible world in which it exists. -/
+    lemma icomposites_actual : ∀ {s : ω.substance}, s.icomposite → ∀ w, s.exists w → 
+                          ∃ (a : ω.accident), a ∈ s.accidents ∧ a.exists w  :=
+      begin
+        intros s h₁ w h₂,
+        obtain ⟨a, ha₁, ha₂⟩ := h₁,
+        simp [substance.accidents],
+        use a.localize w,
+        have c₀ := ha₁.localize_inheres w,
+        have c₁ : s = a.owner,
+          apply unique_inheres;
+          assumption <|> simp,
+        rw ←c₁ at c₀,
+        rw c₁ at h₂,
+        replace h₂ := a.localize_exists h₂,
+        exact ⟨c₀, h₂⟩,
+      end
   end intrinsic
-
-  section localize
-
-    variable (a)
-    include a
-
-    def accident.localize (w : ω.world) : ω.accident :=
-      if a.exists w then a else 
-      if h : a.intrinsic then ~a else
-      accident.extrinsic.internalize h
-
-    lemma accident.localize_exists {w : ω.world} : a.owner.exists w → (a.localize w).exists w := sorry
-    lemma accident.localize_inheres (w : ω.world) : (a.localize w).inheres a.owner := sorry
-    lemma accident.localize_intrinsic (w : ω.world) : (a.localize w).intrinsic := sorry  
-
-  end localize
 
 
 end accident_lemmas
-
-/-- The Fundamental Theorem of Composites states that any 
-    composite substance has an accident in any possible world in which it exists. -/
-theorem ftcomposites : ∀ (s : ω.substance), s.composite → ∀ w, s.exists w → 
-                       ∃ (a : ω.accident), a ∈ s.accidents ∧ a.exists w  :=
-  begin
-    intros s h₁ w h₂,
-    obtain ⟨a, ha⟩ := h₁,
-    use a.localize w,
-    simp [substance.accidents] at *,
-    have c₀ := a.localize_inheres w,
-    have c₁ : s = a.owner,
-      apply unique_inheres;
-      assumption <|> simp,
-    rw ←c₁ at c₀,
-    rw c₁ at h₂,
-    replace h₂ := a.localize_exists h₂,
-    exact ⟨c₀, h₂⟩,
-  end
 
 section simplicity_lemmas
 
