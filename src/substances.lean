@@ -29,7 +29,7 @@ section substances
   /-- Negation of `entity.perfect` -/
   def entity.imperfect (e : ω.entity) := ¬ e.perfect
 
-  /-- Particular `substances` in the ontology are dense entities, 
+  /-- Individual `substances` in the ontology are dense entities, 
       every other entity is an `accident`.
       We also call a dense entity a perfect entity.
       **Substances** are entities which do not have contraries, 
@@ -76,6 +76,11 @@ section substances
   def entity.ante (e : ω.entity) : ω.substance ⊕ ω.accident :=
     if h : e.perfect then sum.inl ⟨e, h⟩ else sum.inr ⟨e, h⟩
 
+  /-- An entitative event is substantive if it is dense. -/
+  def event.substantive (e : ω.event) : Prop := e.entitative ∧ e.dense
+  /-- An entitative event is accidental if it is not dense. -/
+  def event.accidental (e : ω.event) : Prop := e.entitative ∧ ¬e.dense
+
   /-- The `necessary being` (substance) is the substance which exists in every possible world. -/
   def nb (ω : ontology) : ω.substance := ⟨ω.nbe, by simp [nbe, entity.perfect]⟩
   instance substance_inhabited : inhabited ω.substance := ⟨ω.nb⟩
@@ -86,9 +91,6 @@ section substances
   /-- A substance is `necessary` if it is the necessary being (substance). -/
   @[reducible, simp]
   def substance.necessary (s : ω.substance) := s = ω.nb
-
-  @[simp]
-  lemma nbe.perfect (ω : ontology) : ω.nbe.perfect := ω.nb.perfect 
 
   @[reducible, simp]
   def world.substances (w : ω.world) := {s : ω.substance | s.exists w}
@@ -224,6 +226,11 @@ section substance_lemmas
   --   cInf_le := _,
   --   le_cInf := _ }
 
+  --TODO: This proof requires some lemmas about the specialization order.
+  /-- Any possible world in which a substance does not exist can be enlarged
+      so as to contain the substance. -/
+  lemma substance.addable (s : ω.substance) : -s.exists ⇒ s.up.addable := sorry
+
 end substance_lemmas
 
 -- We discuss the fundamental notions of subsistence,
@@ -242,7 +249,7 @@ section subsistence
 
   -- Inherence is the same relation defined between accidents and substances:
   /-- **Inherence** is the subsistence of accidents in substances. 
-      This is the only possible kind of subsistence, so
+      This is the only possible kind of subsistence for distinct entities, so
       this is simply a type cast from `entity.subsists`. -/
   def accident.inheres (a : ω.accident) (s : ω.substance) := a.up.subsists s.up
 
@@ -386,9 +393,10 @@ section subsistence_lemmas
   lemma substance.ssubsists (s : ω.substance) : s.up.subsists s.up := self_subsist.mp s.perfect
 
   @[simp]
-  lemma inheres_owner : a.inheres a.owner :=
+  lemma accident.inh_owner (a : ω.accident) : a.inheres a.owner :=
     by simp [accident.inheres, accident.owner, entity.subsists]
 
+  /-- An entity only subsists in a single substance -/
   lemma unique_subsists : e.subsists e₁ → e.subsists e₂ → e₁ = e₂ :=
     by intros h₁ h₂; simp [entity.subsists] at *; rwa h₁ at h₂
   
@@ -399,6 +407,15 @@ section subsistence_lemmas
       obtain ⟨⟨s₂, op₂, ne₂⟩, pe₂⟩ := s₂,
       simp [accident.inheres, entity.subsists] at *,
       rwa h₁ at h₂,
+    end
+
+  /-- Only accidents subsist in another entity distinct from themselves -/
+  lemma imperfect_of_subsists_other : e.subsists e₁ → e ≠ e₁ → e.imperfect :=
+    begin
+      intros h₁ h₂ h₃,
+      simp at h₃,
+      have c := unique_subsists h₃ h₁,
+      contradiction,
     end
 
   @[simp]
@@ -493,7 +510,7 @@ section accident_lemmas
       contradiction,
     end
 
-  -- All accidents are simple
+  /-- All accidents are simple. -/
   lemma accident.simple : a.up.simple := 
     begin
       simp,
@@ -612,16 +629,33 @@ section accident_lemmas
       if h : a.intrinsic then ~a else
       accident.extrinsic.internalize h
 
-    def accident.localize_exists {w : ω.world} : a.owner.exists w → (a.localize w).exists w := sorry
-    def accident.localize_inheres {w : ω.world} : (a.localize w).inheres a.owner := sorry
-    def accident.localize_intrinsic (w : ω.world) : (a.localize w).intrinsic := sorry
-
-  
+    lemma accident.localize_exists {w : ω.world} : a.owner.exists w → (a.localize w).exists w := sorry
+    lemma accident.localize_inheres (w : ω.world) : (a.localize w).inheres a.owner := sorry
+    lemma accident.localize_intrinsic (w : ω.world) : (a.localize w).intrinsic := sorry  
 
   end localize
 
 
 end accident_lemmas
+
+/-- The Fundamental Theorem of Composites states that any 
+    composite substance has an accident in any possible world in which it exists. -/
+theorem ftcomposites : ∀ (s : ω.substance), s.composite → ∀ w, s.exists w → 
+                       ∃ (a : ω.accident), a ∈ s.accidents ∧ a.exists w  :=
+  begin
+    intros s h₁ w h₂,
+    obtain ⟨a, ha⟩ := h₁,
+    use a.localize w,
+    simp [substance.accidents] at *,
+    have c₀ := a.localize_inheres w,
+    have c₁ : s = a.owner,
+      apply unique_inheres;
+      assumption <|> simp,
+    rw ←c₁ at c₀,
+    rw c₁ at h₂,
+    replace h₂ := a.localize_exists h₂,
+    exact ⟨c₀, h₂⟩,
+  end
 
 section simplicity_lemmas
 
