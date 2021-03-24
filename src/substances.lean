@@ -227,7 +227,7 @@ section substance_lemmas
   --   le_cInf := _ }
 
   --TODO: This proof requires some lemmas about the specialization order.
-  /-- Any possible world in which a substance does not exist can be enlarged
+  /- Any possible world in which a substance does not exist can be enlarged
       so as to contain the substance. -/
   -- lemma substance.addable (s : ω.substance) : -s.exists ⇒ s.up.addable := sorry
 
@@ -740,6 +740,16 @@ section accident_lemmas
         replace h₂ := a.localize_exists h₂,
         exact ⟨c₀, h₂⟩,
       end
+    
+    lemma nb_acc_actual : ω.nb.composite → ∀ w, ∃ (a : ω.accident), a ∈ ω.nb.accidents ∧ a.exists w  :=
+      begin
+        intros h w,
+        replace h := nb_intrinsic h,
+        replace h := icomposites_actual h w (by simp [nb]),
+        exact h,
+      end
+    
+
   end intrinsic
 
 
