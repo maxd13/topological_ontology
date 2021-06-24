@@ -476,7 +476,7 @@ section accidents
   def entity.composite := ¬ e.simple
   /-- A substance is called `simple` if it has no accidents. -/
   @[reducible, simp]
-  def substance.simple := s.accidents = ∅
+  def substance.simple := ¬ s.accidents.nonempty
   /-- Negation of `substance.simple`. -/
   @[reducible, simp]
   def substance.composite := s.accidents.nonempty
@@ -766,7 +766,7 @@ section simplicity_lemmas
       intro h,
       replace h := h.2,
       simp [is_preconnected] at h,
-      simp [ext_iff],
+      simp [set.nonempty],
       intros a c,
       specialize h a.exists a.exists.exterior,
       specialize h a.existential a.exterior.existential,
@@ -821,7 +821,7 @@ section simplicity_lemmas
       -- simp [set.nonempty] at c,
     end
 
-  lemma nb_simp_iff_connected : ω.nb.simple ↔ ω.nb.exists.connected :=
+  lemma nb_simple_iff_connected : ω.nb.simple ↔ ω.nb.exists.connected :=
     begin
       refine ⟨_, simple_of_connected ω.nb⟩,
       intro h,
@@ -844,7 +844,7 @@ section simplicity_lemmas
         rw inter_comm,
         apply dense_iff_inter_open.mp c₁; assumption,
       let ac₁ : ω.accident := ⟨⟨a₁, open_a₁, hw₁⟩, c₁⟩,
-      simp [substance.simple, ext_iff] at h,
+      simp [substance.simple, set.nonempty] at h,
       specialize h ac₁,
       by_contradiction contra,
       suffices c : ac₁.exists.clopen,
@@ -864,9 +864,9 @@ section simplicity_lemmas
 
   def connected (ω : ontology) := connected_space ω.world  
 
-  lemma nb_simp_iff_space_connected : ω.nb.simple ↔ ω.connected :=
+  lemma nb_simple_iff_space_connected : ω.nb.simple ↔ ω.connected :=
     begin
-      convert nb_simp_iff_connected,
+      convert nb_simple_iff_connected,
       simp [nb, nbe],
       constructor; intro h,
         obtain ⟨⟨h⟩,⟨w⟩⟩ := h,
