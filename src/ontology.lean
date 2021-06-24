@@ -199,6 +199,8 @@ section events
   @[reducible, simp]
   def event.clopen : Prop := is_clopen e
   @[reducible, simp]
+  def event.closed : Prop := is_closed e
+  @[reducible, simp]
   def event.compact : Prop := compact e
 
   -- necessity, possibility, impossibility, contingency
@@ -313,7 +315,7 @@ end event_lemmas
 -- We defer full philosophical explanation to the "Intensionality and Extensionality" section.
 section entities
  
-  /-- Particular (possible, extensional) `entities` in the ontology are nonempty open sets of possible worlds.
+  /-- Individual (possible, extensional) `entities` in the ontology are nonempty open sets of possible worlds.
       An entity is said to **exist** precisely at the worlds which are its elements. -/
   structure entity (ω : ontology) :=
     -- the event of the entity existing ("exists" is a reserved word)
@@ -327,6 +329,8 @@ section entities
   /-- Any groundable event `e` can be cast to an entity, 
       the existence of which is the ground of `e`. -/
   def event.entity (e : ω.event) (h : ⋄◾e) : ω.entity := ⟨◾e, is_open_interior, h⟩
+  /-- An event is entitative if it is both existential and possible. -/
+  def event.entitative (e : ω.event) : Prop := e.existential ∧ ⋄e
 
   /-- main extensionality lemma for entities. -/
   @[ext]
@@ -365,6 +369,19 @@ section entities
   -- #reduce λ (e₁ : ω.entity) (e₂ : ω.entity), e₁ ⇒ e₂
   -- #reduce λ (e₁ : ω.entity) (e₂ : ω.event), e₁ ⇒ e₂
   -- #reduce λ (e₁ : ω.entity) (e₂ : ω.event), e₂ ⇒ e₁
+
+  /-- The event of an entity being "removed" from a possible world. -/
+  def entity.removed (w : ω.world) : ω.event := 
+    {w' | e.exists w ∧ w' < w ∧ ¬ e.exists w'}
+  /-- The event of an entity being "added" to a possible world. -/
+  def entity.added (w : ω.world) : ω.event := 
+    {w' | ¬e.exists w ∧ w < w' ∧ e.exists w'}
+  /-- The set of all possible worlds from which an entity can be "removed". -/
+  def entity.removable : ω.event := 
+    {w | ⋄e.removed w}
+  /-- The set of all possible worlds to which an entity can be "added". -/
+  def entity.addable : ω.event := 
+    {w | ⋄e.added w}
 
   /-- The necessary being (entity) is the entity which exists in
       every possible world. -/
@@ -474,6 +491,12 @@ section worlds
   instance world.has_mem : has_mem ω.entity ω.world := ⟨λe w, w ∈ e.exists⟩
   @[reducible, simp]
   def world.entities := {e : ω.entity | e ∈ w}
+
+  @[reducible, simp]
+  def world.ideal : ω.event := {w' | w' ≤ w}
+  def world.filter : ω.event := {w' | w ≤ w'}
+  def nonparmenidean (ω : ontology) : ω.event := {w | ∃ e : ω.entity, e.contingent ∧ e.exists w}
+
 
   -- extensionality principle for possible worlds
   @[ext]
