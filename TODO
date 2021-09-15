@@ -1,0 +1,107 @@
+
+Define all causal principles (and their localized versions):
+    ☐ PSR (SUFFICIENT REASON)
+    ☐ LPSR
+    ☐ PC (CAUSALITY)
+    ☐ LPC
+    ☐ PAC (ACCIDENTAL CAUSALITY "all accidents have a cause")
+    ☐ LPAC 
+    ☐ TPC (THOMISTIC CAUSALITY)
+    ☐ LTPC
+    ☐ PPC (PROPORTIONATE CAUSALITY)
+    ☐ LPPC
+    ☐ PP (PLATONIC PRINCIPLE)
+    ☐ LPP
+    ☐ LF (LOCAL-FINITENESS)
+    ☐ LLF
+    ☐ PCF (CAUSAL FINITISM)
+    ☐ LPCF
+    ☐ PCS (principle of causal semantics)
+    ☐ PCB (principle of causal beginning)
+
+Define all finitistic principles:
+   ☐ UFINITISM (ULTRAFINITISM): "only a finite number of things exist (in each world)"
+   ☐ LUFINITISM (LOCAL ULTRAFINITISM): "the set of all possible worlds with a finite number of things in them"
+   ☐ WUFINITISM (WEAK ULTRAFINITISM): "it is possible that ..."
+   ☐ SFINITISM (SUBSTANTIAL FINITISM): "only a finite number of (X := substance) exist (in each world)"
+   ☐ LSFINITISM [LOCAL] hint: define the other finitisms in terms of this one, using defaults.
+   ☐ WSFINITISM [WEAK]
+   ☐ E5A (EUCLID'S 5TH AXIOM): "in any possible world, any set of actually existing things of kind (X := substance) 
+                                 has a strictly larger cardinality than a proper part of itself."
+   ☐ LE5A [LOCAL]
+   ☐ WE5A [WEAK]
+
+Prove equivalences between the principles:
+   ☐ (Intersection of X, LSFINITISM X) = LUFINITISM
+   ☐ (Intersection of X, LSFINITISM X) = LSFINITISM entity
+   ☐ (For all X, SFINITISM X) iff UFINITISM
+   ☐ (For all X, SFINITISM X) iff SFINITISM entity
+   ☐ LE5A X = LSFINITISM X (call this the dedekind-moorean-shift theorem)
+   ☐ E5A X iff SFINITISM X
+   ☐ SFINITISM implies PCF
+   ☐ PCF implies PP
+
+Prove the following theorems:
+   ☐ `Conjunctive_1'` + PSR + Zorn -> PP for substrata (reifying chains).
+      In a world w, take a substrata x which has a cause, and consider the partial
+      order under causation of all the events which cause x in w; because x is a substrata, these events
+      must occur in w. Then apply Zorn's lemma and take a chain of events in this partial order,
+      and we can then proceed by cases.
+      1. If the chain only has a single element, then trivially it has an upper bound.
+      2. If the chain has more than one element, then the conjunction of the whole chain, 
+         must be a contingent event, since the chain occurs at least in w, but in at least
+         some other world one some event in the chain doesn't occur, and hence the chain doesn't occur.
+      3. Therefore, by the PSR, this event has a cause c.
+      4. Therefore also by `Conjunctive_1` this cause c needs to be a cause also of any contingent event
+         in the chain, since the chain event can be expressed as the conjunction of itself with any
+         contingent event in the chain.
+      5. Then if the chain only contains contingent elements, c is an upper bound of the chain.
+      6. But if the chain contains a necessary element, then either this is the greatest element of the
+         chain or not.
+      7. But if it is the greatest element of the chain, it is an upper bound of the chain.
+      8. And if it is in the middle of the chain, then it has some cause y in the chain which is contingent.
+      9. But then because c is the cause of all contingent events in the chain, it must be the cause of y,
+         and hence, by transitivity, it must also be the cause of the necessary element. Hence c is an
+         upper bound of the whole chain.
+      This concludes the proof.
+   ☐ TPC -> PSR
+   ☐ Nothing can be the cause of its accidents (external cause) -> NOGAP
+   ☐ PPC + TPC -> NOGAP
+   ☐ PCS + PCB -> PS or There is a first cause
+      Take a 
+   
+
+
+specify conjectures:
+   Finitism: 
+      ☐ There exists a common ultrafinitistic ontology
+      ☐ There exists a common substantially finitistic ontology (weaker than the above)
+      ☐ What is the largest general class of entities X for which an X-finitistic common ontology exists?
+      ☐ Solve these conjectures also under the assumption the ontology is Alexandroff.
+   Essence:
+      ☐ Two substances have the same essence if and only if their state spaces are homeomorphic.
+      ☐ If not, how can the definition of essence be changed so as to make it so?
+
+Define eminence: 
+
+3. Define agent causality, instrumental causality (extras).
+4. Revise definition of 4 causes (extra).
+5. Define grounding, groundability of an event (use box notation).
+   1. An event is groundable if its interior is nonempty.
+   2. The ground (or ontological counterpart) of an event is its interior.
+6. Define real and virtual entities relative to an intensional ontology.
+7. Define prime, strongly prime, and absolutely real entities.
+   1. An entity is prime if it cannot be written as the arbitrary union of a collection of entities to which it doesn't belong, nor as the (finite) intersection of entities distinct from itself.
+   2. A prime entity is strongly prime if it cannot be written as the arbitrary intersection of a collection of entities to which it doesn't belong.
+   3. An entity is absolutely real if it is real regardless of the choice of background intensional ontology.
+8. Prove all prime entities are absolutely real.
+9. Prove God is prime under classical theism (actually ctheism is logically equivalent to this).
+10. Turn this file into a proper todo list.
+11. Define proper notation for existential entailment and the truthmaker modalities.
+12. Modularize substances and properties into their own files.
+13. Modularize natural theology into its own folder.
+14. Modularize causality into its own folder.
+15. Modularize advanced notions of intensionality into its own module and namespace.
+16. Develop fuzzy set theory in the math modules and the theory of avents in ontology.lean
+17. Use avents to discuss analogy and univocity for monadic properties.
+18. 
