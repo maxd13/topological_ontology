@@ -17,6 +17,8 @@ structure event.factor (e : ω.event) :=
 
 def cause.dircauses (e₁ : ω.event) {e₂ : ω.event} (f : e₂.factor) := c.simcauses e₁ f.begins
 
+def event.factor.direct {e₂ : ω.event} (f : e₂.factor) (c : ω.cause) := c.substratum f.begins
+
 def cause.indcauses (e₁ : ω.event) {e₂ : ω.event} (f : e₂.factor) := 
   (c.causes e₁ f.begins) ∩ -(c.simcauses e₁ f.begins)
 
@@ -31,10 +33,8 @@ def cause.noninertial (c : ω.cause) {e : ω.event} (f : e.factor) : Prop :=
 def cause.inertial (c : ω.cause) {e : ω.event} (f : e.factor) : Prop := ¬ c.noninertial f
 
 structure cause.tfactor (c : ω.cause) {e : ω.event} (f : e.factor) : Prop:=
-  (axiom₁ : c.substratum f.begins)
-  (axiom₂ : ∀ ca, f.begins ⇒ c.causes ca f.begins ≡ c.causes ca e)
-  (axiom₃ : ∀ ca, f.continues ⇒ c.causes ca f.continues ≡ c.causes ca e)
-
+  (axiom₁ : ∀ ca, f.begins ⇒ c.causes ca f.begins ≡ c.causes ca e)
+  (axiom₂ : ∀ ca, f.continues ⇒ c.causes ca f.continues ≡ c.causes ca e)
 
 def cause.pind₁ {e : ω.event} (f : e.factor) : Prop := 
   c.tfactor f ∧
@@ -42,57 +42,70 @@ def cause.pind₁ {e : ω.event} (f : e.factor) : Prop :=
 
 -- def cause.pind₂ : Prop := 
 
-/-- An event is said to be **Weakly Non-Inertially Temporally Factorizable**
-    if it admits a weakly non-inertial temporal factorization (Duh). -/
-def cause.wnitf (c : ω.cause) (e : ω.event) := ∃ f : e.factor, c.tfactor f ∧ c.wnoninertial f
+def cause.pcem (c : ω.cause) {c' : ω.cause} (mc : c'.mcause) : ω.event :=
+  {w | ∀ e : ω.entity, c'.caused e w → ∃ f : e.exists.factor, c.tfactor f ∧ f.direct c ∧
+    ∀ ca mca, c.causes ca f.continues ⇒ c'.causes mca e ▹ c.causes ca mca
+  }
+
+/-- An event is said to be **Weakly Directly Non-Inertially Temporally Factorizable**
+    if it admits a direct weakly non-inertial temporal factorization (Duh). -/
+def cause.wdnitf (c : ω.cause) (e : ω.event) := ∃ f : e.factor, f.direct c ∧ c.tfactor f ∧ c.wnoninertial f
+
+/-- An event is said to be **Directly Non-Inertially Temporally Factorizable**
+    if it admits a direct non-inertial temporal factorization (Duh). -/
+def cause.dnitf (c : ω.cause) (e : ω.event) := ∃ f : e.factor, f.direct c ∧ c.tfactor f ∧ c.noninertial f
+
+/-- An event is said to be **Directly Temporally Factorizable**
+    if it admits a direct temporal factorization (Duh). -/
+def cause.dtf (c : ω.cause) (e : ω.event) := ∃ f : e.factor, f.direct c ∧ c.tfactor f
 
 def cause.direct' : ω.event :=
-  {w | ∀ e : ω.event, e.occurs w → ∃ f : e.factor, c.tfactor f}
+  {w | ∀ e : ω.event, e.occurs w → c.dtf e}
 
 def cause.direct : ω.event :=
-  {w | ∀ e : ω.entity, e.exists w → ∃ f : e.exists.factor, c.tfactor f}
+  {w | ∀ e : ω.entity, e.exists w → c.dtf e}
 
 def cause.nidirect : ω.event :=
-  {w | ∀ e : ω.entity, e.exists w → ∃ f : e.exists.factor, c.tfactor f ∧ c.noninertial f}
+  {w | ∀ e : ω.entity, e.exists w → c.dnitf e}
 
-def cause.wnidirect : ω.event :=
-  {w | ∀ e : ω.entity, e.exists w → c.wnitf e}
+def cause.wdnidirect : ω.event :=
+  {w | ∀ e : ω.entity, e.exists w → c.wdnitf e}
 
 
--- lemma wnitf_lemma : c.ps (λe, c.wnitf e) :=
+-- lemma wdnitf_lemma : c.ps (λe, c.wnitf e) :=
 --   begin
 
 --   end
 
-lemma quasi_simultaneity_of_wnidirect : □c.wnidirect → c.ps univ :=
-  begin
-    intro h,
-    simp [ext_iff] at h,
-    simp [cause.ps, ext_iff, cause.eps],
-    intros w₁ e₁ aux h₁ e₂ w₂ h₂,
-    clear aux h₁ w₁,
-    have c₀ := c.occured_causes h₂,
-    specialize h w₂ e₁ c₀,
-    obtain ⟨f, hf₁, hf₂⟩ := h,
-    unfold_coes at h₂,
-    by_cases h : f.begins w₂,
-      have c := hf₁.axiom₂ e₂ h,
-      replace c := c.2,
-      unfold_coes at c,
-      simp [h₂] at c,
-      replace c := hf₁.axiom₁ e₂ c,
-      exact c,
-    rw ←f.factor at c₀,
-    simp at c₀,
-    cases c₀, contradiction,
-    clear h,
-    replace c₀ := hf₁.axiom₃ e₂ c₀,
-    replace c₀ := c₀.2,
-    unfold_coes at c₀,
-    simp [h₂] at c₀,
-    replace hf₂ := hf₂ e₂ c₀,
-    exact hf₂,
-  end
+-- lemma quasi_simultaneity_of_wnidirect : □c.wdnidirect → c.ps univ :=
+--   begin
+--     intro h,
+--     simp [ext_iff] at h,
+--     simp [cause.ps, ext_iff, cause.eps],
+--     intros w₁ e₁ aux h₁ e₂ w₂ h₂,
+--     clear aux h₁ w₁,
+--     have c₀ := c.occured_causes h₂,
+--     specialize h w₂ e₁ c₀,
+--     obtain ⟨f, hf₁, hf₂⟩ := h,
+--     unfold_coes at h₂,
+--     by_cases h : f.begins w₂,
+--       have c := hf₁.axiom₂ e₂ h,
+--       replace c := c.2,
+--       unfold_coes at c,
+--       simp [h₂] at c,
+--       replace c := hf₁.axiom₁ e₂ c,
+--       exact c,
+--     rw ←f.factor at c₀,
+--     simp at c₀,
+--     cases c₀, contradiction,
+--     clear h,
+--     replace c₀ := hf₁.axiom₃ e₂ c₀,
+--     replace c₀ := c₀.2,
+--     unfold_coes at c₀,
+--     simp [h₂] at c₀,
+--     replace hf₂ := hf₂ e₂ c₀,
+--     exact hf₂,
+--   end
 
 lemma eps_stronger : c.eps ⇒ c.epcs ∩ c.epsc :=
   begin
@@ -139,7 +152,7 @@ theorem aquinas_second (h' : c.entitative) : c.epcs ∩ c.epsc ∩ c.epc ∩ (c.
     let e : ω.entity := ⟨ee, h₅, nonempty_of_mem h₆⟩,
     have c₁ := pc e _ h₆, swap,
       simp [nbe], assumption,
-    have c₂ := pp _ c₁, swap,
+    have c₂ := pp e _ c₁, swap,
       exact @h₃,
     obtain ⟨ge, hg, cg⟩ := c₂,
     specialize h₃ ge cg,
@@ -154,7 +167,7 @@ theorem aquinas_second (h' : c.entitative) : c.epcs ∩ c.epsc ∩ c.epc ∩ (c.
     contradiction,
   end
 
-theorem aquinas_second_psr : c.epcs ∩ c.epsc ∩ c.epsr ∩ (c.epp (λe, c.substratum e)) ⇒ c.first_cause ω.nbe :=
+theorem aquinas_second_psr : (c.epcs (@entity.contingent ω) univ) ∩ (c.epsc univ) ∩ c.epsr ∩ (c.epp' (λe, c.substratum e)) ⇒ c.first_cause ω.nbe :=
   begin
     rintro w ⟨⟨⟨h₁, h₂⟩, psr⟩, pp⟩,
     by_cases h : ∃ e : ω.entity, e.contingent ∧ e.exists w, swap,
@@ -162,7 +175,7 @@ theorem aquinas_second_psr : c.epcs ∩ c.epsc ∩ c.epsr ∩ (c.epp (λe, c.sub
     specialize h₁ h, clear h,
     specialize h₂ h₁ univ, clear h₁,
     suffices c₀ : ∀ (su : event ω), cause.csubstratum c su →
-                 su ≠ univ → event.existential su →
+                 su ≠ univ → univ su →
                  event.occurs su w → cause.causes c univ su w,
       specialize h₂ c₀,
       simp [cause.first_cause, nbe],
@@ -172,13 +185,13 @@ theorem aquinas_second_psr : c.epcs ∩ c.epsc ∩ c.epsr ∩ (c.epp (λe, c.sub
       replace h₄ := ne.symm h₄,
       apply h₂; try{assumption},
         exact ⟨e.possible, h₄⟩,
-      exact e.existential,
+      trivial,
     clear h₂,
     intros ee h₃ h₄ h₅ h₆,
     replace h₃ := h₃.2,
-    let e : ω.entity := ⟨ee, h₅, nonempty_of_mem h₆⟩,
-    have c₁ := psr e ⟨nonempty_of_mem h₆,h₄⟩ h₆,
-    have c₂ := pp _ c₁, swap,
+    -- let e : ω.entity := ⟨ee, h₅, nonempty_of_mem h₆⟩,
+    have c₁ := psr ee ⟨nonempty_of_mem h₆,h₄⟩ h₆,
+    have c₂ := pp ee _ c₁, swap,
       exact @h₃,
     obtain ⟨g, hg, cg⟩ := c₂,
     specialize h₃ g cg,
@@ -195,9 +208,39 @@ theorem aquinas_second_psr : c.epcs ∩ c.epsc ∩ c.epsr ∩ (c.epp (λe, c.sub
 theorem scotus_second (h' : c.entitative) : ⋄(c.epcs ∩ c.epsc ∩ c.epc ∩ (c.epp (λe, c.substratum e))) → c.dscotus :=
   c.scotus_theorem $ aquinas_second c @h'
 
-theorem scotus_second_psr : ⋄(c.epcs ∩ c.epsc ∩ c.epsr ∩ (c.epp (λe, c.substratum e))) → c.dscotus :=
+theorem scotus_second_psr : ⋄((c.epcs (@entity.contingent ω) univ) ∩ (c.epsc univ) ∩ c.epsr ∩ (c.epp' (λe, c.substratum e))) → c.dscotus :=
   c.scotus_theorem $ aquinas_second_psr c
 
+
+-- theorem material_substratum : ∀ {c' : ω.cause} (mc : c'.mcause), c.pcem mc ∩ mc.pis c ⇒ c.epcs (@entity.contingent ω) univ :=
+--   begin
+--     rintros c' mc w ⟨hw₁,hw₂⟩ ⟨e,he₁,he₂⟩,
+--     by_cases h : mc.immaterial e w,
+--       specialize hw₂ e h,
+--       refine ⟨e, by trivial, _⟩,
+--       refine ⟨he₂, _, hw₂⟩,
+--       unfold_coes,
+--       simp [nbe] at he₁,
+--       exact ⟨e.possible, he₁⟩,
+--     simp [cause.mcause.immaterial] at h,
+--     replace h : ¬c'.uncaused e.exists w,
+--       by_contradiction h₀,
+--       apply h,
+--       exact ⟨he₂,h₀⟩,
+--     simp [cause.uncaused, cause.caused] at h,
+--     simp [has_neg.neg, compl, set_of, has_mem.mem, set.mem] at h,
+--     obtain ⟨m, hm⟩ := h,
+--     replace hm := c'.caused_causes hm,
+--     specialize hw₁ e hm,
+--     obtain ⟨f, hf₁, hf₂, h⟩ := hw₁,
+    
+    -- use f.continues,
+    -- push_neg at h,
+      
+    -- unfold_coes at h,
+    -- simp [set_of] at h,
+    
+  -- end
 
 theorem leibniz_psr (h : c.conjunctive₁') : c.epsr ∩ c.epss ⇒ c.first_cause ω.nbe :=
   begin
@@ -255,9 +298,10 @@ theorem atheological_hylemorphism : (∃ c : ω.cause, ⋄(c.uhylemorphism ∩ �
           simp [accident.owner, nb] at h₁,
           intro theism,
           simp [ontology.theism, ext_iff] at theism,
-          specialize theism a,
-          simp [accident.inheres, entity.subsists] at theism,
-          contradiction,
+          apply theism,
+          refine ⟨a, _⟩,
+          simp [accident.inheres, entity.subsists, nb],
+          exact h₁,
         left,
         use a.owner,
         refine ⟨h₁,_⟩,
@@ -307,6 +351,21 @@ theorem atheological_hylemorphism : (∃ c : ω.cause, ⋄(c.uhylemorphism ∩ �
       exact imperfect_of_subsists_other h₄ h₅,
     exact ⟨a, h₄⟩,
   end
+
+theorem theological_hylemorphism : ∀ (c' : ω.cause) (mc : c'.mcause), -c'.uhylemorphism ∩ mc.pis c ⇒ c.epcs :=
+  begin
+    rintros c' mc w ⟨h₁, h₂⟩,
+    simp [cause.uhylemorphism, mc, cause.epc] at h₁,
+    simp [set_of, has_mem.mem, set.mem] at h₁,
+    obtain ⟨e, h₁, h₃, h₄, h₅⟩ := h₁,
+    have c : mc.immaterial e w := ⟨h₄, h₅⟩,
+    specialize h₂ e c,
+    intro aux, clear aux,
+    refine ⟨e.exists, e.existential, h₄, ⟨_,h₂⟩⟩,
+    simp [nbe] at h₃,
+    exact ⟨e.possible, h₃⟩,
+  end
+
 
 -- The leibnizian version of a weakened version of Aquina's second way.
 -- Possibly the weakest argument anyone can give for the existence of God.
@@ -552,10 +611,10 @@ theorem ctheism_of_contingency : ω.contingency_contingent → ω.ctheism :=
             We are not here committed to either.
 
     8. (Premisse) Given any possible world `w`,
-        there must exist some world `w'` which is either strictly"larger" (`>`) than `w`, 
+        there must be some world `w'` which is either strictly"larger" (`>`) than `w`, 
         or strictly "smaller" (`<`) than `w` (`ω.viable`).
 
-        8.1. What `w < w'` means is that every entity which exists at `w` also exists at `w`, but not vice-versa.
+        8.1. What `w < w'` means is that every entity which exists at `w` also exists at `w'`, but not vice-versa.
         8.2. See the definition of `ω.viable`, as well as the definitions of `specialization_order`
              and `specialization` (currently defined) at alexandroff.lean for further
              details on what "larger" and "smaller" mean.
@@ -564,7 +623,7 @@ theorem ctheism_of_contingency : ω.contingency_contingent → ω.ctheism :=
     we pack them all together into the `ω.participated : Prop` definition. It turns
     out that it suffices to assume that it is logically consistent for there to be
     an `b : ω.being` with the aforementioned properties to prove `ω.ctheism`.
-    The definition `ω.participated` can then reduces to our 4 premisses as the
+    The definition `ω.participated` can then reduce to our 4 premisses as the
     following example shows:
     
     example : ω.participated = ∃ b : ω.being, b.composable ∧ b.ecaused ∧ b.eexemplary := 
