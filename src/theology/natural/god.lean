@@ -30,7 +30,22 @@ section theism
 
   /-- this is a not so trivial proof that if the nb exists alone,
       then it has no accidents, because accidents are contingent. -/
-  @[simp] lemma theism_of_ctheism {ω : ontology} : ω.ctheism → ω.theism := sorry
+  @[simp] lemma theism_of_ctheism {ω : ontology} : ω.ctheism → ω.theism :=
+    begin
+      rintros ⟨w, hw⟩,
+      dunfold theism,
+      by_contradiction h,
+      replace h : ω.nb.composite,
+        simp at h, simp [h],
+      replace h := nb_acc_actual h w,
+      obtain ⟨a, ha₁, ha₂⟩ := h,
+      have ha₃ := a.contingent,
+      simp at ha₃,
+      specialize hw a ω.nb ha₂ (by simp [nb, nbe]),
+      unfold_coes at hw,
+      simp [nb] at hw,
+      contradiction,
+    end
 
   /-- **Greek Theism** is non-classical theism. -/
   def greek_theism := ω.theism ∧ ¬ ω.ctheism
@@ -71,7 +86,7 @@ section divine_properties
   
   /-- Only the necessary being can be purely actual, 
       in which case theism follows. -/
-  def eq_nb_of_purely_actual : s.purely_actual → s.necessary :=
+  theorem eq_nb_of_purely_actual : s.purely_actual → s.necessary :=
   begin
       intros h,
       simp [substance.purely_actual] at h,
@@ -84,25 +99,35 @@ section divine_properties
       exact exists_iff_in_state.2 hw₂,
   end
 
-  theorem simple_of_purely_actual : s.purely_actual → s.simple := sorry
+  theorem simple_of_purely_actual : s.purely_actual → s.simple :=
+    begin
+      intro h₀,
+      by_contradiction h,
+      simp [set.nonempty, accident.inheres] at h,
+      obtain ⟨a, ha⟩ := h,
+      obtain ⟨w₁, hw₁⟩ := a.possible,
+      have h := a.contingent,
+      simp [nb, nbe, ext_iff] at h,
+      obtain ⟨w₂, hw₂⟩ := h,
+      specialize h₀ w₁ w₂,
+      simp [substance.state, ext_iff] at h₀,
+      specialize h₀ a,
+      unfold_coes at h₀,
+      simp [ha, hw₁, hw₂] at h₀,
+      contradiction,
+    end
 
   theorem theism_iff_purely_actual : ω.theism ↔ ∃ s : ω.substance, s.purely_actual := sorry
 
   -- Then we discuss causal properties which properly belong to the divine being:
   variable (c : ω.cause)
-  
-  /-- An entity is a **First Cause** in some possible world `w` if it is the cause 
-      of every other entity existing in `w` (except itself). -/
-  def cause.first_cause : ω.event := 
-    {w | ∀ e' ∈ w, e ≠ e' → c.causes e e' w}
-  
-  def cause.omnipotent : Prop := □c.first_cause e 
 
   /-- A a causal structure `c` is **principled** (in the sense that it emanates from 
       a necessary first principle) just in case the necessary being can possibly be a `first_cause`
       with respect to `c`. Proofs that a causal structure is principled are called
       **(stage 1) cosmological arguments**. -/
-  def cause.principled : Prop := ⋄c.first_cause ω.nbe
+  @[reducible, simp, alias]
+  def cause.principled : Prop := c.dscotus
 
   /-- The *first gap problem* is showing that if 
       the necessary being is a first cause of all 
@@ -171,6 +196,15 @@ section theos
       rw g'_necessary,
     end
 
+  /-- God is a fixed point of any possessed property He may possibly exemplify.
+      As such we say that He is his Omnipotence, His Omniscience, His benevolence,
+      and whatever else is predicated of Him, *in the precise and non-paradoxical sense*
+      that the *event* of God being, e.g. Omnipotent is the *event* of God existing,
+      and also the *event* of Him being Omniscient, etc...
+      This would actually be valid for any simple substance as well.
+      -/
+  theorem divine_simplicity : ∀ p : ω.predicate, p.possessed → ⋄p g.s → p g.s = g.s.exists := sorry
+
   /-- God is maximally perfect w.r.t. any analogy of being. -/
   theorem theos.maximally_perfect : ∀ (g : ω.theos) (b : ω.being), g.s.up.mperfect b.is := sorry
 
@@ -196,7 +230,7 @@ section god
           specialize hw _, swap,
             exact entails_of_inheres a.inh_owner he,
           have c₁ := a.inh_owner, rw hw at c₁,
-          have c₂ := g.simple, simp [substance.simple, ext_iff] at c₂,
+          have c₂ := g.simple, simp [substance.simple, set.nonempty] at c₂,
           specialize c₂ a,
           contradiction,
         have c₁ := c₀ e₁ h₁,
@@ -247,9 +281,6 @@ section god
   /-- God is absolutely real. -/
   theorem god.absolutely_real : g.s.up.absolutely_real := sorry
 
-  -- set_option pp.implicit true
-  -- set_option pp.all true
-
   theorem ctheism_of_no_universe : (¬∃ e : ω.entity, e.contingent) → ω.ctheism :=
     begin
       intro h,
@@ -259,6 +290,18 @@ section god
       intros e₁ e₂ h₁ h₂, clear h₁ h₂,
       rw h e₁,
       rw h e₂,
+    end 
+  
+  theorem ctheism_of_no_universe₂ : ∀ {w}, (¬∃ e : ω.entity, e.contingent ∧ e.exists w) → ω.ctheism :=
+    begin
+      intros w h,
+      push_neg at h,
+      use w,
+      intros e₁ e₂ h₁ h₂,
+      have c₁ := h e₁,
+      have c₂ := h e₂,
+      simp [h₁,h₂] at *, clear h h₁ h₂,
+      rw c₁, rw c₂,
     end 
 
   /-- If there are contingent substances, `ω.ctheism` is true
@@ -315,7 +358,7 @@ section god
     theorem to_be_is_to_be_caused_by_god : c.causes g.s e = e := sorry
     theorem creation_preceeds_matter : ¬∃ context : ω.event, c.causes g.s e ⇒ context ∧
                                         c.causes g.s e ≠ context ∧ ¬□context := sorry
-    theorem god.free : c.is_free g.s := sorry
+    -- theorem god.free : c.is_free g.s := sorry
 
 
   end power_and_will
