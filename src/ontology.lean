@@ -343,6 +343,9 @@ section entities
 
   variables (e e₁ e₂ : ω.entity)
 
+  lemma entity_exists_inj : function.injective (@entity.exists ω) :=
+    λ e₁ e₂, @entity_ext ω e₁ e₂
+
   /-- Two entities are said to be `contrary` if there is no possible world
       in which both exist together.
       they are otherwise said to be `compatible`. -/
@@ -394,6 +397,9 @@ section entities
   /-- An entity is `necessary` if it is the necessary being. -/
   @[reducible, simp]
   def entity.necessary := e = ω.nbe
+
+  @[reducible, simp]
+  def entity.compact := e.exists.compact
 
   /-- Use `□e` for "`e` is necessary" -/
   @[reducible, simp]
@@ -739,12 +745,9 @@ section realism
 
 end realism
 
--- We discuss prime entities and how the topological notion of (sub-)basis relates to iontologies.
--- TODO: define different notions prime entities  
--- and prove equivalences between this notion, the notion of belonging to sub-basis,
--- and the notion of reality.
-section prime
 
+-- additional auxiliary lemmas involving compact events and entities
+section compact
   -- It is annoying that mathlib doesn't export this
   -- sort of lemma using sets of sets instead of set families.
   lemma event.compact.elim {e : ω.event} : e.compact → (∀ (S : set ω.event), 
@@ -771,12 +774,77 @@ section prime
       exact h₃,
     end
 
-  lemma ecompact_elim {e : ω.entity} : e.exists.compact → (∀ {S : set ω.entity}, S.nonempty →
+  lemma entity.compact.elim {e : ω.entity} : e.compact → (∀ {S : set ω.entity}, S.nonempty →
                                                          e ⇒ Sup S →
                                                          ∃ s : set ω.entity, s.nonempty ∧ s ⊆ S ∧ finite s ∧ e ⇒ Sup s)
-                                                         := sorry
+                                                         :=
+  begin
+    intros h S hS he,
+    simp [Sup, hS, entity_Sup, has_entailment.entails] at he,
+    have c := h.elim (entity.exists '' S),
+    specialize c _, swap,
+      intros i hi,
+      simp at hi,
+      obtain ⟨x, _, hx⟩ := hi,
+      rw ←hx, exact x.existential,
+    specialize c _, swap,
+      simp [has_entailment.entails],
+      exact he,
+    obtain ⟨s, hs₁, hs₂, hs₃⟩ := c,
+    have sne : s.nonempty,
+      simp [sUnion, set.subset] at hs₃,
+      obtain ⟨w, hw⟩ := e.possible,
+      obtain ⟨ev, hev,_⟩ := hs₃ hw,
+      exact ⟨ev, hev⟩,
+    replace sne : {e : ω.entity | e.exists ∈ s}.nonempty,
+      obtain ⟨ev, hev⟩ := sne,
+      have c := hs₁ hev, simp [image] at c,
+      obtain ⟨e',_, he'⟩ := c,
+      rw ←he' at hev,
+      exact ⟨e', hev⟩,
+    refine ⟨{e | e.exists ∈ s}, sne, _⟩,
+    constructor,
+      intros e' he', simp at he',
+      have c := hs₁ he', simp [image] at c,
+      obtain ⟨e'', goal, eq⟩ := c,
+      replace eq := (entity_ext_iff e'' e').2 eq,
+      rwa ←eq,
+    constructor,
+      set S' := {e : ω.entity | e.exists ∈ s},
+      have c : entity.exists '' S' = s,
+        simp [image],
+        ext, constructor; intro hyp,
+          simp at hyp,
+          obtain ⟨_, _, hyp⟩ := hyp,
+          rwa ←hyp,
+        simp,
+        have c := hs₁ hyp, simp [image] at c,
+        obtain ⟨e', _, eq⟩ := c,
+        rw ←eq at hyp,
+        exact ⟨e', hyp, eq⟩,
+      have c₁ := entity_exists_inj.inj_on S',
+      apply finite_of_finite_image c₁,
+      rwa c,
+    simp [Sup, sne, entity_Sup, has_entailment.entails, set.subset],
+    simp [has_entailment.entails, sUnion, set.subset] at hs₃,
+    intros w hw,
+    obtain ⟨ev, hev₁,hev₂⟩ := hs₃ hw,
+    specialize hs₁ hev₁, simp [image] at hs₁,
+    obtain ⟨e', aux, he'⟩ := hs₁, clear aux,
+    rw ←he' at hev₁,  
+    rw ←he' at hev₂,
+    exact ⟨e', hev₁, hev₂⟩,
+  end
 
-  variables (e : ω.entity) (b : set ω.entity)
+end compact
+
+-- We discuss prime entities and how the topological notion of (sub-)basis relates to iontologies.
+-- TODO: define different notions prime entities  
+-- and prove equivalences between this notion, the notion of belonging to sub-basis,
+-- and the notion of reality.
+section prime
+
+  variables (e : ω.entity)
 
   /-- An entity `e` is said to be **meet prime** if 
       for any entities `e₁, e₂` whose
@@ -796,61 +864,82 @@ section prime
       in the partial order of opens being prime. -/
   def entity.jprime := ∀ ⦃e₁ e₂ : ω.entity⦄, (e ⇒ e₁ ⊔ e₂) → (e ⇒ e₁ ∨ e ⇒ e₂)
 
-  def entity.jprime.induction {e : ω.entity} : e.jprime → ∀ {S : set ω.entity}, S.nonempty →
-                               finite S → e ⇒ Sup S → ∃ e₂ ∈ S, e ⇒ e₂ :=
-  begin
-    intros h₀ S ne h₁,
-    revert ne,
-    apply h₁.induction_on,
-      simp, intro h,
-      simp [set.nonempty] at h,
-      contradiction,
-    intros e₂ s h₃ h₄ h₅ h₆ h₇,
-    simp [Sup, h₆] at *,
-    simp [has_entailment.entails] at *,
-    clear h₆,
-    by_cases c : s.nonempty, swap,
-      replace c := not_nonempty_iff_eq_empty.mp c,
-      simp [entity_Sup] at h₇,
-      rw c, rw c at h₇, simp at h₇,
-      exact ⟨e₂, by simp, h₇⟩,
-    specialize h₅ c,
-    simp [c] at h₅,
-    simp [entity.jprime, entity_sup] at h₀,
-    simp [has_entailment.entails] at h₀,
-    have aux : entity_Sup (insert e₂ s) h₆ = e₂ ⊔ entity_Sup s c, 
-      admit,
-    rw aux at h₇,
-    specialize h₀ h₇,
-    cases h₀, exact ⟨e₂, by simp, h₀⟩,
-    specialize h₅ h₀,
-    obtain ⟨x, hx₁, hx₂⟩ := h₅,
-    exact ⟨x, by simp [hx₁], hx₂⟩,
-  end
-
   /-- An entity is **completely join prime** if it is join prime and compact. -/
-  def entity.cjprime := e.jprime ∧ e.exists.compact
+  def entity.cjprime := e.jprime ∧ e.compact
 
-  /-- An entity is **absolutely basic** if it belongs to every topological basis
+  /-- An entity `e` is said to be **prime** if it is both join prime and meet prime. -/
+  def entity.prime := e.jprime ∧ e.mprime
+
+  /-- An entity `e` is said to be **completely prime** if it is both prime and compact. -/
+  def entity.cprime := e.prime ∧ e.compact
+  
+  /-- An entity is said to be **absolutely basic** if it belongs to every topological basis
       of open sets. -/
-  def entity.abasic := ∀ (B : set ω.event), is_topological_basis B → e.exists ∈ B
+  def entity.abasic := ∀ {B : set ω.event}, is_topological_basis B → e.exists ∈ B
 
-  def entity.uncoverable := ∀ (S : set ω.entity), S.nonempty → e ⇒ Sup S → ∃ e₂ ∈ S, e ⇒ e₂
+  /-- An entity is said to be **absolutely sub-basic** if it belongs to every topological sub-basis
+      of open sets. -/
+  def entity.asubasic := ∀ {B : set ω.event}, ω.t = generate_from B → e.exists ∈ B
+  
+  /-- An entity `e` is said to be **uncoverable** if all of its open covers contain a superset of `e`.
+      Notice that if the cover is a subset cover this implies that the cover must contain `e`,
+      so any cover of `e` by its subsets must be trivial in this sense. -/
+  def entity.uncoverable := ∀ {S : set ω.entity}, S.nonempty → e ⇒ Sup S → ∃ e₂ ∈ S, e ⇒ e₂
+  
+end prime
+
+section prime_lemmas
+  variables (e : ω.entity)
+
+  lemma entity.jprime.induction {e : ω.entity} : e.jprime → ∀ {S : set ω.entity}, S.nonempty →
+                              finite S → e ⇒ Sup S → ∃ e₂ ∈ S, e ⇒ e₂ :=
+    begin
+      intros h₀ S ne h₁,
+      revert ne,
+      apply h₁.induction_on,
+        simp, intro h,
+        simp [set.nonempty] at h,
+        contradiction,
+      intros e₂ s h₃ h₄ h₅ h₆ h₇,
+      simp [Sup, h₆] at *,
+      simp [has_entailment.entails] at *,
+      clear h₆,
+      by_cases c : s.nonempty, swap,
+        replace c := not_nonempty_iff_eq_empty.mp c,
+        simp [entity_Sup] at h₇,
+        rw c, rw c at h₇, simp at h₇,
+        exact ⟨e₂, by simp, h₇⟩,
+      specialize h₅ c,
+      simp [c] at h₅,
+      simp [entity.jprime, entity_sup] at h₀,
+      simp [has_entailment.entails] at h₀,
+      have aux : entity_Sup (insert e₂ s) h₆ = e₂ ⊔ entity_Sup s c, 
+        simp [entity_Sup, entity_sup],
+      rw aux at h₇,
+      specialize h₀ h₇,
+      cases h₀, exact ⟨e₂, by simp, h₀⟩,
+      specialize h₅ h₀,
+      obtain ⟨x, hx₁, hx₂⟩ := h₅,
+      exact ⟨x, by simp [hx₁], hx₂⟩,
+    end
 
   lemma cjprime_iff_uncoverable : e.cjprime ↔ e.uncoverable :=
     begin
       constructor; intro h,
         obtain ⟨pe, ce⟩ := h,
         intros S neS hS,
-        replace ce := ecompact_elim ce neS hS,
+        replace ce := ce.elim neS hS,
         obtain ⟨s, sne, h₁, h₂, h₃⟩ := ce,
         replace pe := pe.induction sne h₂ h₃,
         obtain ⟨e₂, h₄, h₅⟩ := pe,
         exact ⟨e₂, h₁ h₄, h₅⟩,
       admit,
         -- simp [image] at ce,
-
     end
+
+  lemma asubasic_iff_cprime : e.asubasic ↔ e.cprime := sorry
+  lemma absolutely_real_iff_asubasic : e.absolutely_real ↔ e.asubasic := sorry
+  
 
   -- theorem abasic_iff_cjprime : e.abasic ↔ e.cjprime :=
   --   begin
@@ -858,9 +947,7 @@ section prime
   --     constructor; intro h, swap,
   --       intros B hB,
   --   end
-
-
-end prime
+end prime_lemmas
 
 end ontology
 
