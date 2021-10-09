@@ -3,6 +3,7 @@ open set topological_space classical
 set_option pp.generalized_field_notation true
 local attribute [instance] prop_decidable
 noncomputable theory
+universe u
 
 /-! 
 # A topological formal ontology and foundation of philosophy
@@ -135,7 +136,7 @@ noncomputable theory
 /-- An `ontology` is a nonempty T₀ topological space
 of possible worlds. -/
 structure ontology :=
-    (world : Type*)
+    (world : Type u)
     [wne : nonempty world]
     [t : topological_space world]
     -- identity of indiscernibles for possible worlds
@@ -373,6 +374,9 @@ section entities
   -- #reduce λ (e₁ : ω.entity) (e₂ : ω.event), e₁ ⇒ e₂
   -- #reduce λ (e₁ : ω.entity) (e₂ : ω.event), e₂ ⇒ e₁
 
+  /-- An entity is said to be a **truthmaker** for any event its existence entails. -/
+  def entity.truthmaker (e : ω.entity) (ev : ω.event) : Prop := e ⇒ ev
+
   /-- The event of an entity being "removed" from a possible world. -/
   def entity.removed (w : ω.world) : ω.event := 
     {w' | e.exists w ∧ w' < w ∧ ¬ e.exists w'}
@@ -438,8 +442,8 @@ section entities
         exact i.possible.some_mem,
     end
 
-    -- so are pairwise unions, obviously
-    def entity_sup (e₁ e₂ : ω.entity) : ω.entity := 
+  -- so are pairwise unions, obviously
+  def entity_sup (e₁ e₂ : ω.entity) : ω.entity := 
     begin
       fconstructor,
         exact e₁.exists ∪ e₂.exists,
@@ -450,12 +454,21 @@ section entities
       exact e₁.possible,
     end
 
-  @[reducible, simp]
+  -- @[reducible, simp]
   instance has_Sup_entity : has_Sup ω.entity := 
   ⟨λ s, if h : s.nonempty then entity_Sup s h else ω.nbe⟩
 
-  @[reducible, simp]
+  -- @[reducible, simp]
   instance has_sup_entity : has_sup ω.entity := ⟨entity_sup⟩
+
+  @[simp]
+  lemma Sup_sup (e₁ e₂ : ω.entity) : Sup {e₁, e₂} = e₁ ⊔ e₂ :=
+    begin
+      have c : ({e₁, e₂} : set ω.entity).nonempty, 
+        use e₁, simp,
+      simp [Sup, has_Sup.Sup, entity_Sup, entity_sup, c],
+      exact sup_comm,
+    end
 
   /-- Intersections of compatible entities are entities.
       If `h` is a proof of the compatibility of the entities
@@ -498,12 +511,6 @@ section worlds
   @[reducible, simp]
   def world.entities := {e : ω.entity | e ∈ w}
 
-  @[reducible, simp]
-  def world.ideal : ω.event := {w' | w' ≤ w}
-  def world.filter : ω.event := {w' | w ≤ w'}
-  def nonparmenidean (ω : ontology) : ω.event := {w | ∃ e : ω.entity, e.contingent ∧ e.exists w}
-
-
   -- extensionality principle for possible worlds
   @[ext]
   lemma world.ext {w₁ w₂ : ω.world} (h : w₁.entities = w₂.entities) : w₁ = w₂ :=
@@ -524,6 +531,62 @@ section worlds
         contradiction,
       },
     end
+
+  @[reducible, simp]
+  def world.ideal : ω.event := {w' | w' ≤ w}
+  def world.filter : ω.event := {w' | w ≤ w'}
+
+  variable (ω)
+
+  def nonparmenidean : ω.event := {w | ∃ e : ω.entity, e.contingent ∧ e.exists w}
+  def parmenidean : ω.event := {w | ∀ e : ω.entity, e ∈ w → □ e}
+
+  def weakly_parmenidean : Prop := ⋄ω.parmenidean
+  def strongly_parmenidean : Prop := □ω.parmenidean
+  /-- A modal collapsing ontology is an ontology with a single possible world -/
+  def mcollapse : Prop := ∀ w₁ w₂ : ω.world, w₁ = w₂
+
+  def Parmenides : ontology := { world := unit }
+  def Sierpinski : ontology := { world := Prop }
+
+  lemma mcollapse_iff_str_parme : ω.mcollapse ↔ ω.strongly_parmenidean :=
+    begin
+      constructor; intro h;
+        simp [strongly_parmenidean, nbe, ext_iff, parmenidean] at *,
+        intros w₁ e he w₂,
+        specialize h w₁ w₂,
+        rwa h at he,
+      intros w₁ w₂,
+      ext e, constructor; intro h₀,
+        exact h w₁ e h₀ w₂,
+      exact h w₂ e h₀ w₁,
+    end
+
+  -- #reduce Sierpinski.t.is_open {false}
+  -- lemma weakly_parme_weaker : ∃ ω₀ : ontology.{0}, ω₀.weakly_parmenidean ∧ ¬ ω₀.mcollapse :=
+  --   begin
+  --     use Sierpinski, constructor,
+  --       use false, simp [parmenidean],
+  --       intros e h, 
+  --       by_cases hyp : e.exists = {false, true};
+  --         simp [nbe, hyp, ext_iff],
+  --         exact em,
+  --       have c := e.existential,
+  --       change (generate_open (λ (b : Prop → Prop), (b = λ (b : Prop), b = true ∨ false) ∨ false) e.exists) at c,
+  --       simp at c,
+  --       intro w,
+  --       apply generate_open.cases_on c,
+  --       -- simp at d,
+  --       -- induction c; try {simp},
+  --       --   change (c_s = λ (b : Prop), b) at c_H,
+  --       --   rw c_H at h,
+  --       --   change (false) at h, 
+  --       --   contradiction,
+        
+        -- simp [set_of, set.mem] at c_H,
+        --; simp [nbe],
+        -- simp [sierpinski_space.is_open] at c,
+  -- end
 
 
 end worlds
@@ -554,6 +617,59 @@ section ontology
 
 end ontology
 
+
+/- We introduce a custom notion of subbasis in an ontology. -/
+section subbasis
+
+  def {v} is_subbasis {ω : ontology.{v}} (B : set ω.event) : Prop :=
+    (∀ ev : ω.event, ev ∈ B → ev.entitative) ∧
+    ∀ e : ω.entity, ∃ (I : Type v) (ne : nonempty I) (S : I → set ω.event),
+    (∀ i, (S i).finite ∧ (S i).nonempty ∧ (S i) ⊆ B) ∧
+    (⋃ i, ⋂₀ S i) = e
+
+  def is_subbasis' (B : set ω.entity) : Prop := is_subbasis $ entity.exists '' B
+
+  variable {B : set ω.event}
+
+  lemma is_subbasis.ne : is_subbasis B → B.nonempty :=
+    begin
+      intro h,
+      by_contradiction contra,
+      replace contra := not_nonempty_iff_eq_empty.mp contra,
+      simp [is_subbasis, contra] at h,
+      specialize h ω.nbe,
+      obtain ⟨I, ne, S, h⟩ := h,
+      replace h := (h.1 ne).2,
+      obtain ⟨h₁, h₂⟩ := h,
+      replace h₁ := h₁.not_subset_empty,
+      contradiction,
+    end
+  
+  lemma is_subbasis.ne_of_mem : is_subbasis B → ∀ {b : ω.event}, b ∈ B → ⋄b :=
+    λ h b hb, (h.1 b hb).2
+
+  lemma is_subbasis.existential_of_mem : is_subbasis B → ∀ {b : ω.event}, b ∈ B → b.existential :=
+    λ h b hb, (h.1 b hb).1
+  
+  lemma is_subbasis.sUnion_necessary :  is_subbasis B → □ ⋃₀ B :=
+    begin
+      intro h,
+      replace h := h.2 ω.nbe,
+      obtain ⟨I, ne, S, ⟨h₁, h₂⟩⟩ := h,
+      unfold_coes at h₂,
+      simp [nbe, Union, ext_iff] at h₂,
+      simp [sUnion, ext_iff],
+      intro w, specialize h₂ w,
+      obtain ⟨i, hi⟩ := h₂,
+      specialize h₁ i,
+      obtain ⟨h₁, ⟨e,he⟩, h₃⟩ := h₁,
+      specialize hi e he,
+      specialize h₃ he,
+      exact ⟨e, h₃, hi⟩,
+    end
+
+end subbasis
+
 /-! ## Intensionality and Extensionality
 
   A fundamental question in any ontological theory is that of
@@ -579,7 +695,7 @@ end ontology
   It may look like we are saying that entities, or at least our particular kind of
   "extensional" entities, are *nothing but* sets of possible worlds, or that nothing but
   sets of possible worlds are supposed to "exist" in our theory. This of course seems implausible
-  among other things because sets are abstract mathematical objects, not concretely existing "things".
+  among other reasons because sets are abstract mathematical objects, not concretely existing "things".
   This objection can however be resolved by understanding that, this being a mathematical theory,
   we are not really claiming that possible entities *are* nothing other than sets of possible worlds, 
   but only that these entities can be *represented* as the sets of possible worlds in which they exist.
@@ -591,13 +707,11 @@ end ontology
 -/
 
 /-- An **Intensional ontology** is an ontology generated by a mapping of intensional entities to existential events -/
-structure iontology (ω : ontology) :=
-  (ientity : Type*)
+structure iontology (ω : ontology.{u}) :=
+  (ientity : Type u)
   [iene : nonempty ientity]
   (map : ientity → ω.event)
-  (axiom₁ : ∀ ie, (map ie).possible)
-  (axiom₂ : ω.t = (generate_from $ range map))
-  (axiom₃ : □ ⋃₀ range map)
+  (axiom₁ : is_subbasis $ range map)
 
 namespace iontology
 
@@ -606,7 +720,6 @@ namespace iontology
     variables {Ω : ω.iontology} (ie : Ω.ientity)
 
     /-- the `event` of an intensional entity existing -/
-    @[reducible]
     def ientity.exists := Ω.map ie
 
     /-! **...**
@@ -618,133 +731,34 @@ namespace iontology
 
     -/
     
-    lemma iexists_possible : ie.exists.possible := Ω.axiom₁ ie
+    lemma ientity.possible : ie.exists.possible := 
+      Ω.axiom₁.ne_of_mem 
+      (by simp [ientity.exists]; use ie)
 
-    lemma iexists_existential : ie.exists.existential :=
-      begin
-        simp [event.existential, iontology.ientity.exists],
-        dunfold is_open ontology_top,
-        rw Ω.axiom₂,
-        dunfold generate_from, simp,
-        apply generate_open.basic,
-        use ie,
-      end 
+    lemma ientity.existential : ie.exists.existential :=
+      Ω.axiom₁.existential_of_mem
+      (by simp [ientity.exists]; use ie)
 
     -- "up" is used for informal inheritance here
     /-- cast from `ientity` to `entity` -/
-    def ientity.up : ω.entity := ⟨ie.exists, iexists_existential ie, iexists_possible ie⟩
+    def ientity.up : ω.entity := ⟨ie.exists, ie.existential, ie.possible⟩
 
   end ientity
   
 end iontology
 
--- We discuss whether extensional entities are real or mere abstracta. 
-section realism
+section iontology_basis
 
-  variables (e : ω.entity) (Ω : ω.iontology)
+  variable {B : set ω.event}
 
-  /-! ## Real and Virtual Entities
-  
-    Some philosophers might furthermore be skeptical with the prospect that, for example,
-    the existential event "human beings exist" 
-    corresponds to some particular, unique, "extensional entity"
-    which may possibly exist concretely in the world;
-    i.e. the (not necessarily Platonic) universal of "Man", or Humanity.
-    We make a concession to this sort of skepticism in order to make our
-    system more general, and we will admit that some such extensional entities might be,
-    in some sense, abstracta, figures of speech, concoctions of language, etc...
-    and these we will call **virtual** entities; all other entities we shall call **real** entities. 
-    Formally what will make a non-empty existential event a real entity is its belonging 
-    to the image of the representation function which maps intensional possible entities to 
-    their extensional representations.
+  def is_subbasis.intensionalize : is_subbasis B → ω.iontology :=
+    λ h, { ientity := subtype B
+        , iene := let ⟨b, hb⟩ := h.ne in ⟨⟨b, hb⟩⟩
+        , map := subtype.val
+        , axiom₁ := by simpa [range, subtype.val] 
+        }
 
-  -/
-
-  /-- An `entity` `e` is real with respect to an iontology `Ω` if there is an `Ω.ientity`
-      which exists in the same possible worlds as `e`  -/
-  def entity.real : Prop := ∃ ie : Ω.ientity, ie.up = e
-  /-- an `entity` is virtual with respect to an iontology `Ω` if its is not real with respect to `Ω` -/
-  @[reducible]
-  def entity.virtual : Prop := ¬ e.real Ω
-
-  /-! **Example**
-  
-    To give an example, the extensional entity "Socrates"
-    defined as the existential event "(the set of all possible worlds in which) Socrates exists"
-    is real because there is some possible intensional entity Socrates such that the event of 
-    this Socrates existing is precisely the same event which defines the extensional "Socrates".
-    However one could consistently hold that the event "Humans exist" does not represent some
-    distinct intensional entity over and above the individual intensional human beings from whose
-    representations it is constructed. In this case, the associated extensional entity, "Humanity",
-    would be a virtual entity. This is compatible with doctrines of mereological nihilism and such.
-
-    We assume that talk of "virtual entities" is just a figure of speech for talk about 
-    existential events which talk about the existence of more than a single intensional entity,
-    and as such we can conclude that the jump from existential events to extensional entities
-    does not indeed commits us to any novel metaphysical thesis, nor to anything which could possibly
-    be controversial.
-
-  -/
-
-  /-! **Absolutely Real Entities**
-    
-      One important notion that will arise out of intensionality will be the property 
-      of an entity being absolutely real, i.e. real regardless of the underlying intensional ontology used
-      to generate the ontological structure. This will allow us to think about intensional ontologies much 
-      in the same way that geometers think about a choice of "basis", or "chart", so that we --like them-- 
-      shall be most interested in proving only the results which do not depend on an arbitrary choice of
-      intensional ontology.
-
-  -/
-
-  /-- An `entity` is absolutely real if it is real regardless of the choice of iontology -/
-  def entity.absolutely_real := ∀ Ω : ω.iontology, e.real Ω
-
-  section algebraic_realism
-
-    /-! **Algebraic Realism**
-
-      We shall name the theory which claims that all extensional entities are real **algebraic realism**,
-      and we can also prove that both this theory and its denial are logically consistent. 
-      The theory is to be so called because it is realistic about the set theoretic constructions
-      of extensional entities (unions and intersections), which are algebraic constructions 
-      in a complete Heyting algebra, or topological frame. 
-      Because we are not committed to algebraic realism from the outset,
-      we intend our identification of existential events with extensional entities to be metaphysically neutral.
-  
-    -/
-
-    /-- **Algebraic realism** for intensional ontologies claims that all 
-    extensional entities are real.   
-    It is realist about the algebraic operations of topological frames. -/
-    class realist : Prop :=
-      (postulate₀ : ∀ e : ω.entity, e.real Ω)
-
-    /-! **Final remarks about Intensionality**
-  
-      Even though we are not assuming algebraic realism, our general intention is indeed to avoid talking about 
-      intensional entities as most as possible. If we completely abstract away talk of intensional entities from
-      our system, we will be left simply with a topological space of possible worlds from which the distinction 
-      between real and virtual entities cannot be defined. In order to define it we would at the very least have 
-      to equip the space with an additional sub-basis to stand in for the events which are used to represent the
-      intensional entities we intend to abstract, and then claim that an entity is real only if it belong to the sub-basis.
-      As such, in order to make the distinction we would need to introduce this sub-basis as a new unwanted and 
-      unneeded primitive concept to which our system would have to be committed. 
-      In order to eschew this primitive, we must say that the distinction between real and virtual entities is,
-      for the most part, not really useful in our system, and we have introduced it,
-      along with the discussion of intensional entities, only in order to anticipate some 
-      objections which might be leveled against our theory 
-      (e.g. that it is committed to algebraic realism, or to an universal extensionality principle for the most 
-      basic sort of possible entities). Because of this, in what follows we will simply be talking about 
-      extensional entities and will pay no attention to whether they are real or virtual unless 
-      it becomes important (and in general it won't be).
-
-    -/
-  
-  end algebraic_realism
-
-end realism
-
+end iontology_basis
 
 -- additional auxiliary lemmas involving compact events and entities
 section compact
@@ -778,176 +792,65 @@ section compact
                                                          e ⇒ Sup S →
                                                          ∃ s : set ω.entity, s.nonempty ∧ s ⊆ S ∧ finite s ∧ e ⇒ Sup s)
                                                          :=
-  begin
-    intros h S hS he,
-    simp [Sup, hS, entity_Sup, has_entailment.entails] at he,
-    have c := h.elim (entity.exists '' S),
-    specialize c _, swap,
-      intros i hi,
-      simp at hi,
-      obtain ⟨x, _, hx⟩ := hi,
-      rw ←hx, exact x.existential,
-    specialize c _, swap,
-      simp [has_entailment.entails],
-      exact he,
-    obtain ⟨s, hs₁, hs₂, hs₃⟩ := c,
-    have sne : s.nonempty,
-      simp [sUnion, set.subset] at hs₃,
-      obtain ⟨w, hw⟩ := e.possible,
-      obtain ⟨ev, hev,_⟩ := hs₃ hw,
-      exact ⟨ev, hev⟩,
-    replace sne : {e : ω.entity | e.exists ∈ s}.nonempty,
-      obtain ⟨ev, hev⟩ := sne,
-      have c := hs₁ hev, simp [image] at c,
-      obtain ⟨e',_, he'⟩ := c,
-      rw ←he' at hev,
-      exact ⟨e', hev⟩,
-    refine ⟨{e | e.exists ∈ s}, sne, _⟩,
-    constructor,
-      intros e' he', simp at he',
-      have c := hs₁ he', simp [image] at c,
-      obtain ⟨e'', goal, eq⟩ := c,
-      replace eq := (entity_ext_iff e'' e').2 eq,
-      rwa ←eq,
-    constructor,
-      set S' := {e : ω.entity | e.exists ∈ s},
-      have c : entity.exists '' S' = s,
-        simp [image],
-        ext, constructor; intro hyp,
-          simp at hyp,
-          obtain ⟨_, _, hyp⟩ := hyp,
-          rwa ←hyp,
-        simp,
-        have c := hs₁ hyp, simp [image] at c,
-        obtain ⟨e', _, eq⟩ := c,
-        rw ←eq at hyp,
-        exact ⟨e', hyp, eq⟩,
-      have c₁ := entity_exists_inj.inj_on S',
-      apply finite_of_finite_image c₁,
-      rwa c,
-    simp [Sup, sne, entity_Sup, has_entailment.entails, set.subset],
-    simp [has_entailment.entails, sUnion, set.subset] at hs₃,
-    intros w hw,
-    obtain ⟨ev, hev₁,hev₂⟩ := hs₃ hw,
-    specialize hs₁ hev₁, simp [image] at hs₁,
-    obtain ⟨e', aux, he'⟩ := hs₁, clear aux,
-    rw ←he' at hev₁,  
-    rw ←he' at hev₂,
-    exact ⟨e', hev₁, hev₂⟩,
-  end
+    begin
+      intros h S hS he,
+      simp [Sup, has_Sup.Sup, hS, entity_Sup, has_entailment.entails] at he,
+      have c := h.elim (entity.exists '' S),
+      specialize c _, swap,
+        intros i hi,
+        simp at hi,
+        obtain ⟨x, _, hx⟩ := hi,
+        rw ←hx, exact x.existential,
+      specialize c _, swap,
+        simp [has_entailment.entails],
+        exact he,
+      obtain ⟨s, hs₁, hs₂, hs₃⟩ := c,
+      have sne : s.nonempty,
+        simp [sUnion, set.subset] at hs₃,
+        obtain ⟨w, hw⟩ := e.possible,
+        obtain ⟨ev, hev,_⟩ := hs₃ hw,
+        exact ⟨ev, hev⟩,
+      replace sne : {e : ω.entity | e.exists ∈ s}.nonempty,
+        obtain ⟨ev, hev⟩ := sne,
+        have c := hs₁ hev, simp [image] at c,
+        obtain ⟨e',_, he'⟩ := c,
+        rw ←he' at hev,
+        exact ⟨e', hev⟩,
+      refine ⟨{e | e.exists ∈ s}, sne, _⟩,
+      constructor,
+        intros e' he', simp at he',
+        have c := hs₁ he', simp [image] at c,
+        obtain ⟨e'', goal, eq⟩ := c,
+        replace eq := (entity_ext_iff e'' e').2 eq,
+        rwa ←eq,
+      constructor,
+        set S' := {e : ω.entity | e.exists ∈ s},
+        have c : entity.exists '' S' = s,
+          simp [image],
+          ext, constructor; intro hyp,
+            simp at hyp,
+            obtain ⟨_, _, hyp⟩ := hyp,
+            rwa ←hyp,
+          simp,
+          have c := hs₁ hyp, simp [image] at c,
+          obtain ⟨e', _, eq⟩ := c,
+          rw ←eq at hyp,
+          exact ⟨e', hyp, eq⟩,
+        have c₁ := entity_exists_inj.inj_on S',
+        apply finite_of_finite_image c₁,
+        rwa c,
+      simp [Sup, has_Sup.Sup, sne, entity_Sup, has_entailment.entails, set.subset],
+      simp [has_entailment.entails, sUnion, set.subset] at hs₃,
+      intros w hw,
+      obtain ⟨ev, hev₁,hev₂⟩ := hs₃ hw,
+      specialize hs₁ hev₁, simp [image] at hs₁,
+      obtain ⟨e', aux, he'⟩ := hs₁, clear aux,
+      rw ←he' at hev₁,  
+      rw ←he' at hev₂,
+      exact ⟨e', hev₁, hev₂⟩,
+    end
 
 end compact
-
--- We discuss prime entities and how the topological notion of (sub-)basis relates to iontologies.
--- TODO: define different notions prime entities  
--- and prove equivalences between this notion, the notion of belonging to sub-basis,
--- and the notion of reality.
-section prime
-
-  variables (e : ω.entity)
-
-  /-- An entity `e` is said to be **meet prime** if 
-      for any entities `e₁, e₂` whose
-      nonempty conjunction entails `e`,
-      one of them must entail `e`. 
-      This is equivalent to the principal ideal of `e` in
-      the partial order of opens being prime. -/
-  def entity.mprime := 
-    ∀ {e₁ e₂ : ω.entity} {h : e₁.compatible e₂},
-    (h.inter ⇒ e) → (e₁ ⇒ e ∨ e₂ ⇒ e)
-
-  /-- An entity `e` is said to be **join prime** if 
-      for any entities `e₁, e₂` whose
-      disjunction is entailed by `e`,
-      `e` must entail one of them. 
-      This is equivalent to the principal filter of `e`
-      in the partial order of opens being prime. -/
-  def entity.jprime := ∀ ⦃e₁ e₂ : ω.entity⦄, (e ⇒ e₁ ⊔ e₂) → (e ⇒ e₁ ∨ e ⇒ e₂)
-
-  /-- An entity is **completely join prime** if it is join prime and compact. -/
-  def entity.cjprime := e.jprime ∧ e.compact
-
-  /-- An entity `e` is said to be **prime** if it is both join prime and meet prime. -/
-  def entity.prime := e.jprime ∧ e.mprime
-
-  /-- An entity `e` is said to be **completely prime** if it is both prime and compact. -/
-  def entity.cprime := e.prime ∧ e.compact
-  
-  /-- An entity is said to be **absolutely basic** if it belongs to every topological basis
-      of open sets. -/
-  def entity.abasic := ∀ {B : set ω.event}, is_topological_basis B → e.exists ∈ B
-
-  /-- An entity is said to be **absolutely sub-basic** if it belongs to every topological sub-basis
-      of open sets. -/
-  def entity.asubasic := ∀ {B : set ω.event}, ω.t = generate_from B → e.exists ∈ B
-  
-  /-- An entity `e` is said to be **uncoverable** if all of its open covers contain a superset of `e`.
-      Notice that if the cover is a subset cover this implies that the cover must contain `e`,
-      so any cover of `e` by its subsets must be trivial in this sense. -/
-  def entity.uncoverable := ∀ {S : set ω.entity}, S.nonempty → e ⇒ Sup S → ∃ e₂ ∈ S, e ⇒ e₂
-  
-end prime
-
-section prime_lemmas
-  variables (e : ω.entity)
-
-  lemma entity.jprime.induction {e : ω.entity} : e.jprime → ∀ {S : set ω.entity}, S.nonempty →
-                              finite S → e ⇒ Sup S → ∃ e₂ ∈ S, e ⇒ e₂ :=
-    begin
-      intros h₀ S ne h₁,
-      revert ne,
-      apply h₁.induction_on,
-        simp, intro h,
-        simp [set.nonempty] at h,
-        contradiction,
-      intros e₂ s h₃ h₄ h₅ h₆ h₇,
-      simp [Sup, h₆] at *,
-      simp [has_entailment.entails] at *,
-      clear h₆,
-      by_cases c : s.nonempty, swap,
-        replace c := not_nonempty_iff_eq_empty.mp c,
-        simp [entity_Sup] at h₇,
-        rw c, rw c at h₇, simp at h₇,
-        exact ⟨e₂, by simp, h₇⟩,
-      specialize h₅ c,
-      simp [c] at h₅,
-      simp [entity.jprime, entity_sup] at h₀,
-      simp [has_entailment.entails] at h₀,
-      have aux : entity_Sup (insert e₂ s) h₆ = e₂ ⊔ entity_Sup s c, 
-        simp [entity_Sup, entity_sup],
-      rw aux at h₇,
-      specialize h₀ h₇,
-      cases h₀, exact ⟨e₂, by simp, h₀⟩,
-      specialize h₅ h₀,
-      obtain ⟨x, hx₁, hx₂⟩ := h₅,
-      exact ⟨x, by simp [hx₁], hx₂⟩,
-    end
-
-  lemma cjprime_iff_uncoverable : e.cjprime ↔ e.uncoverable :=
-    begin
-      constructor; intro h,
-        obtain ⟨pe, ce⟩ := h,
-        intros S neS hS,
-        replace ce := ce.elim neS hS,
-        obtain ⟨s, sne, h₁, h₂, h₃⟩ := ce,
-        replace pe := pe.induction sne h₂ h₃,
-        obtain ⟨e₂, h₄, h₅⟩ := pe,
-        exact ⟨e₂, h₁ h₄, h₅⟩,
-      admit,
-        -- simp [image] at ce,
-    end
-
-  lemma asubasic_iff_cprime : e.asubasic ↔ e.cprime := sorry
-  lemma absolutely_real_iff_asubasic : e.absolutely_real ↔ e.asubasic := sorry
-  
-
-  -- theorem abasic_iff_cjprime : e.abasic ↔ e.cjprime :=
-  --   begin
-  --     simp [entity.abasic, entity.cjprime],
-  --     constructor; intro h, swap,
-  --       intros B hB,
-  --   end
-end prime_lemmas
 
 end ontology
 
