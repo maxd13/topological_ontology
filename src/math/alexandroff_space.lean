@@ -44,8 +44,21 @@ instance specialization_order [h : t0_space α] : partial_order α :=
     finish,
   end 
 }
-
 omit t
+
+instance sierpinski_t0 : @t0_space Prop sierpinski_space :=
+  begin
+    constructor,
+    intros p q h,
+    use {true}, simp [is_open],
+    cases prop_complete p with hp hp;
+    cases prop_complete q with hq hq;
+    simp [hp, hq, xor];
+    simp [hp, hq] at h;
+    contradiction,
+  end
+
+
 
 end topological_space
 
