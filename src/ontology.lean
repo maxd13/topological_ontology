@@ -710,8 +710,8 @@ end subbasis
 structure iontology (ω : ontology.{u}) :=
   (ientity : Type u)
   [iene : nonempty ientity]
-  (map : ientity → ω.event)
-  (axiom₁ : is_subbasis $ range map)
+  («exists» : ientity → ω.event)
+  (axiom₁ : is_subbasis $ range «exists»)
 
 namespace iontology
 
@@ -720,7 +720,7 @@ namespace iontology
     variables {Ω : ω.iontology} (ie : Ω.ientity)
 
     /-- the `event` of an intensional entity existing -/
-    def ientity.exists := Ω.map ie
+    def ientity.exists := Ω.exists ie
 
     /-! **...**
 
@@ -743,6 +743,10 @@ namespace iontology
     /-- cast from `ientity` to `entity` -/
     def ientity.up : ω.entity := ⟨ie.exists, ie.existential, ie.possible⟩
 
+    instance ientity_coe : has_coe Ω.ientity ω.entity := ⟨ientity.up⟩
+
+    -- #check ie ⇒ ie
+
   end ientity
   
 end iontology
@@ -754,7 +758,7 @@ section iontology_basis
   def is_subbasis.intensionalize : is_subbasis B → ω.iontology :=
     λ h, { ientity := subtype B
         , iene := let ⟨b, hb⟩ := h.ne in ⟨⟨b, hb⟩⟩
-        , map := subtype.val
+        , «exists» := subtype.val
         , axiom₁ := by simpa [range, subtype.val] 
         }
 
