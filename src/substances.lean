@@ -95,7 +95,11 @@ section substances
   @[reducible, simp]
   def world.substances (w : ω.world) := {s : ω.substance | s.exists w}
   @[reducible, simp]
+  def world.perfects (w : ω.world) := {s : ω.entity | s.exists w ∧ s.perfect}
+  @[reducible, simp]
   def world.accidents (w : ω.world) := {a : ω.accident | a.exists w}
+  @[reducible, simp]
+  def world.imperfects (w : ω.world) := {s : ω.entity | s.exists w ∧ s.imperfect}
 
 end substances
 
