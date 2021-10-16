@@ -592,7 +592,7 @@ section accident_lemmas
   lemma accident.lem : (a.up ⊔ (~a).up) = a.owner :=
     begin
       unfold_coes,
-      simp [entity_sup, accident.owner],
+      simp [entity_sup, accident.owner, has_sup.sup, entity_sup],
       congr,
       simp [has_tilde.tilde, accident.exterior],
     end
@@ -674,9 +674,10 @@ section accident_lemmas
           simp [accident.localize, c],
         have lem := a.lem, unfold_coes at lem, simp at lem,
         rw ←lem at h, clear lem,
-        simp [entity_sup] at h,
+        unfold_coes at h,
+        simp [accident.owner, has_sup.sup, entity_sup] at h,
         cases h, contradiction,
-        exact h,
+        simpa [has_tilde.tilde, accident.exterior],
       end
     
 
