@@ -199,7 +199,7 @@ section theos
   /-- God is a fixed point of any possessed property He may possibly exemplify.
       As such we say that He is his Omnipotence, His Omniscience, His benevolence,
       and whatever else is predicated of Him, *in the precise and non-paradoxical sense*
-      that the *event* of God being, e.g. Omnipotent is the *event* of God existing,
+      that the *event* of God being (e.g.) Omnipotent is the *event* of God existing,
       and also the *event* of Him being Omniscient, etc...
       This would actually be valid for any simple substance as well.
       -/
