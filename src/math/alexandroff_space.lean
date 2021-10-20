@@ -25,7 +25,7 @@ include t
 def specialization (x y : α) : Prop :=
   ∀ s, t.is_open s → x ∈ s → y ∈ s 
 
-@[priority std.priority.default - 100]
+@[priority 50]
 instance specialization_order [h : @t0_space α t] : partial_order α := 
 { le := t.specialization,
   le_refl := by simp [specialization],
