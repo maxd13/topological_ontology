@@ -333,6 +333,11 @@ section entities
   /-- An event is entitative if it is both existential and possible. -/
   def event.entitative (e : ω.event) : Prop := e.existential ∧ ⋄e
 
+  @[simp]
+  lemma entity.entitative (e : ω.entity) : e.exists.entitative := ⟨e.existential, e.possible⟩
+  @[reducible]
+  lemma event.entitative.entity {e : ω.event} (h : e.entitative) : ω.entity := ⟨e, h.1, h.2⟩
+
   /-- main extensionality lemma for entities. -/
   @[ext]
   lemma entity_ext {e₁ e₂ : ω.entity} (h : e₁.exists = e₂.exists) : e₁ = e₂ := 
@@ -541,7 +546,9 @@ section worlds
   def nonparmenidean : ω.event := {w | ∃ e : ω.entity, e.contingent ∧ e.exists w}
   def parmenidean : ω.event := {w | ∀ e : ω.entity, e ∈ w → □ e}
 
+  @[reducible, simp]
   def weakly_parmenidean : Prop := ⋄ω.parmenidean
+  @[reducible, simp]
   def strongly_parmenidean : Prop := □ω.parmenidean
   /-- A modal collapsing ontology is an ontology with a single possible world -/
   def mcollapse : Prop := ∀ w₁ w₂ : ω.world, w₁ = w₂
@@ -666,6 +673,16 @@ section subbasis
       specialize hi e he,
       specialize h₃ he,
       exact ⟨e, h₃, hi⟩,
+    end
+
+  lemma {v} default_subbasis (ω : ontology.{v}) : @is_subbasis ω event.entitative := 
+    begin
+      refine ⟨λ_,id, _⟩,
+      intro e,
+      refine ⟨(punit.{v+1} : Type v), ⟨punit.star⟩,(λ_,{e.exists}), _⟩,
+      unfold_coes, simp,
+      refine ⟨⟨e.existential, e.possible⟩,_⟩,
+      simp [Union],
     end
 
 end subbasis
