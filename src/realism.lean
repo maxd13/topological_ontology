@@ -91,8 +91,15 @@ section algebraic_realism
   /-- **Algebraic realism** for intensional ontologies claims that all 
   extensional entities are real.   
   It is realist about the algebraic operations of topological frames. -/
-  class realist : Prop :=
+  class iontology.arealist : Prop :=
     (postulate₀ : ∀ e : ω.entity, e.real Ω)
+  
+  lemma natural_arealism : ω.default_subbasis.intensionalize.arealist :=
+    begin
+      constructor, intro e,
+      use e; unfold_coes; simp [iontology.ientity.up],
+      change (e.exists = e.exists), refl,
+    end
 
   /-! **Final remarks about Intensionality**
 
@@ -132,7 +139,7 @@ section prime
       This is equivalent to the principal ideal of `e` in
       the partial order of opens being prime. -/
   def entity.mprime := 
-    ∀ {e₁ e₂ : ω.entity} {h : e₁.compatible e₂},
+    ∀ ⦃e₁ e₂ : ω.entity⦄ ⦃h : e₁.compatible e₂⦄,
     (h.inter ⇒ e) → (e₁ ⇒ e ∨ e₂ ⇒ e)
 
   /-- An entity `e` is said to be **join prime** if 
@@ -247,7 +254,7 @@ section prime_lemmas
       exact ⟨x, by simp [hx₁], hx₂⟩,
     end
 
-  lemma cjprime_iff_uncoverable : e.cjprime ↔ e.uncoverable' :=
+  lemma cjprime_iff_uncoverable' : e.cjprime ↔ e.uncoverable' :=
     begin
       constructor; intro h,
         obtain ⟨pe, ce⟩ := h,
@@ -299,7 +306,10 @@ section prime_lemmas
       rwa hi,
     end
 
-  lemma asubasic_iff_cprime : e.asubasic ↔ e.cprime :=
+  lemma cjprime_iff_uncoverable : e.cjprime ↔ e.uncoverable :=
+    by convert cjprime_iff_uncoverable' e; ext; symmetry; exact uncoverable'_iff_uncoverable e
+
+  theorem asubasic_iff_cprime : e.asubasic ↔ e.cprime :=
     begin
       constructor; intro h,
         admit,
@@ -313,7 +323,7 @@ section prime_lemmas
         have c := subset_Union (λ i, ⋂₀ S i) i,
         simp at c,
         rwa h₃ at c,
-      have c := (cjprime_iff_uncoverable e).mp h.to_cjprime,
+      have c := (cjprime_iff_uncoverable' e).mp h.to_cjprime,
       simp at c,
       rw ←sUnion_range at h₃,
       set B' := { s | s ∈ range (λ (x : I), ⋂₀ S x) ∧ s.nonempty},
@@ -399,6 +409,7 @@ section prime_lemmas
       simpa [entity.real, iontology.ientity.up, iontology.ientity.exists],
     end
   
+  lemma absolutely_real_iff_cprime : e.absolutely_real ↔ e.cprime := sorry
 
   -- theorem abasic_iff_cjprime : e.abasic ↔ e.cjprime :=
   --   begin
@@ -407,6 +418,69 @@ section prime_lemmas
   --       intros B hB,
   --   end
 end prime_lemmas
+
+section nb_lemmas
+
+  lemma nbe.mprime : ω.nbe.mprime := sorry
+
+  theorem weakly_parmenidean_iff₀ : ω.weakly_parmenidean ↔ ω.nbe.uncoverable :=
+    begin
+      simp,
+      constructor; intro h,
+        obtain ⟨w, hw⟩ := h,
+        simp [parmenidean] at hw,
+        intros S hS₁ hS₂ h, clear hS₂,
+        simp [nbe, has_entailment.entails, set.subset] at h,
+        specialize @h w,
+        obtain ⟨ev, hev, h⟩ := h,
+        specialize hS₁ ev hev,
+        specialize hw ⟨ev, hS₁.1, hS₁.2⟩ h, simp at hw,
+        refine ⟨ev, hev, _⟩, rw hw,
+        simp [has_entailment.entails, set.subset],
+      let S := {ev : ω.event | ev.contingent ∧ ev.entitative},
+      specialize @h S _, swap,
+        intros ev hev, exact hev.2,
+      simp [nbe, has_entailment.entails, set.subset] at h,
+      simp [set.nonempty, parmenidean],
+      by_contradiction contra, push_neg at contra,
+      by_cases c : S.nonempty, swap,
+        simp [set.nonempty] at c,
+        obtain ⟨w⟩ := ω.wne,
+        specialize contra w,
+        obtain ⟨e, hw, he⟩ := contra,
+        simp [nbe] at he,
+        specialize c e.exists w hw he,
+        have absurdity := e.entitative,
+        contradiction,
+      specialize h c, clear c,
+      specialize h _, swap,
+        intro w, specialize contra w,
+        obtain ⟨e, hw, he⟩ := contra,
+        simp [nbe] at he,
+        exact ⟨e.exists, ⟨⟨⟨e.possible,he⟩,e.entitative⟩,hw⟩⟩,
+      clear contra,
+      obtain ⟨insanity, ⟨⟨sophistry, illusion⟩, gibberish⟩, nonsense⟩ := h,
+      have absurdity : insanity = univ,
+        simpa [ext_iff],
+      contradiction,
+    end
+  theorem weakly_parmenidean_iff₁ : ω.weakly_parmenidean ↔ ω.nbe.cprime :=
+    begin
+      convert weakly_parmenidean_iff₀,
+      ext, constructor; intro h,
+        replace h := h.to_cjprime,
+        replace h := (cjprime_iff_uncoverable' ω.nbe).mp h,
+        simp at h, assumption,
+      replace h := (cjprime_iff_uncoverable ω.nbe).2 h,
+      exact ⟨⟨h.1, nbe.mprime⟩, h.2⟩,
+    end
+  theorem weakly_parmenidean_iff₂ : ω.weakly_parmenidean ↔ ω.nbe.asubasic := 
+    by convert weakly_parmenidean_iff₁; ext; exact asubasic_iff_cprime ω.nbe
+  theorem weakly_parmenidean_iff₃ : ω.weakly_parmenidean ↔ ω.nbe.absolutely_real :=
+    by convert weakly_parmenidean_iff₂; ext; exact absolutely_real_iff_asubasic ω.nbe
+
+
+end nb_lemmas
 
 
 end ontology
