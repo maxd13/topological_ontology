@@ -8,126 +8,7 @@ namespace ontology
 
 variable {ω : ontology}
 
--- We discuss whether extensional entities are real or mere abstracta. 
-section realism
-
-  variables (e : ω.entity) (Ω : ω.iontology)
-
-  /-! ## Real and Virtual Entities
-  
-    Some philosophers might furthermore be skeptical with the prospect that, for example,
-    the existential event "human beings exist" 
-    corresponds to some particular, unique, "extensional entity"
-    which may possibly exist concretely in the world;
-    i.e. the (not necessarily Platonic) universal of "Man", or Humanity.
-    We make a concession to this sort of skepticism in order to make our
-    system more general, and we will admit that some such extensional entities might be,
-    in some sense, abstracta, figures of speech, concoctions of language, etc...
-    and these we will call **virtual** entities; all other entities we shall call **real** entities. 
-    Formally what will make a non-empty existential event a real entity is its belonging 
-    to the image of the representation function which maps intensional possible entities to 
-    their extensional representations.
-
-  -/
-
-  /-- An `entity` `e` is real with respect to an iontology `Ω` if there is an `Ω.ientity`
-      which exists in the same possible worlds as `e`  -/
-  def entity.real : Prop := ∃ ie : Ω.ientity, ie.up = e
-  /-- an `entity` is virtual with respect to an iontology `Ω` if its is not real with respect to `Ω` -/
-  @[reducible]
-  def entity.virtual : Prop := ¬ e.real Ω
-
-  /-! **Example**
-  
-    To give an example, the extensional entity "Socrates"
-    defined as the existential event "(the set of all possible worlds in which) Socrates exists"
-    is real because there is some possible intensional entity Socrates such that the event of 
-    this Socrates existing is precisely the same event which defines the extensional "Socrates".
-    However one could consistently hold that the event "Humans exist" does not represent some
-    distinct intensional entity over and above the individual intensional human beings from whose
-    representations it is constructed. In this case, the associated extensional entity, "Humanity",
-    would be a virtual entity. This is compatible with doctrines of mereological nihilism and such.
-
-    We assume that talk of "virtual entities" is just a figure of speech for talk about 
-    existential events which talk about the existence of more than a single intensional entity,
-    and as such we can conclude that the jump from existential events to extensional entities
-    does not indeed commits us to any novel metaphysical thesis, nor to anything which could possibly
-    be controversial.
-
-  -/
-
-  /-! **Absolutely Real Entities**
-    
-      One important notion that will arise out of intensionality will be the property 
-      of an entity being absolutely real, i.e. real regardless of the underlying intensional ontology used
-      to generate the ontological structure. This will allow us to think about intensional ontologies much 
-      in the same way that geometers think about a choice of "basis", or "chart", so that we --like them-- 
-      shall be most interested in proving only the results which do not depend on an arbitrary choice of
-      intensional ontology.
-
-  -/
-
-  /-- An `entity` is absolutely real if it is real regardless of the choice of iontology -/
-  def entity.absolutely_real : Prop := ∀ Ω : ω.iontology, e.real Ω
-
-end realism
-
-section algebraic_realism
-
-  variables (Ω : ω.iontology)
-
-  /-! **Algebraic Realism**
-
-    We shall name the theory which claims that all extensional entities are real **algebraic realism**,
-    and we can also prove that both this theory and its denial are logically consistent. 
-    The theory is to be so called because it is realistic about the set theoretic constructions
-    of extensional entities (unions and intersections), which are algebraic constructions 
-    in a complete Heyting algebra, or topological frame. 
-    Because we are not committed to algebraic realism from the outset,
-    we intend our identification of existential events with extensional entities to be metaphysically neutral.
-
-  -/
-
-  /-- **Algebraic realism** for intensional ontologies claims that all 
-  extensional entities are real.   
-  It is realist about the algebraic operations of topological frames. -/
-  class iontology.arealist : Prop :=
-    (postulate₀ : ∀ e : ω.entity, e.real Ω)
-  
-  lemma natural_arealism : ω.default_subbasis.intensionalize.arealist :=
-    begin
-      constructor, intro e,
-      use e; unfold_coes; simp [iontology.ientity.up],
-      change (e.exists = e.exists), refl,
-    end
-
-  /-! **Final remarks about Intensionality**
-
-    Even though we are not assuming algebraic realism, our general intention is indeed to avoid talking about 
-    intensional entities as most as possible. If we completely abstract away talk of intensional entities from
-    our system, we will be left simply with a topological space of possible worlds from which the distinction 
-    between real and virtual entities cannot be defined. In order to define it we would at the very least have 
-    to equip the space with an additional sub-basis to stand in for the events which are used to represent the
-    intensional entities we intend to abstract, and then claim that an entity is real only if it belong to the sub-basis.
-    As such, in order to make the distinction we would need to introduce this sub-basis as a new unwanted and 
-    unneeded primitive concept to which our system would have to be committed. 
-    In order to eschew this primitive, we must say that the distinction between real and virtual entities is,
-    for the most part, not really useful in our system, and we have introduced it,
-    along with the discussion of intensional entities, only in order to anticipate some 
-    objections which might be leveled against our theory 
-    (e.g. that it is committed to algebraic realism, or to an universal extensionality principle for the most 
-    basic sort of possible entities). Because of this, in what follows we will simply be talking about 
-    extensional entities and will pay no attention to whether they are real or virtual unless 
-    it becomes important (and in general it won't be).
-
-  -/
-
-end algebraic_realism
-
 -- We discuss prime entities and how the topological notion of (sub-)basis relates to iontologies.
--- TODO: define different notions prime entities  
--- and prove equivalences between this notion, the notion of belonging to sub-basis,
--- and the notion of reality.
 section prime
 
   variables (e : ω.entity)
@@ -171,6 +52,23 @@ section prime
       so any cover of `e` by its subsets must be trivial in this sense. -/
   def entity.uncoverable := ∀ ⦃S : set ω.event⦄, (∀ (ev : ω.event), ev ∈ S → ev.entitative) → S.nonempty → e ⇒ ⋃₀ S → ∃ e₂ ∈ S, e ⇒ e₂
   def entity.uncoverable' := ∀ ⦃S : set ω.entity⦄, S.nonempty → e ⇒ Sup S → ∃ e₂ ∈ S, e ⇒ e₂
+
+  /-- An entity `e` is said to be **densely meet prime** if 
+      for any *dense* entities `e₁, e₂` whose
+      nonempty conjunction entails `e`,
+      one of them must entail `e`. -/
+  def entity.dmprime := 
+    ∀ ⦃e₁ e₂ : ω.entity⦄ (he₁ : e₁.exists.dense) (he₂ : e₂.exists.dense) ⦃h : e₁.compatible e₂⦄,
+    (h.inter ⇒ e) → (e₁ ⇒ e ∨ e₂ ⇒ e)
+
+  /-- An entity `e` is said to be **densely join prime** if 
+      for any *dense* entities `e₁, e₂` whose
+      disjunction is entailed by `e`,
+      `e` must entail one of them. -/
+  def entity.djprime := ∀ ⦃e₁ e₂ : ω.entity⦄ (he₁ : e₁.exists.dense) (he₂ : e₂.exists.dense), (e ⇒ e₁ ⊔ e₂) → (e ⇒ e₁ ∨ e ⇒ e₂)
+
+  /-- An entity `e` is said to be **densely prime** if it is both densely join prime and densely meet prime. -/
+  def entity.dprime := e.djprime ∧ e.dmprime
   
 end prime
 
