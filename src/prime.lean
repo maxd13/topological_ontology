@@ -1,4 +1,4 @@
-import ontology
+import substances
 open set topological_space classical
 set_option pp.generalized_field_notation true
 local attribute [instance] prop_decidable
@@ -8,7 +8,7 @@ namespace ontology
 
 variable {ω : ontology}
 
--- We discuss prime entities and how the topological notion of (sub-)basis relates to iontologies.
+-- We discuss prime entities, topological basis, subbasis and some definitions involving compact sets.
 section prime
 
   variables (e : ω.entity)
@@ -53,25 +53,29 @@ section prime
   def entity.uncoverable := ∀ ⦃S : set ω.event⦄, (∀ (ev : ω.event), ev ∈ S → ev.entitative) → S.nonempty → e ⇒ ⋃₀ S → ∃ e₂ ∈ S, e ⇒ e₂
   def entity.uncoverable' := ∀ ⦃S : set ω.entity⦄, S.nonempty → e ⇒ Sup S → ∃ e₂ ∈ S, e ⇒ e₂
 
-  /-- An entity `e` is said to be **densely meet prime** if 
-      for any *dense* entities `e₁, e₂` whose
-      nonempty conjunction entails `e`,
-      one of them must entail `e`. -/
-  def entity.dmprime := 
-    ∀ ⦃e₁ e₂ : ω.entity⦄ (he₁ : e₁.exists.dense) (he₂ : e₂.exists.dense) ⦃h : e₁.compatible e₂⦄,
-    (h.inter ⇒ e) → (e₁ ⇒ e ∨ e₂ ⇒ e)
+  -- The following definitions concern entities which are prime in a substantial sense:
 
-  /-- An entity `e` is said to be **densely join prime** if 
-      for any *dense* entities `e₁, e₂` whose
+  /-- An entity `e` is said to be **substantially meet prime** if 
+      for any substances `s₁, s₂` whose
+      conjunction entails `e`,
+      one of them must entail `e`. -/
+  def entity.smprime := 
+    ∀ ⦃s₁ s₂ : ω.substance⦄,
+    (s₁.meet s₂ ⇒ e) → (s₁ ⇒ e ∨ s₂ ⇒ e)
+
+  /-- An entity `e` is said to be **substantially join prime** if 
+      for any substances `s₁, s₂` whose
       disjunction is entailed by `e`,
       `e` must entail one of them. -/
-  def entity.djprime := ∀ ⦃e₁ e₂ : ω.entity⦄ (he₁ : e₁.exists.dense) (he₂ : e₂.exists.dense), (e ⇒ e₁ ⊔ e₂) → (e ⇒ e₁ ∨ e ⇒ e₂)
+  def entity.sjprime := ∀ ⦃s₁ s₂ : ω.substance⦄, (e ⇒ s₁.exists ∪ s₂.exists) → (e ⇒ s₁ ∨ e ⇒ s₂)
 
-  /-- An entity `e` is said to be **densely prime** if it is both densely join prime and densely meet prime. -/
-  def entity.dprime := e.djprime ∧ e.dmprime
-  
+  /-- An entity `e` is said to be **substantially prime** if it is both substantially join prime and substantially meet prime. -/
+  def entity.sprime := e.sjprime ∧ e.smprime
+
+
 end prime
 
+-- We prove important properties concerning the previous notions and relate them to iontologies. 
 section prime_lemmas
   variables (e : ω.entity)
 
