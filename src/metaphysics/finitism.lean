@@ -7,10 +7,26 @@ namespace ontology
 
 variable (ω : ontology)
 
--- substantially finite worlds are worlds with finitely many substances
-def sfinite := {w : ω.world | w.substances.finite}
+/-- A possible world is **(X := Substantially) finite** if it has finitely many (X := substance). -/
+def lsfinite (X : set ω.entity := entity.perfect) : ω.event := 
+  {w : ω.world | {e : ω.entity | e ∈ X ∧ e.exists w}.finite}
 
--- weakly substantially finitistic ontologies are ontologies with at least one substantially finite world
-def wsfinitistic : Prop := ω.sfinite.nonempty
+/-- A possible world is **Ultrafinite** if it has only a finite number of entities. -/
+@[reducible, simp]
+def lufinite := ω.lsfinite univ
+
+-- Global definitions:
+
+/-- **Ultrafinitistic** ontologies are ontologies in which only a finite number of entities exist in each world. -/
+def ultrafin : Prop := □ω.lufinite
+
+/-- **Weakly Ultrafinitistic** ontologies are ontologies in which there is a possible world with only a finite number of entities. -/
+def wultrafin : Prop := ⋄ω.lufinite
+
+/-- **Substantially Finitistic** ontologies are ontologies in which only a finite number of (X := substance) exist in each world. -/
+def sfin (X : set ω.entity := entity.perfect) : Prop := □ω.lsfinite X
+
+/-- **Weakly Substantially Finitistic** ontologies are ontologies with at least one (X := substantially) finite world. -/
+def wsfin (X : set ω.entity := entity.perfect) : Prop := ⋄ω.lsfinite X
 
 end ontology
