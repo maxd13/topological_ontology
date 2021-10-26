@@ -161,7 +161,9 @@ structure theos (ω : ontology) :=
 
 /-- A **God** is a **Theos** with the attribute of **Divine Aseity**.
     Assumption of aseity is sufficient for proving all the properties
-    of the classical theistic God. -/
+    of the classical theistic God.
+    God is here taken as a synonym for "Deus", 
+    or "the classical latin, or scholastic, conception of God". -/
 structure god (ω : ontology) extends theos ω :=
   (aseity : ∃ w : ω.world, ∀ s' ∈ w.substances, s' = s)
 
