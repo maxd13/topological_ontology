@@ -348,6 +348,8 @@ namespace cause
   /-- **External cause**. -/
   def excauses (e : ω.event) (e₁ : ω.entity) : ω.event := 
     c.causes e e₁ ∩ {w | ¬ ∃ e₂ : ω.entity, e₂.exists = e ∧ e₁ ≈ e₂}
+
+  def ppc₀ : Prop := ∀ (e : ω.event) (e₁ : ω.entity), c.simcauses e e₁ ⇒ c.excauses e e₁
   
   /-- **Strictly Existential cause**. -/
   def secauses (e : ω.event) (e₁ : ω.entity) : ω.event := 
@@ -654,7 +656,7 @@ namespace cause
   /-- The **Principle of Substratum Causality**, as an event. 
       It reads: "If there are contingent substrata of a 
       certain kind (existential), then any event which is the cause
-      of all contingent substrata of that kind (other than the thing  itself)
+      of all contingent substrata of that kind (other than the thing itself)
       is the cause of all events of that kind (other than the thing itself)."
       -/
   def epsc (kind := @event.existential ω) : ω.event := 
@@ -698,13 +700,13 @@ namespace cause
       if there is some event which may possibly cause the event to occur. -/
   def cground (e : ω.event) : ω.event := {w | ∃ e' : ω.event, e'.occurs w ∧ ⋄c.causes e' e}
 
-  /-- An **Aristotelian-Causal Account of Modality** for events is the set of all the possible worlds 
-      `w` relative to which an event is possible if and only if either the event occurs or some event
-      in `w` can possibly cause the event to occur. -/
+  /-- An **Aristotelian-Causal Account of Modality**, for events, is the set of all possible worlds 
+      `w` in which for any given possible event `e`, it either occurs in `w` or some event
+      in `w` can possibly cause `e` to occur. -/
   def acam' : ω.event := {w | ∀ e : ω.event, ⋄e → e.occurs w ∨ c.cground e w}
   -- Notice the converse of the (`→`) in the above definition is trivial.
 
-  /-- An **Aristotelian-Causal Account of Modality** (for entities) is the set of all the possible worlds 
+  /-- An **Aristotelian-Causal Account of Modality** (for entities) is the set of all possible worlds 
       `w` in which for any given possible entity `e`, it either exists in `w` or some event
       in `w` can possibly cause `e` to exist. -/
   def acam : ω.event := {w | ∀ (e : ω.entity), e.exists w ∨ c.cground e w}
@@ -804,7 +806,7 @@ section four_causes
     (axiom₇ : c.conjunctive₂')
     (axiom₈ : c.pp)
     (axiom₉ : ∀ (s₁ s₂ : ω.substance) w, c.causes s₁ s₂ w → s₂.equiv w ⇒ s₁.equiv w)
-    (axiom₁₀ : ∀ e₁ e₂, ⋄(-c.causes e₁ e₂ ∩ e₁ ∩ e₂))
+    (axiom₁₀ : ∀ s₁ s₂ : ω.substance, ⋄(-c.causes s₁ s₂ ∩ s₁ ∩ s₂))
 
   def cause.uhylemorphism (c : ω.cause) : ω.event := { w | c.mcause ∧ c.epc (λe, e.perfect ∧ e.contingent) w}
 

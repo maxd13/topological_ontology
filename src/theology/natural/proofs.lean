@@ -463,10 +463,11 @@ theorem ctheism_of_contingency : ω.contingency_contingent → ω.ctheism :=
     rintros ⟨h₁, h₂⟩,
     have c : set.nonempty entity.contingent := h₁,
     simp [Sup, c, entity_Sup, nbe, ext_iff] at h₂,
-    clear c h₁,
+    -- clear c h₁,
     obtain ⟨w, hw⟩ := h₂,
     replace hw : ∀ e : ω.entity, e.exists w → e.necessary,
       intro e,
+      simp [has_Sup.Sup, c, entity_Sup] at hw,
       specialize hw e,
       contrapose,
       exact hw,
@@ -543,7 +544,7 @@ theorem ctheism_of_contingency : ω.contingency_contingent → ω.ctheism :=
             to say that God has the attributes classically prescribed to Him (`ω.ctheism`) is to 
             say that the necessary being cannot *in any way* be construed as the universe,
             or as any collection of things, and that it cannot be taken to be a mere abstraction,
-            *no matter ones underlying intensional position on abstractions*, provide only it is a consistent
+            *no matter ones underlying intensional position on virtual entities*, provide only it is a consistent
             position.
         0.3. The necessary being is unique up to existential equivalence (i.e. *qua* extensional entity)
             (`nbe_unique`).
@@ -622,7 +623,7 @@ theorem ctheism_of_contingency : ω.contingency_contingent → ω.ctheism :=
     Since premisses **(1)**, **(3)**, **(5)** and **(7)** depend on an instance of `ω.being`,
     we pack them all together into the `ω.participated : Prop` definition. It turns
     out that it suffices to assume that it is logically consistent for there to be
-    an `b : ω.being` with the aforementioned properties to prove `ω.ctheism`.
+    a `b : ω.being` with the aforementioned properties to prove `ω.ctheism`.
     The definition `ω.participated` can then reduce to our 4 premisses as the
     following example shows:
     
@@ -688,7 +689,7 @@ theorem aquinas_fourth : ω.participated → ω.viable → ω.ctheism :=
     -- possible world `w`:
     obtain ⟨w⟩ := ω.wne,
     -- because the ontology is viable, this world could be
-    -- made larger and smaller by some world `w'`.
+    -- made larger or smaller by some world `w'`.
     -- This generates 2 proof goals for us corresponding to the
     -- "larger" and "smaller" cases, respectively:
     specialize viable w,

@@ -13,7 +13,11 @@ section relations
 
   variable (ω)
 
-  abbreviation property (α := Prop) [topological_space α] [has_none α] := ω.observable α → ω.observable α
+  -- abbreviation property (α := Prop) [topological_space α] [has_none α] := ω.observable α → ω.observable α
+  abbreviation property (α : Type := Prop) [topological_space α] := ω.entity → ω.world → α
+
+  def property.positive  {ω : ontology}{α : Type} [topological_space α] (p : ω.property α) : Prop := ∀ e, continuous (p e)
+
   abbreviation relation (α := Prop) [topological_space α] [has_none α] := 
     ω.observable α → ω.observable α → ω.observable α
 
