@@ -27,12 +27,13 @@ structure sim (Ω : ω.iontology) :=
   (reflexive : ∀ {e}, r e e = 1)
   (symmetric : ∀ {e₁ e₂}, r e₁ e₂ = r e₂ e₁)
   (triangular : ∀ e₁ e₂ e₃, ((r e₁ e₂) : ℝ) * (r e₂ e₃) ≤ r e₁ e₃)
+  -- TODO: prove this as a theorem, follows from triangular inequality
   (subst : ∀ e₁ e₂, r e₁ e₂ = 1 → ∀ e₃, r e₁ e₃ = r e₂ e₃)
   -- these principles are probably wrong, will think about them later.
   -- consubstantial entities with the same essence are exactly similar
   -- (coessence : ∀ e₁ e₂, 0 < r e₁ e₂ → e₁ ≈ e₂ → r e₁ e₂ = 1)
   -- -- substances do not have the same essence as their accidents
-  -- (essence : ∀ e₁ e₂, 0 < r e₁ e₂ → e₁ ≈ e₂ → e₁ ≢ e₂ → ¬ e₁.up.compatible e₂)
+  -- (essence : ∀ e₁ e₂, 0 < r e₁ e₂ → e₁ ≈ e₂ → e₁ ⇎ e₂ → ¬ e₁.up.compatible e₂)
 
 attribute [class] sim
 attribute [simp, refl] sim.reflexive

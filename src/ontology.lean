@@ -245,13 +245,17 @@ section events
   @[reducible, simp]
   instance has_tilde_event : has_tilde ω.event := ⟨event.exterior⟩
 
-  /-- Use `e₁ ⇒ e₂` instead of `e₁ ⊆ e₂`, replace with `⇒'` for `⊂` -/
+  /-- Use `e₁ ⇒ e₂` instead of `e₁ ⊆ e₂`, replace with `⇒'` for `⊂`.
+      Use `e₁ ⇏ e₂` for `¬ e₁ ⇒ e₂`. 
+      Use `e₁ ≡ e₂` for `e₁ ⇒ e₂ ∨ e₂ ⇒ e₁`. 
+      Use `e₁ ≢ e₂` for `¬ e₁ ≡ e₂`.
+  -/
   @[reducible, simp]
   instance has_entailment_event : has_entailment ω.event := ⟨set.subset⟩
 
-  /-- Use `e₁ ▹ e₂` instead of `-e₁ ∪ e₂` 
-      Use `e₁ ≡ e₂` instead of `(e₁ ▹ e₂) ∩ (e₂ ▹ e₁)`
-      Use `e₁ ≢ e₂` instead of `-(e₁ ≡ e₂)` -/
+  /-- Use `e₁ ⟶ e₂` instead of `-e₁ ∪ e₂` 
+      Use `e₁ ⟷ e₂` instead of `(e₁ ⟶ e₂) ∩ (e₂ ⟶ e₁)`
+      Use `e₁ !⟷ e₂` instead of `-(e₁ ⟷ e₂)` -/
   @[reducible, simp]
   instance has_local_entailment_event : has_local_entailment ω.event := ⟨λ e₁ e₂, -e₁ ∪ e₂⟩
 
@@ -264,9 +268,13 @@ section events
   -- #check ~e
   -- #check e₁ ⇒ e₂
   -- #check e₁ ⇒' e₂
-  -- #check e₁ ▹ e₂
+  -- #check e₁ ⇏ e₂
   -- #check e₁ ≡ e₂
   -- #check e₁ ≢ e₂
+  -- #check e₁ ⟶ e₂
+  -- #check e₁ ⟷ e₂
+  -- #check e₁ !⟶ e₂
+  -- #check e₁ !⟷ e₂
   -- example : e.groundable ↔ ⋄◾e := by simp
 
 end events

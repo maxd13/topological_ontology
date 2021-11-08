@@ -12,7 +12,7 @@ structure belief (ω : ontology) :=
   (believes  : ω.substance → ω.event → ω.event)
   (cogito : ∀ {s e}, believes s e ⇒ s)
   (reflexive : ∀ {s}, (∃ e, ⋄believes s e) → s ⇒ believes s s)
-  (transitive : ∀ {s e₁ e₂}, believes s (e₁ ▹ e₂) ∩ believes s e₁ ⇒ believes s e₂)
+  (transitive : ∀ {s e₁ e₂}, believes s (e₁ ⟶ e₂) ∩ believes s e₁ ⇒ believes s e₂)
   (idempotent : ∀ {s e}, believes s (believes s e) = believes s e)
 
 structure knowledge (ω : ontology) extends belief ω :=

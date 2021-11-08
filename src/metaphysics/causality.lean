@@ -390,7 +390,7 @@ namespace cause
   def subadditive : Prop := ∀ e e₁ e₂, c.causes e (e₁ ∪ e₂) ⇒ c.causes e e₁ ∪ c.causes e e₂
   def superadditive : Prop := ∀ e e₁ e₂, c.causes e e₁ ∪ c.causes e e₂ ⇒ c.causes e (e₁ ∪ e₂)
 
-  def K : Prop := ∀ e e₁ e₂, c.causes e (e₁ ▹ e₂) ⇒ ((c.causes e e₁) ▹ c.causes e e₂)
+  def K : Prop := ∀ e e₁ e₂, c.causes e (e₁ ⟶ e₂) ⇒ ((c.causes e e₁) ⟶ c.causes e e₂)
   def axiom₄₀ : Prop := ∀ e₁ e₂, c.causes e₁ e₂ ⇒ c.causes e₁ (c.causes e₁ e₂)
   def axiom₄₁ : Prop := ∀ e, c.caused e ⇒ c.caused (c.caused e)
   def axiom₄₂ : Prop := ∀ e₁ e₂, c.causes e₁ e₂ = c.causes e₁ (c.caused e₂)

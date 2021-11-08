@@ -33,8 +33,8 @@ def cause.noninertial (c : ω.cause) {e : ω.event} (f : e.factor) : Prop :=
 def cause.inertial (c : ω.cause) {e : ω.event} (f : e.factor) : Prop := ¬ c.noninertial f
 
 structure cause.tfactor (c : ω.cause) {e : ω.event} (f : e.factor) : Prop:=
-  (axiom₁ : ∀ ca, f.begins ⇒ c.causes ca f.begins ≡ c.causes ca e)
-  (axiom₂ : ∀ ca, f.continues ⇒ c.causes ca f.continues ≡ c.causes ca e)
+  (axiom₁ : ∀ ca, f.begins ⇒ c.causes ca f.begins ⟷ c.causes ca e)
+  (axiom₂ : ∀ ca, f.continues ⇒ c.causes ca f.continues ⟷ c.causes ca e)
 
 def cause.pind₁ {e : ω.event} (f : e.factor) : Prop := 
   c.tfactor f ∧
@@ -44,7 +44,7 @@ def cause.pind₁ {e : ω.event} (f : e.factor) : Prop :=
 
 def cause.pcem (c : ω.cause) {c' : ω.cause} (mc : c'.mcause) : ω.event :=
   {w | ∀ e : ω.entity, c'.caused e w → ∃ f : e.exists.factor, c.tfactor f ∧ f.direct c ∧
-    ∀ ca mca, c.causes ca f.continues ⇒ c'.causes mca e ▹ c.causes ca mca
+    ∀ ca mca, c.causes ca f.continues ⇒ c'.causes mca e ⟶ c.causes ca mca
   }
 
 /-- An event is said to be **Weakly Directly Non-Inertially Temporally Factorizable**

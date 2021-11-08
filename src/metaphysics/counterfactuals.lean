@@ -41,17 +41,17 @@ section cfr_examples
   /- The previous definition contains a paradox, can you spot it? -/
 
   /-- `e₁` subjunctively entails `e₂` in world `w` if the removal of any entities from `w` 
-      implies `e₁ ▹ e₂`. 
+      implies `e₁ ⟶ e₂`. 
       Alternatively, if for any world "smaller" than `w`
       in which `e₁` happens, `e₂` also happens. -/
-  def removal_cfr : ω.cfr := ⟨λe₁ e₂ w, w.ideal ⇒ e₁ ▹ e₂⟩
+  def removal_cfr : ω.cfr := ⟨λe₁ e₂ w, w.ideal ⇒ e₁ ⟶ e₂⟩
   /-- `e₁` subjunctively entails `e₂` in world `w` if the addition of any entities from `w` 
-      implies `e₁ ▹ e₂`.
+      implies `e₁ ⟶ e₂`.
       Alternatively, if for any world "larger" than `w`
       in which `e₁` happens, `e₂` also happens. -/
-  def addition_cfr : ω.cfr := ⟨λe₁ e₂ w, w.filter ⇒ e₁ ▹ e₂⟩
+  def addition_cfr : ω.cfr := ⟨λe₁ e₂ w, w.filter ⇒ e₁ ⟶ e₂⟩
   /-- `e₁` subjunctively entails `e₂` in world `w` if the addition or removal of any entities from `w` 
-      implies `e₁ ▹ e₂`. -/
+      implies `e₁ ⟶ e₂`. -/
   def arithmetic_cfr : ω.cfr := ⟨λe₁ e₂, ω.removal_cfr e₁ e₂ ∪ ω.addition_cfr e₁ e₂⟩
 
 end cfr_examples
@@ -82,7 +82,7 @@ section cfr
 
   /-- If `e₁` subjunctively entails `e₂` in `w` and `e₁` occurs in `w`, `e₂` 
       should also occur in `w`. -/
-  def cfr.postulate₁ : Prop := ∀ e₁ e₂, c e₁ e₂ ⇒ e₁ ▹ e₂
+  def cfr.postulate₁ : Prop := ∀ e₁ e₂, c e₁ e₂ ⇒ e₁ ⟶ e₂
 
   /-- A `cfr` is paradoxical if the falsity of the antecedent of the subjunctive implication
       implies its truth. -/
@@ -175,10 +175,10 @@ instance default_cfr : inhabited ω.cfr :=
   -- discussions boil down to.
 
 /- **TODOs**
-    TODO: Define ` ▹+ ` notation as the 
+    TODO: Define ` ⟶+ ` notation as the 
     subjunctive implication arrow relative to a default
     choice of counterfactual relation.
-    TODO: Define `x ▹- y` notation as `-x ▹+ -y`.
+    TODO: Define `x ⟶- y` notation as `-x ⟶+ -y`.
 
     TODO: Specify different ways with which counterfactual 
           relations (`cfrs`) can be 
@@ -189,7 +189,7 @@ instance default_cfr : inhabited ω.cfr :=
           using the natural `ctr` as the 
           default. It remains to be investigated whether
           this is equivalent to what is currently defined in
-          causality.lean for the `x ▹- y` case. 
+          causality.lean for the `x ⟶- y` case. 
           
           Some other
           such ways could be by the introduction of primitive
@@ -197,7 +197,7 @@ instance default_cfr : inhabited ω.cfr :=
           `event → world → world` or `event → world → set world`, 
           which for every pair `e, w` would define what the 
           world `w` would be like in case `e` were to occur.
-          Then `e₁ ▹+ e₂` should reduce to {w | (π e₁ w) ∈ e₂}
+          Then `e₁ ⟶+ e₂` should reduce to {w | (π e₁ w) ∈ e₂}
           or to {w | (π e₁ w) ⊆ e₂}, respectively. 
           Compared to the `ctrs`, it does look harder to define
           such projections without assuming new primitives.

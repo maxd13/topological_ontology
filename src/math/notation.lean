@@ -1,6 +1,5 @@
 import order.lattice
 
-
 -- Module used solely for defining notation classes
 
 class has_box (α : Type*) :=
@@ -38,9 +37,20 @@ class has_entailment (α : Type*) (β := α) :=
 
 infixr ` ⇒ ` := has_entailment.entails
 
-def strict_entailment {α β : Type*} [has_entailment α] (x y : α) := x ⇒ y ∧ x ≠ y
+def strict_entailment {α} [has_entailment α] (x y : α) := x ⇒ y ∧ ¬ (y ⇒ x)
+def negation_entailment {α} [has_entailment α] (x y : α) := ¬ (x ⇒ y)
+def equivalence_entailment {α} [has_entailment α] (x y : α) := x ⇒ y ∧ y ⇒ x
+def comparable_entailment {α} [has_entailment α] (x y : α) := x ⇒ y ∨ y ⇒ x
+def incomparable_entailment {α} [has_entailment α] (x y : α) := ¬ comparable_entailment x y
+def inequivalence_entailment {α} [has_entailment α] (x y : α) := ¬ equivalence_entailment x y
 
 infixr ` ⇒' `:50 := strict_entailment
+infixr ` ⇏ `:50 := negation_entailment
+infixr ` ⇔ `:50 := equivalence_entailment
+infixr ` ⇎ `:50 := inequivalence_entailment
+infixr ` ≡ ` := comparable_entailment
+infixr ` ≢ `:50 := incomparable_entailment
+
 
 instance cross_entailment₁ (α β γ : Type*) [has_entailment β] 
                           [c₁ : has_coe α β] [c₂ : has_coe γ β]
@@ -61,15 +71,17 @@ instance cross_entailment₄ (α β : Type*) [has_entailment β]
 class has_local_entailment (α : Type*) :=
   (entails : α → α → α)
 
-reserve infixr ` ▹ `:50
-infixr ` ▹ ` := has_local_entailment.entails
+reserve infixr ` ⟶ `:50
+infixr ` ⟶ ` := has_local_entailment.entails
 
-def local_eq {α : Type*} [has_local_entailment α] [has_inf α] (x y : α) := (x ▹ y) ⊓ (y ▹ x) 
+def local_neg {α : Type*} [has_local_entailment α] [has_neg α] (x y : α) := -( x ⟶ y)
 
--- class has_local_eq (α : Type*) := (eq : α → α → α)
-infixr ` ≡ ` := local_eq -- has_local_eq.eq
+infixr ` !⟶ `:50 := local_neg
 
-def local_neq {α : Type*} [has_local_entailment α] [has_inf α] [has_neg α] (x y : α) := -(x ≡ y)
+def local_eq {α : Type*} [has_local_entailment α] [has_inf α] (x y : α) := (x ⟶ y) ⊓ (y ⟶ x) 
 
--- class has_local_neq (α : Type*) := (neq : α → α → α)
-infixr ` ≢ `:50 := local_neq -- has_local_neq.neq
+infixr ` ⟷ `:50 := local_eq
+
+def local_neq {α : Type*} [has_local_entailment α] [has_inf α] [has_neg α] (x y : α) := -(x ⟷ y)
+
+infixr ` !⟷ `:50 := local_neq 
