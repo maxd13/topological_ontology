@@ -29,7 +29,7 @@ section substances
   /-- Negation of `entity.perfect` -/
   def entity.imperfect (e : ω.entity) := ¬ e.perfect
 
-  /-- Individual `substances` in the ontology are dense entities, 
+  /-- The `substances` in the ontology are dense entities, 
       every other entity is an `accident`.
       We also call a dense entity a perfect entity.
       **Substances** are entities which do not have contraries, 

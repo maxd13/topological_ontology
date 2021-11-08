@@ -321,7 +321,7 @@ end event_lemmas
 -- We defer full philosophical explanation to the "Intensionality and Extensionality" section.
 section entities
  
-  /-- Individual (possible, extensional) `entities` in the ontology are nonempty open sets of possible worlds.
+  /-- The (possible, extensional) `entities` in the ontology are nonempty open sets of possible worlds.
       An entity is said to **exist** precisely at the worlds which are its elements. -/
   structure entity (ω : ontology) :=
     -- the event of the entity existing ("exists" is a reserved word)
