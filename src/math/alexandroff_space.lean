@@ -121,3 +121,10 @@ instance alexandroff₀_t0  (order) : @t0_space α (alexandroff₀_of order) :=
 end topological_space
 
 def uncountable (α : Type u) := infinite α ∧ ¬ nonempty (α ≃ ℕ)
+
+-- I shouldn't need to do this
+-- it is already defined in newer versions of mathlib.
+def setoid.rel {α}(r : setoid α) : α → α → Prop := @setoid.r _ r
+
+-- This might also be defined in newer versions of mathlib
+def setoid.eq {α} : setoid α := ⟨eq, eq_equivalence⟩
