@@ -127,7 +127,7 @@ lemma eps_stronger : c.eps ⇒ c.epcs ∩ c.epsc :=
   end
 
 
-theorem aquinas_second (h' : c.entitative) : c.epcs ∩ c.epsc ∩ c.epc ∩ (c.epp (λe, c.substratum e)) ⇒ c.first_cause ω.nbe :=
+theorem aquinas_second (h' : c.entitative) : c.epcs ∩ c.epsc ∩ c.epc ∩ (c.epp (λe, c.csubstratum e)) ⇒ c.first_cause ω.nbe :=
   begin
     rintro w ⟨⟨⟨h₁, h₂⟩, pc⟩, pp⟩,
     by_cases h : ∃ e : ω.entity, e.contingent ∧ e.exists w, swap,
@@ -148,26 +148,23 @@ theorem aquinas_second (h' : c.entitative) : c.epcs ∩ c.epsc ∩ c.epc ∩ (c.
       exact e.existential,
     clear h₂,
     intros ee h₃ h₄ h₅ h₆,
-    replace h₃ := h₃.2,
     let e : ω.entity := ⟨ee, h₅, nonempty_of_mem h₆⟩,
-    have c₁ := pc e _ h₆, swap,
-      simp [nbe], assumption,
-    have c₂ := pp e _ c₁, swap,
-      exact @h₃,
+    have c₁ := pc e (by simpa [nbe]) h₆,
+    have c₂ := pp e h₃ c₁,
     obtain ⟨ge, hg, cg⟩ := c₂,
+    replace h₃ := h₃.2,
     specialize h₃ ge cg,
     convert cg,
     replace cg := h' (nonempty_of_mem ⟨ee, cg⟩),
     symmetry,
     by_contradiction h,
     let g : ω.entity := ⟨ge, cg, nonempty_of_mem h₃⟩,
-    specialize pc g _ h₃, swap,
-      simp [nbe], assumption,
+    specialize pc g (by simpa [nbe]) h₃,
     unfold_coes at pc, simp [g] at pc,
     contradiction,
   end
 
-theorem aquinas_second_psr : (c.epcs (@entity.contingent ω) univ) ∩ (c.epsc univ) ∩ c.epsr ∩ (c.epp' (λe, c.substratum e)) ⇒ c.first_cause ω.nbe :=
+theorem leibniz_second : (c.epcs (@entity.contingent ω) univ) ∩ (c.epsc univ) ∩ c.epsr ∩ (c.epp' (λe, c.csubstratum e)) ⇒ c.first_cause ω.nbe :=
   begin
     rintro w ⟨⟨⟨h₁, h₂⟩, psr⟩, pp⟩,
     by_cases h : ∃ e : ω.entity, e.contingent ∧ e.exists w, swap,
@@ -188,12 +185,10 @@ theorem aquinas_second_psr : (c.epcs (@entity.contingent ω) univ) ∩ (c.epsc u
       trivial,
     clear h₂,
     intros ee h₃ h₄ h₅ h₆,
-    replace h₃ := h₃.2,
-    -- let e : ω.entity := ⟨ee, h₅, nonempty_of_mem h₆⟩,
     have c₁ := psr ee ⟨nonempty_of_mem h₆,h₄⟩ h₆,
-    have c₂ := pp ee _ c₁, swap,
-      exact @h₃,
+    have c₂ := pp ee h₃ c₁,
     obtain ⟨g, hg, cg⟩ := c₂,
+    replace h₃ := h₃.2,
     specialize h₃ g cg,
     convert cg,
     symmetry,
@@ -205,11 +200,11 @@ theorem aquinas_second_psr : (c.epcs (@entity.contingent ω) univ) ∩ (c.epsc u
   end
 
 -- And of course we can get `dscotus` out of these proofs:
-theorem scotus_second (h' : c.entitative) : ⋄(c.epcs ∩ c.epsc ∩ c.epc ∩ (c.epp (λe, c.substratum e))) → c.dscotus :=
+theorem scotus_second (h' : c.entitative) : ⋄(c.epcs ∩ c.epsc ∩ c.epc ∩ (c.epp (λe, c.csubstratum e))) → c.dscotus :=
   c.scotus_theorem $ aquinas_second c @h'
 
-theorem scotus_second_psr : ⋄((c.epcs (@entity.contingent ω) univ) ∩ (c.epsc univ) ∩ c.epsr ∩ (c.epp' (λe, c.substratum e))) → c.dscotus :=
-  c.scotus_theorem $ aquinas_second_psr c
+theorem scotus_second_psr : ⋄((c.epcs (@entity.contingent ω) univ) ∩ (c.epsc univ) ∩ c.epsr ∩ (c.epp' (λe, c.csubstratum e))) → c.dscotus :=
+  c.scotus_theorem $ leibniz_second c
 
 
 -- theorem material_substratum : ∀ {c' : ω.cause} (mc : c'.mcause), c.pcem mc ∩ mc.pis c ⇒ c.epcs (@entity.contingent ω) univ :=
@@ -242,7 +237,7 @@ theorem scotus_second_psr : ⋄((c.epcs (@entity.contingent ω) univ) ∩ (c.eps
     
   -- end
 
-theorem leibniz_psr (h : c.conjunctive₁') : c.epsr ∩ c.epss ⇒ c.first_cause ω.nbe :=
+theorem leibniz_BCCF (h : c.conjunctive₁') : c.epsr ∩ c.epss ⇒ c.first_cause ω.nbe :=
   begin
     rintros w ⟨psr, pss⟩,
     by_cases c₀ : ∀ w', w' = w,
@@ -282,8 +277,8 @@ theorem leibniz_psr (h : c.conjunctive₁') : c.epsr ∩ c.epss ⇒ c.first_caus
     exact h.1,
   end
 
-theorem scotus_leibniz_psr (h : c.conjunctive₁') : ⋄(c.epsr ∩ c.epss) → c.dscotus :=
-  c.scotus_theorem $ leibniz_psr c h
+theorem scotus_leibniz_BCCF (h : c.conjunctive₁') : ⋄(c.epsr ∩ c.epss) → c.dscotus :=
+  c.scotus_theorem $ leibniz_BCCF c h
 
 
 theorem atheological_hylemorphism : (∃ c : ω.cause, ⋄(c.uhylemorphism ∩ ω.nonparmenidean)) → ω.atheism :=
@@ -367,97 +362,52 @@ theorem theological_hylemorphism : ∀ (c' : ω.cause) (mc : c'.mcause), -c'.uhy
   end
 
 
--- The leibnizian version of a weakened version of Aquina's second way.
--- Possibly the weakest argument anyone can give for the existence of God.
--- theorem weak_leibniz2 : ⋄ω.epsr → ω.theism :=
---   begin
---     simp [set.nonempty, epsr],
---     intros w psr,
---     dunfold theism substance.simple entity.simple,
---     -- suppose God had an accident
---     simp [substance.accidents, ext_iff],
---     by_contradiction h,
---     push_neg at h,
---     -- then He should also have an accident 'a' 
---     -- in the world w in which psr is valid
---     have c₀ : ∃ (a : entity ω), a.subsists (nb ω).up ∧ a.contingent ∧ a ∈ w,
---         admit,
---     obtain ⟨a, a_subs, a_contingent, H⟩ := c₀,
---     simp [entity.contingent] at a_contingent,
---     -- this accident has a cause in w, call it 's'.
---     have c₁ := psr a a_contingent H,
---     simp [entity.caused] at c₁,
---     obtain ⟨s, hs⟩ := c₁,
---     -- But this cause would in a sense have to be a
---     -- cause of something that is going on in the necessary
---     -- being.
---     have c₂ : s.causes ω.nbe.exists w,
---         admit,
---     -- However the necessary being admits no causes.
---     have c₃ : ¬ ∃ s : ω.substance, s.causes ω.nbe.exists w,
---         admit,
---     push_neg at c₃,
---     specialize c₃ s,
---     contradiction,
---     -- Therefore the necessary being 
---     -- is what we call God (E.Q.D.D.).
-
-
-
---     -- by_cases c₀ : ∃ e : ω.entity, e ∈ w ∧ e.contingent,
---     --     swap,
---     --     admit,
---     -- obtain ⟨e, H, hce⟩ := c₀,
---     -- have c₁ := psr e hce H,
---     -- obtain ⟨g, uncaused, cause⟩ := pp e c₁,
---     -- simp [entity.uncaused] at uncaused,
---     -- have c₂ : ¬ g.val.contingent,
---     --     intro h,
---     --     simp [ substance.causes
---     --          , entity.sdepends
---     --          , entity.depends
---     --          , event.sdepends
---     --          , event.depends
---     --          ] at cause,
---     --     have gexists := cause.1.2.1,
---     --     specialize psr g.val h gexists,
---     --     contradiction,
---     -- simp [entity.contingent] at c₂,
---     -- rw c₂ at uncaused,
---     -- simp [entity.caused, substance.causes, event.sdepends] at uncaused,
---     -- simp [theism, substance.metaphysical, simple],
---     -- intros x sx,
---     -- -- specialize uncaused x,
---     -- -- simp at uncaused,
---     -- admit,
---   end
-
-
--- Aquina's second way, weakened so as to use pp instead of
--- any stronger assumptions, and which assumes only the
--- conjoint possibility of the premisses.
-
--- A slightly stronger argument can prove classical
--- theism. Since weak substantial finitism is strictly stronger
--- than pp, it should also follow that we cannot prove classical
--- theism from pp alone. I wonder if we can prove it
--- from causal finitism?
--- theorem wsf_aquinas2 : ω.psr → ω.wsfinitistic → ω.ctheism :=
---   begin
---     intros psr wsf,
---     obtain ⟨w₀, hw₀⟩ := wsf,
---     admit,
---   end
+-- The argument from consubstantial causation.
+theorem consub_cosmo : c.consubstantial → ⋄(c.epsr ∩ c.uncaused ω.nbe) → ω.theism :=
+  begin
+    simp [set.nonempty, cause.epsr],
+    intros h w psr unc,
+    dunfold theism substance.simple entity.simple,
+    -- suppose God had an accident
+    simp [substance.accidents, ext_iff, set.nonempty],
+    intro a,
+    by_contradiction contra,
+    -- then He should also have an accident 'a' 
+    -- in the world w in which psr is valid
+    have : ω.nb.composite := ⟨a, contra⟩,
+    clear contra a,
+    obtain ⟨a, contra, h₁⟩ := nb_acc_actual this w, clear this,
+    simp [substance.accidents] at contra,
+    -- this accident has a cause in w, call it 's'.
+    have : a.exists.contingent,
+      refine ⟨a.possible, _⟩,
+      have := a.contingent,
+      simp [entity.contingent, nbe] at this,
+      simpa [event.necessary],
+    obtain ⟨s, hs⟩ := psr a this h₁, clear this,
+    -- But this cause would in a sense have to be a
+    -- cause of something that is going on in the necessary
+    -- being.
+    have c₁ : c.causes s ω.nbe.exists w,
+        refine h s a hs ω.nbe _ (by simp [nbe]),
+        simp [has_equiv.equiv, entity.cosubstantial],
+        exact ⟨ω.nbe, self_subsist.mp ω.nb.perfect, contra⟩,
+    -- However the necessary being admits no causes.
+    simp [cause.uncaused, cause.caused] at unc,
+    apply unc s, assumption,
+    -- Therefore the necessary being 
+    -- is what we call God (E.Q.D.D.).
+  end
 
 variable (ω)
 
 
 /-- "It is contingent that there contingent things. "-/
-def contingency_contingent := (∃ e : ω.entity, e.contingent) ∧ (Sup $ @entity.contingent ω).contingent
+def contingency_contingent : Prop := (∃ e : ω.entity, e.contingent) ∧ (Sup $ @entity.contingent ω).contingent
 
 /-- It is it enough for it it to be contingent that there are
     contingent entities for we to get full blown classical theism
-    without any extra auxiliary assumption. -/
+    without any extra auxiliary assumptions. -/
 theorem ctheism_of_contingency : ω.contingency_contingent → ω.ctheism :=
   begin
     rintros ⟨h₁, h₂⟩,
@@ -541,10 +491,10 @@ theorem ctheism_of_contingency : ω.contingency_contingent → ω.ctheism :=
             abstraction, and with it being the universe. See god.lean for details.
         0.2. Indeed, to say that God exists (`ω.theism`) is to say that the necessary being cannot be construed
             as a well-behaved materialistic universe, as the material universe has accidents. While
-            to say that God has the attributes classically prescribed to Him (`ω.ctheism`) is to 
+            to say that God has the attributes classically ascribed to Him (`ω.ctheism`) is to 
             say that the necessary being cannot *in any way* be construed as the universe,
             or as any collection of things, and that it cannot be taken to be a mere abstraction,
-            *no matter ones underlying intensional position on virtual entities*, provide only it is a consistent
+            *no matter one's underlying intensional position on which entities are real*, provide only it is a consistent
             position.
         0.3. The necessary being is unique up to existential equivalence (i.e. *qua* extensional entity)
             (`nbe_unique`).
@@ -603,7 +553,7 @@ theorem ctheism_of_contingency : ω.contingency_contingent → ω.ctheism :=
 
     7. (Premisse) The multitude, collection, or whole of things (substances) of a given 
        kind varies in perfection across possible worlds in proportion to the number of 
-       entities of that kind which exist in each respective world (`b.composable`).
+       entities of that kind which exists in each respective world (`b.composable`).
 
        7.1. Strictly larger sets are strictly more perfect than the strictly smaller sets.
        7.2. Collections are strictly more perfect than their proper parts, 
@@ -674,9 +624,7 @@ theorem aquinas_fourth : ω.participated → ω.viable → ω.ctheism :=
     -- contingent things. I.e. the necessary being's
     -- existence is logically equivalent to "there exists something contingent",
     -- so it can be thought of as the collection
-    -- of contingent things, a so called "
-    -- big contingent fact" (albeit not a contingent one)
-    -- or "the universe".
+    -- of contingent things, or "the universe".
     replace c : ω.nbe = Sup entity.contingent := sorry,
     -- we can then specialize the compositionality of being
     -- to the set of contingent entities and to the necessary being:

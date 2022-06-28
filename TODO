@@ -47,8 +47,8 @@ Prove the following theorems:
       order under causation of all the events which cause x in w; because x is a substrata, these events
       must occur in w. Then apply Zorn's lemma and take a chain of events in this partial order,
       and we can then proceed by cases.
-      1. If the chain only has a single element, then trivially it has an upper bound.
-      2. If the chain has more than one element, then the conjunction of the whole chain, 
+      1. If the chain only has a single contingent element, then trivially it has an upper bound.
+      2. If the chain has more than one contingent element, then the conjunction of the whole chain, 
          must be a contingent event, since the chain occurs at least in w, but in at least
          some other world one some event in the chain doesn't occur, and hence the chain doesn't occur.
       3. Therefore, by the PSR, this event has a cause c.
