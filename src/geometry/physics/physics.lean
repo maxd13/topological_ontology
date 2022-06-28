@@ -8,14 +8,16 @@ local attribute [instance] prop_decidable
 
 open ontology
 
-structure geometry extends ontology := 
-    (space : emetric_space world)
+-- TODO: Need to upgrade to latest version of mathlib before developing this file properly.
 
-
+-- structure geometry extends ontology.{u+1} := 
+--     (time : setoid world)
+--     (simultaneity_of_space : ∀ w₁ w₂, space.rel w₁ w₂ → time.rel w₁ w₂)
+    
 
 --common sense geometry
-class geometry.common (ω : geometry) (H : Type* := ℝ) [topological_space H] (n : ℕ := 3) extends ontology.common ω.to_ontology :=
-    (axiom₄ : nonempty (@manifold (fin n → H)  _ ω.world ω.space.to_uniform_space.to_topological_space))
+-- class geometry.common (ω : geometry) (H : Type* := ℝ) [topological_space H] (n : ℕ := 3) extends ontology.common ω.to_ontology :=
+--     (axiom₄ : nonempty (@manifold (fin n → H)  _ ω.world ω.space.to_uniform_space.to_topological_space))
     
 
 -- I am not sure how to model time.
