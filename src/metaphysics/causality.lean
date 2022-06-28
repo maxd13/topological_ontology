@@ -38,7 +38,7 @@ variables {ω : ontology}
    its adoption is to be preferred over disagreement with another philosopher 
    who has given plausible reasons as to why his position must be true, unless we are able
    to sufficiently explain to him that the plausibility behind the reasons he adduces is not due to his theory of
-   causality being true, but it can be better explained by our own theory. Proceeding in this way we can keep
+   causality being true, but that it can be better explained by our own theory. Proceeding in this way we can keep
    disagreements to a minimum, leaving greater room for cooperation.
    
    Furthermore, at least *some* of the arguments we will introduce, e.g. about the existence of God,
@@ -210,21 +210,21 @@ namespace explanation
       and this happens precisely when `e` is the cause of 
       some motion in some previous possible world `w₀` 
       which ultimately lead to the configuration `m` existing in `w`.
-      So we say that the oiler is the cause of a clay pot even when the oiler
+      So we say that the potter is the cause of a clay pot even when the potter
       is dead and no longer exists, only because of the fact that, 
-      at some point in the past, the oiler was the simultaneous cause of some
+      at some point in the past, the potter was the simultaneous cause of some
       motion of clay which changed the material configuration of the clay
       until the point that it became a pot. The fundamental kind of
       causation as such is simultaneous causation, as non-simultaneous cases 
       can be reduced to the simultaneous ones.
 
       After the clay became a pot, it 
-      no longer needed the oiler for continuing to be a pot, but this is so
+      no longer needed the potter for continuing to be a pot, but this is so
       only because the pot is nothing but a configuration of the underlying clay. 
       Some things however, like the fundamental particles of physics, or any
       sort of fundamental material substratum that is proposed for things,
       cannot be reduced to configurations of further material substrata,
-      and so could not possibly be caused like the oiler causes the pot. 
+      and so could not possibly be caused like the potter causes the pot. 
       As such, to the extent that these things are caused at all, their cause
       must be simultaneous to them. Furthermore, it may just be that many other
       things besides material substrata behave like this, for instance processes
@@ -251,6 +251,10 @@ namespace explanation
   /-- The (explanatory) **Principle of Sufficient Reason**, as an event. -/
   def epsr (kind := @event.contingent ω) : ω.event := 
     {w : ω.world | ∀ (e : ω.event), kind e → e.occurs w → ∃ e', ε.explains e' e w}
+
+  /-- The (explanatory) **Weak Principle of Sufficient Reason**, as an event. -/
+  def ewpsr (kind := @event.contingent ω) : ω.event := 
+    {w : ω.world | ∀ (e : ω.event), kind e → e.occurs w → ∃ e', ⋄ε.explains e' e}
 
   /-- The (explanatory) **Principle of Sufficient Reason**. -/
   def psr (kind := @event.contingent ω) : Prop := □ε.epsr kind
@@ -334,10 +338,11 @@ namespace cause
   def pss : Prop := □c.epss
 
   def caused (e : ω.event) : ω.event := {w | ∃ e', c.causes e' e w}
+  def simcaused (e : ω.event) : ω.event := {w | ∃ e', c.simcauses e' e w}
   def is_cause (e : ω.event) : ω.event := {w | ∃ e', c.causes e e' w}
   def uncaused (e : ω.event) : ω.event := -c.caused e
 
-  /-- An **Exact cause** is an event which causes everything that is cosubstantial 
+  /-- An **Exact cause** is an event which causes everything that is consubstantial 
       to some entity in some possible world.
       The event is said to **exact** the entity because it is,
       in a sense, a fully qualified cause of the underlying substance being in the state
@@ -355,17 +360,17 @@ namespace cause
   def secauses (e : ω.event) (e₁ : ω.entity) : ω.event := 
     c.causes e e₁ ∩ {w | ¬ ∃ e₂ : ω.entity, e₂ ≠ e₁ ∧ e₁ ≈ e₂ ∧ c.causes e e₂ w}
 
-  /-- **Existential cause**. -/
+  /-- **Existential cause**. -/ -- needs some work, appears trivial.
   def ecauses (e : ω.event) (e₁ : ω.entity) : ω.event := c.secauses e e₁ ∪ c.exacts e e₁
 
   def entitative : Prop := ∀ {e}, ⋄c.is_cause e → e.existential
   def effentitative : Prop := ∀ {e}, ⋄c.caused e → e.existential
   def substantive : Prop := ∀ {e}, ⋄c.is_cause e → e.substantive
-  /-- **Causal Realism** is the intensional theory that claims whatever
-      entity has causal powers must be real. -/
-  def realism (Ω : ω.iontology) : Prop := ∀ {e : ω.entity}, ⋄c.is_cause e → e.real Ω
+  /-- **Causal Realism** is the intensional proposition which claims that whatever
+      entity can cause real entities must itself be real. -/
+  def realistic (Ω : ω.iontology) : Prop := ∀ (e₁ e₂ : ω.entity), e₂.real Ω → ⋄c.causes e₁ e₂ → e₁.real Ω
   
-  def cosubstantial : Prop := ∀ e (e₁ : ω.entity), c.causes e e₁ ⇒ c.exacts e e₁
+  def consubstantial : Prop := ∀ e (e₁ : ω.entity), c.causes e e₁ ⇒ c.exacts e e₁
   
   section conjunctive
     def conjunctive : Prop := ∀ e e₁ e₂, c.causes e (e₁ ∩ e₂) = c.causes e e₁ ∩ c.causes e e₂
@@ -382,6 +387,12 @@ namespace cause
     def conjunctive₂' : Prop := 
       ∀ e e₁ e₂ : ω.event, 
       e₁.contingent → e₂.contingent → c.causes e e₁ ∩ c.causes e e₂ ⇒ c.causes e (e₁ ∩ e₂)
+
+    def conjunctive₁'' : Prop := 
+      ∀ e e₁ e₂ : ω.event, e₁ ≢ e₂ → c.causes e (e₁ ∩ e₂) ⇒ c.causes e e₁ ∩ c.causes e e₂
+    
+    def econjunctive₁'' : Prop := 
+      ∀ e e₁ e₂ : ω.event, e₁.entitative → e₁ ≢ e₂ → c.causes e (e₁ ∩ e₂) ⇒ c.causes e e₁
       
   
   end conjunctive
@@ -390,6 +401,14 @@ namespace cause
   def subadditive : Prop := ∀ e e₁ e₂, c.causes e (e₁ ∪ e₂) ⇒ c.causes e e₁ ∪ c.causes e e₂
   def superadditive : Prop := ∀ e e₁ e₂, c.causes e e₁ ∪ c.causes e e₂ ⇒ c.causes e (e₁ ∪ e₂)
 
+  /-- Causal monotonicity -/
+  def monotone : Prop := ∀ e e₁ e₂ : ω.event, e₁ ⇒ e₂ → c.causes e e₁ ⇒ c.causes e e₂
+
+  /-- Contingent causal monotonicity -/
+  def cmonotone : Prop := 
+    ∀ e e₁ e₂ : ω.event, e₁.contingent → e₂.contingent → 
+    e₁ ⇒ e₂ → c.causes e e₁ ⇒ c.causes e e₂
+  
   def K : Prop := ∀ e e₁ e₂, c.causes e (e₁ ⟶ e₂) ⇒ ((c.causes e e₁) ⟶ c.causes e e₂)
   def axiom₄₀ : Prop := ∀ e₁ e₂, c.causes e₁ e₂ ⇒ c.causes e₁ (c.causes e₁ e₂)
   def axiom₄₁ : Prop := ∀ e, c.caused e ⇒ c.caused (c.caused e)
@@ -405,6 +424,7 @@ namespace cause
   lemma occured_causes : ∀ {e₁ e₂}, c.causes e₁ e₂ ⇒ e₂ := by
     intros e₁ e₂ w hw; apply c.T; apply c.caused_causes hw
   
+  -- has some similarities to the Gale-Pruss argument
   lemma cause_all_of_cause_singleton : c.conjunctive₁' → ∀ {w e}, c.causes e {w} w →
                                        ∀ e' : ω.event, e'.contingent → e'.occurs w → c.causes e e' w
                                        := begin
@@ -428,34 +448,19 @@ namespace cause
     exact h₄,
   end
 
-  lemma singleton_uncaused_of_conjunctive₁ : c.conjunctive₁ → ∀ w, c.uncaused {w} w := sorry
-    -- begin
-    --   intros h w,
-    --   simp [cause.uncaused, has_neg.neg, compl, set_of],
-    --   by_contradiction c,
-    --   obtain ⟨e, he⟩ := c,
-    --   have c₀ : e.occurs w := c.axiom₀ ⟨{w}, or.inr he⟩,
-    --   have c₁ : {w} = e ∩ {w},
-    --     ext w', simp,
-    --     exact ⟨λh, ⟨by convert c₀, h⟩, and.right⟩,
-    --   rw c₁ at he, clear c₁ c₀,
-    --   replace he := h e e {w} he,
-    --   replace he : ⋄c.causes e e:= nonempty_of_mem he.1,
-    --   have c₂ := c.irreflexive e,
-    --   contradiction,
-    -- end
 
   /-- A substance **Freely causes** some event if it simultaneously causes it and it is possible
       for it to not have simultaneously caused it even while remaining in the same state and in
       the same context in which the causation took place. -/
   def fcauses (s : ω.substance) (e : ω.event) : ω.event := 
-    { w | c.simcauses s e w ∧ ∀ (context : ω.entity), 
+    { w | c.simcauses s e w ∧ ∀ (context : ω.event), 
       c.simcauses s e ⇒ context → c.simcauses s e ≠ context →
-      ∃ w', w' ≠ w ∧ s.state w' = s.state w ∧ context.exists w' ∧
+      ∃ w', w' ≠ w ∧ s.state w' = s.state w ∧ context.occurs w' ∧
       ¬c.simcauses s e w'
     }
   
   def has_will (s : ω.substance) : Prop := ∃ e, ⋄c.fcauses s e
+
   /-- The event of a substance `s` being **free** w.r.t. some 
       causal structure `c` is the set of all possible worlds `w` in which
       `s` exists and there is some possible event `e` which:
@@ -480,41 +485,43 @@ namespace cause
   /-- The causal version of the **Principle of Sufficient Reason**, as an event. -/
   @[reducible, simp]
   def epsr (kind := @event.contingent ω) : ω.event := c.up.epsr kind
+  /-- The causal version of the **Weak Principle of Sufficient Reason**, as an event. -/
+  @[reducible, simp]
+  def ewpsr (kind := @event.contingent ω) : ω.event := c.up.ewpsr kind
+
   /-- The causal version of the **Principle of Sufficient Reason**. -/
   def psr (kind := @event.contingent ω) : Prop := □c.epsr kind
 
-  -- Note: this lemma can be blocked for the `pc` below 
-  -- due to the fact that a singleton event can only be
-  -- an entity in case there is a best (greatest) of all possible worlds,
-  -- which can simply be rejected due the immense amount
-  -- of paradoxes that this generates, among which 
-  -- "accidents cannot possibly exist" is included.
-  lemma weak_modal_fatalism : c.conjunctive₁ → (∃ w₁ w₂ : ω.world, w₁ ≠ w₂) → ¬c.psr :=
-    begin
-      intros h₁ h₂ h₃,
-      obtain ⟨w₁, w₂, h₂⟩ := h₂,
-      simp [cause.psr, ext_iff] at h₃,
-      specialize h₃ w₁,
-      simp [explanation.epsr, set_of, has_mem.mem, set.mem] at h₃,
-      -- the crucial step is specializing to {w₁},
-      -- which works because we are not required to prove
-      -- {w₁} is an existential event.
-      specialize h₃ {w₁} (by simp [set.nonempty]) _, swap,
-        simp [ext_iff],
-        symmetry' at h₂,
-        exact ⟨w₂,h₂⟩,
-      specialize h₃ (mem_singleton_iff.2 rfl),
-      obtain ⟨e, he⟩ := h₃,
-      have c₀ := c.singleton_uncaused_of_conjunctive₁ h₁ w₁,
-      replace he := c.caused_causes he,
-      contradiction,
-    end
-  
   /-- The **Principle of Causality**, as an event. This is the `psr` restricted to entities. -/
   def epc (kind := @entity.contingent ω) : ω.event := 
     {w : ω.world | ∀ (e : ω.entity), kind e → e.exists w → c.caused e w}
   /-- The **Principle of Causality**. This is the `psr` restricted to entities. -/
   def pc (kind := @entity.contingent ω) : Prop := □c.epc kind
+
+
+  theorem Gale_Pruss : c.conjunctive₁' → c.ewpsr ⇒ c.epsr :=
+    begin
+      intros h₀ w h₁,
+      specialize h₁ {w}, simp [ext_iff] at h₁,
+      by_cases hyp : ∃ w', w' ≠ w,
+        obtain ⟨w', hw'⟩ := hyp,
+        specialize h₁ w' hw', clear hw' w',
+        obtain ⟨C, w', h⟩ := h₁,
+        have c₁ := c.axiom₀ ⟨C, h⟩, 
+        simp at c₁, cases c₁, clear c₁,
+        have c₁ := c.cause_all_of_cause_singleton h₀ h,
+        intros e he₁ he₂, use C, apply c₁; assumption,
+      clear h₀ h₁,
+      intros e he, exfalso,
+      simp [entity.contingent, ext_iff] at he,
+      obtain ⟨⟨w', hw'⟩, w'', hw''⟩ := he,
+      push_neg at hyp,
+      have c₁ := hyp w',
+      have c₂ := hyp w'', 
+      cases c₁, cases c₂, clear hyp c₁ c₂,
+      contradiction,
+    end
+
 
   /-- The **Platonic Principle** for events, as an event.
       This principle is a consequence of the doctrine
@@ -572,7 +579,7 @@ namespace cause
   -/
 
   /-- An entity is a **First Cause** in some possible world `w` if it is the cause 
-      of every other event occuring in `w` (except itself). -/
+      of every other event occurring in `w` (except itself). -/
   def first_cause' (e : ω.entity) : ω.event := 
     {w | e.exists w ∧ ∀ e' : ω.event, e'.occurs w → e.exists ≠ e' → c.causes e e' w}
 
@@ -696,8 +703,8 @@ namespace cause
       or something of the sort, or maybe for some other reason)". -/
   def pus (kind := @entity.contingent ω)  (water := λe:ω.event,true) := □c.epus kind water
 
-  /-- An `event` is said to be **Causally Grounded** w.r.t. a causal structure
-      if there is some event which may possibly cause the event to occur. -/
+  /-- An event `e` is said to be **Causally Grounded** w.r.t. a causal structure `c`,
+      and possible world `w`, if there is some event in `w` which may possibly cause `e` to occur. -/
   def cground (e : ω.event) : ω.event := {w | ∃ e' : ω.event, e'.occurs w ∧ ⋄c.causes e' e}
 
   /-- An **Aristotelian-Causal Account of Modality**, for events, is the set of all possible worlds 
@@ -705,6 +712,12 @@ namespace cause
       in `w` can possibly cause `e` to occur. -/
   def acam' : ω.event := {w | ∀ e : ω.event, ⋄e → e.occurs w ∨ c.cground e w}
   -- Notice the converse of the (`→`) in the above definition is trivial.
+
+  /-- A **Non-Negative Aristotelian-Causal Account of Modality**, for events, is the set of all possible worlds 
+      `w` in which for any not purely negative event `e`, it either occurs in `w` or some event
+      in `w` can possibly cause `e` to occur. -/
+  def nnacam : ω.event := {w | ∀ e : ω.event, e.npnegative → e.occurs w ∨ c.cground e w}
+
 
   /-- An **Aristotelian-Causal Account of Modality** (for entities) is the set of all possible worlds 
       `w` in which for any given possible entity `e`, it either exists in `w` or some event
@@ -725,7 +738,189 @@ namespace cause
       but this principle appears to be stronger than `prussian_principle₁`. -/
   def prussian_principle₂ : Prop := ∀ (w : ω.world), c.acam w → (∀ w', (∃ e ∈ w', e ∉ w) → c.epc.occurs w') → c.epc.occurs w
   
-  theorem pruss_nature_of_modality_argument₁ : c.conjunctive₁' → c.prussian_principle₁ → ⋄c.acam' → c.psr :=
+  /-- Independence principle needed in one interpretation of Pruss's argument. 
+      It reads "No contingent event is necessarily impossible to cause, 
+      and the mere fact there are no causes necessitating a contingent event's occurrence 
+      does not necessitate this event's occurrence". 
+      The second part of the conjunction is analytical. -/
+  lemma prussian_independence : □c.acam' → ∀ e : ω.event, e.contingent → e ≢ c.uncaused e :=
+    begin
+      intros h e he, 
+      simp only [incomparable_entailment, comparable_entailment], 
+      simp [event.contingent, event.necessary, ext_iff] at he,
+      obtain ⟨he, ⟨w, hw⟩⟩ := he,
+      push_neg, constructor; intro absurd,
+        simp [event.contingent, event.necessary, ext_iff, cause.acam'] at h,
+        specialize h w e he, 
+        simp [hw, cause.cground, set_of] at h,
+        obtain ⟨C, h₁, ⟨w', hw'⟩⟩ := h,
+        have c₀ := c.axiom₀ ⟨C, hw'⟩,
+        specialize absurd c₀,
+        simp [cause.uncaused, cause.caused] at absurd,
+        specialize absurd C, contradiction,
+      -- the second part doesn't need acam', 
+      -- and is in fact analytical
+      suffices c₀ : c.uncaused e w,
+        specialize absurd c₀, contradiction, 
+        clear absurd,
+      simp [cause.uncaused, cause.caused, has_neg.neg, compl], 
+      simp [set_of],
+      intros C absurd, 
+      replace absurd := c.axiom₀ ⟨C, absurd⟩,
+      contradiction,
+    end
+
+  
+  /-- The least Pruss has to assume, as an additional premise, to conclude the `psr` from 
+      the necessity of `acam'`. -/
+  def prussian_minimal_extra_assumption : Prop := 
+    ∀ e C : ω.event, e.contingent → 
+    c.causes C (e ∩ c.uncaused e) ⇒ c.causes C e
+
+  theorem pruss_nature_of_modality_argument₀ : c.conjunctive₁'' → □c.acam' → c.psr :=
+    begin
+      intros conj h, simp [cause.psr, ext_iff, explanation.epsr], 
+      have indep := c.prussian_independence h,
+      intros w, by_contradiction contra,
+      push_neg at contra,
+      obtain ⟨E, h₁, w', h₂, ⟨h₃, h₄⟩⟩ := contra,
+      let «E*» := c.uncaused E ∩ E,
+      simp [cause.acam', ext_iff] at h,
+      have c₀ : w ∈ «E*»,
+        refine ⟨_, h₃⟩,
+        simpa [cause.uncaused, cause.caused],
+      specialize h w' «E*» ⟨w, c₀⟩,
+      simp [h₂, cause.cground, set_of] at h,
+      obtain ⟨C, h₅, ⟨w'', h₆⟩⟩ := h,
+      simp [«E*»] at h₆,
+      specialize conj C E (c.uncaused E) _, swap,
+        apply (indep E), 
+        simp [event.contingent, event.necessary, ext_iff],
+        exact ⟨⟨w, h₃⟩,⟨w', h₂⟩⟩,
+      simp only [inter_comm] at h₆,
+      specialize conj h₆, clear h₆,
+      obtain ⟨h₆, h₇⟩ := conj,
+      replace h₇ := c.axiom₀ ⟨C, h₇⟩,
+      simp [cause.uncaused, cause.caused] at h₇,
+      specialize h₇ C,
+      contradiction,
+    end
+
+  theorem pruss_nature_of_modality_argument₀' : c.prussian_minimal_extra_assumption → □c.acam' → c.psr :=
+    begin
+      intros min h, simp [cause.psr, ext_iff, explanation.epsr], 
+      intros w, by_contradiction contra,
+      push_neg at contra,
+      obtain ⟨E, h₁, w', h₂, ⟨h₃, h₄⟩⟩ := contra,
+      let «E*» := c.uncaused E ∩ E,
+      simp [cause.acam', ext_iff] at h,
+      have c₀ : w ∈ «E*»,
+        refine ⟨_, h₃⟩,
+        simpa [cause.uncaused, cause.caused],
+      specialize h w' «E*» ⟨w, c₀⟩,
+      simp [h₂, cause.cground, set_of] at h,
+      obtain ⟨C, h₅, ⟨w'', h₆⟩⟩ := h,
+      simp [«E*»] at h₆,
+      specialize min E C _, swap,
+        simp [event.contingent, event.necessary, ext_iff],
+        exact ⟨⟨w, h₃⟩,⟨w', h₂⟩⟩,
+      simp only [inter_comm] at h₆,
+      specialize min h₆, 
+      replace h₆ := c.axiom₀ ⟨C, h₆⟩,
+      simp [cause.uncaused, cause.caused] at h₆,
+      replace h₆ := h₆.2 C,
+      contradiction,
+    end  
+
+  theorem pruss_nature_of_modality_argument₁ : c.conjunctive₁'' → 
+    c.prussian_minimal_extra_assumption → c.prussian_principle₁ 
+    → ⋄c.acam' → c.psr :=
+    begin
+      intros conj min pruss h,
+      obtain ⟨actual_world, ha⟩ := h,
+      suffices c₀ : ∀ w', w' ≠ actual_world → c.epsr.occurs w',
+        have c₁ := pruss actual_world ha c₀,
+        simp [cause.psr, ext_iff], intro w,
+        by_cases h : w = actual_world,
+          rw h, exact c₁,
+        exact c₀ w h,
+        clear pruss,
+      intros w hw,
+      by_contradiction contra,
+      simp [cause.epsr, explanation.epsr, ext_iff] at contra,
+      obtain ⟨E, h₀, h₁, h₂, h₃⟩ := contra,
+      by_cases h : E.occurs actual_world,
+        let nonactuality : ω.event := -{actual_world},
+        let F := E ∩ nonactuality,
+        let «F*» := F ∩ c.uncaused F,
+        have c₀ : w ∈ F,
+          refine ⟨h₂, _⟩,
+          simp [nonactuality, hw],
+        have c₁ : E ≢ nonactuality,
+          simp only [incomparable_entailment, comparable_entailment], 
+          push_neg, constructor; intro absurd,
+            specialize absurd h,
+            simp [nonactuality] at absurd,
+            contradiction,
+          obtain ⟨world, hworld⟩ := h₁,
+          by_cases aux : world = actual_world,
+            cases aux, contradiction,
+          have : world ∈ nonactuality,
+            simp [nonactuality, aux],
+          specialize absurd this,
+          contradiction,
+        have c₂ : ∀ (C : ω.event), ¬c.causes C F w,
+          intros C absurd,
+          have c' := conj C E nonactuality c₁ absurd,
+          replace c' := c'.1,
+          specialize h₃ C,
+          contradiction,
+        have c₃ : ⋄«F*»,
+          refine ⟨w, c₀, _⟩,
+          simpa [cause.uncaused, cause.caused],
+        have c₄ : actual_world ∉ «F*»,
+          intro absurd, simp [«F*», F] at absurd,
+          contradiction,
+        clear c₁ c₂,
+        simp [cause.acam'] at ha,
+        specialize ha «F*» c₃, clear c₃,
+        simp [c₄, cause.cground, set_of] at ha, clear c₄,
+        obtain ⟨C, actual_C, w', hw'⟩ := ha,
+        specialize min F C _, swap,
+          simp [event.contingent, event.necessary, ext_iff],
+          refine ⟨⟨w, c₀⟩, actual_world, _⟩, simp [h],
+        specialize min hw',
+        replace hw' := c.axiom₀ ⟨C, hw'⟩,
+        replace hw' := hw'.2,
+        simp [cause.uncaused, cause.caused] at hw',
+        specialize hw' C, contradiction,
+      -- second case
+      let «F*» := E ∩ c.uncaused E,
+      have c₃ : ⋄«F*»,
+          refine ⟨w, h₂, _⟩,
+          simpa [cause.uncaused, cause.caused],
+      have c₄ : actual_world ∉ «F*»,
+        intro absurd, simp [«F*»] at absurd,
+        replace absurd := absurd.1, 
+        contradiction,
+      simp [cause.acam'] at ha,
+      specialize ha «F*» c₃, clear c₃,
+      simp [c₄, cause.cground, set_of] at ha, clear c₄,
+      cases ha, replace ha := ha.1,
+        contradiction,
+      obtain ⟨C, actual_C, w', hw'⟩ := ha,
+      specialize min E C _, swap,
+        simp [event.contingent, event.necessary, ext_iff],
+        exact ⟨⟨w, h₂⟩, actual_world, h⟩,
+      specialize min hw',
+      replace hw' := c.axiom₀ ⟨C, hw'⟩,
+      replace hw' := hw'.2,
+      simp [cause.uncaused, cause.caused] at hw',
+      specialize hw' C, contradiction,
+    end
+
+  
+  theorem pruss_nature_of_modality_argument₁' : c.conjunctive₁' → c.prussian_principle₁ → ⋄c.acam' → c.psr :=
     begin
       intros conj pruss h,
       obtain ⟨actual_world, ha⟩ := h,
@@ -769,7 +964,96 @@ namespace cause
       contradiction,
     end
 
+-- This section is named after my friend Miguel Luis, which suggested an objection to Pruss's argument to me.
+section miguels_objection
 
+  /-- Independence principle needed in one interpretation of the cold flame argument. 
+      It reads "No contingent *not purely negative* event is necessarily impossible to cause, 
+      and the mere fact there are no causes necessitating a contingent event's occurrence 
+      does not necessitate this event's occurrence". 
+      The second part of the conjunction is analytical. -/
+  lemma miguels_independence : □c.nnacam → ∀ e : ω.event, e.contingent → e.npnegative → e ≢ c.uncaused e :=
+    begin
+      intros h e he miguel, 
+      simp only [incomparable_entailment, comparable_entailment], 
+      simp [event.contingent, event.necessary, ext_iff] at he,
+      obtain ⟨he, ⟨w, hw⟩⟩ := he,
+      push_neg, constructor; intro absurd,
+        simp [event.contingent, event.necessary, ext_iff, cause.nnacam] at h,
+        specialize h w e miguel,
+        simp [hw, cause.cground, set_of] at h,
+        obtain ⟨C, h₁, ⟨w', hw'⟩⟩ := h,
+        have c₀ := c.axiom₀ ⟨C, hw'⟩,
+        specialize absurd c₀,
+        simp [cause.uncaused, cause.caused] at absurd,
+        specialize absurd C, contradiction,
+      -- the second part doesn't need nnacam, 
+      -- and is in fact analytical
+      suffices c₀ : c.uncaused e w,
+        specialize absurd c₀, contradiction, 
+        clear absurd,
+      simp [cause.uncaused, cause.caused, has_neg.neg, compl], 
+      simp [set_of],
+      intros C absurd, 
+      replace absurd := c.axiom₀ ⟨C, absurd⟩,
+      contradiction,
+    end
+
+
+  /-- The **Principle of Non-Negative Uncaused Existence** claims
+      that the uncaused existence of any entity is not a purely negative event. -/
+  def pnnue : Prop := ∀ (e : ω.entity), (↑e ∩ c.uncaused e).npnegative
+
+/-- This is a weaker version of Pruss's argument restricted to non-purely-negative states of affairs, concluding the pc.
+    It indeed appears possible to conclude here something stronger than the `pc`, namely a `psr` restricted
+    to non-purely-negative events. --/
+theorem cold_flame_argument : c.econjunctive₁'' → c.pnnue → □c.nnacam → c.pc :=
+  begin
+      intros conj pnnue h, simp [cause.pc, cause.epc, ext_iff, nbe], 
+      have indep := c.miguels_independence h,
+      intros w, by_contradiction contra,
+      push_neg at contra,
+      obtain ⟨E, w', h₂, ⟨h₃, h₄⟩⟩ := contra,
+      let «E*» := ↑E ∩ (c.uncaused E),
+      simp [cause.nnacam, ext_iff] at h,
+      have c₀ : «E*».npnegative, 
+        simp [«E*»],
+        exact pnnue E,
+      specialize h w' «E*» c₀,
+      cases h, replace h := h.1, contradiction,
+      simp [cause.cground, set_of] at h,
+      obtain ⟨C, h₅, ⟨w'', h₆⟩⟩ := h,
+      simp [«E*»] at h₆,
+      specialize conj C E (c.uncaused E) E.entitative _, swap,
+        apply (indep E), 
+        simp [event.contingent, event.necessary, ext_iff],
+        exact ⟨⟨w, h₃⟩,⟨w', h₂⟩⟩,
+          by_contradiction contra,
+          push_neg at contra,
+          apply contra.2,
+          exact ⟨E.existential, contra.1⟩,
+      specialize conj h₆, 
+      replace h₆ := c.axiom₀ ⟨C, h₆⟩,
+      simp [cause.uncaused, cause.caused] at h₆,
+      replace h₆ := h₆.2,
+      specialize h₆ C,
+      contradiction,
+    end
+
+/-! The idea behind the name of this argument is that if we reject the `psr` for negative events,
+    we could still endorse `nnacam` instead of `acam'`, since it looks like something such as a cold flame,
+    i.e. a flame devoid of heat, is not a purely negative event (if possible), and hence should be 
+    require to be causable, or actual, in order to be possible. Even if it is insisted that 
+    the absence of heat is a negative event which, as such, is not caused, 
+    via `econjunctive₁''` at least the flame as such should be caused, from the fact 
+    the cold flame as a whole is caused; the flame is both caused and devoid of heat.
+    If the principle of causality is false, then generalizing this idea 
+    from a cold flame to an uncaused flame, we obtain,
+    by the same logic, a caused flame devoid of cause, which is absurd. -/
+
+
+
+end miguels_objection
 end cause
 
 section counterfactuals
@@ -792,17 +1076,19 @@ section counterfactuals
 
 end counterfactuals
 
+-- The following sections are very much a work in progress.
+
 section four_causes
   -- variable {ω}
   
   structure cause.mcause (c : ω.cause) : Prop :=
     (axiom₀ : c.substantive)
-    (axiom₁ : c.cosubstantial)
+    (axiom₁ : c.consubstantial)
     (axiom₂ : c.effentitative)
     (axiom₃ : c.simultaneous)
     (axiom₄ : ¬∃ s, c.has_will s)
     (axiom₅ : ∀ (e : ω.entity), ⋄c.is_cause e → e.composite)
-    (axiom₆ : ∀ (e : ω.entity), ⋄c.caused e → e.composite)
+    (axiom₆ : ∀ (s : ω.substance), ⋄c.caused s → s.composite)
     (axiom₇ : c.conjunctive₂')
     (axiom₈ : c.pp)
     (axiom₉ : ∀ (s₁ s₂ : ω.substance) w, c.causes s₁ s₂ w → s₂.equiv w ⇒ s₁.equiv w)
@@ -829,10 +1115,10 @@ section four_causes
     
   class cause.effcause (c : ω.cause) : Prop :=
     (axiom₀ : c.substantive)
-    (axiom₁ : c.conjunctive')
-    (axiom₂ : c.pp' (λe, c.substratum e))
-    (axiom₃ : c.psr)
-    (axiom₄ : ⋄c.acam')
+    (axiom₁ : c.conjunctive₁'')
+    -- (axiom₂ : c.pp' (λe, c.substratum e))
+    -- (axiom₃ : c.psr)
+    (axiom₄ : □c.acam')
     
 
   -- def ecause.aristotelian : Prop := 

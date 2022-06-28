@@ -196,6 +196,11 @@ section events
   @[reducible, simp]
   def event.closed : Prop := is_closed e
   @[reducible, simp]
+  def event.nnegative : Prop := ¬ is_closed e
+  /-- **Not Purely Negative** events -/
+  @[reducible, simp]
+  def event.npnegative : Prop := ¬ is_closed e ∨ is_clopen e
+  @[reducible, simp]
   def event.compact : Prop := compact e
 
   -- necessity, possibility, impossibility, contingency
@@ -555,6 +560,7 @@ section worlds
   @[reducible, simp]
   def world.ideal : ω.event := {w' | w' ≤ w}
   def world.filter : ω.event := {w' | w ≤ w'}
+  def world.nonactuality : ω.event := {w' | w' ≠ w}
 
   variable (ω)
 
@@ -636,6 +642,9 @@ section ontology
   /-- A complemented ontology supports complemented entities. -/
   def complemented := ∃ e : ω.entity, e.complemented
 
+  /-- The **Principle of Non-Negative Nonactual Existence** claims
+      that the nonactual (a.k.a. merely possible) existence of any entity is a non-negative event. -/
+  def pnnnae : Prop := ∀ (w : ω.world) (e : ω.entity), (↑e ∩ w.nonactuality).nnegative
 
 end ontology
 
@@ -876,6 +885,10 @@ section realism
       the class itself and/or the extensional entity corresponding to the class. 
       The existence of a realization implies realism about the `C`s. -/
   def iontology.rerealism (C : set ω.entity):= Ω.realism (subtype C) subtype.val
+
+  /-! Now, if a map of this sort is not injective, we can take the position in question to be a realization
+      of a position of **grounding** rather than a position of realism. Since however a position of grounding 
+      is just a (possibly partial) function, we do not define a new structure for it. -/
 
   /-! **Absolutely Real Entities**
     
