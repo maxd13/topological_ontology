@@ -1,4 +1,4 @@
-import ontology
+import prime
 open set topological_space classical
 local attribute [instance] prop_decidable
 set_option pp.generalized_field_notation true
@@ -238,7 +238,7 @@ section substance_lemmas
 end substance_lemmas
 
 -- We discuss the fundamental notions of subsistence,
--- inherence and cosubstantiality, 
+-- inherence and consubstantiality, 
 -- which provide further justification for our definitions.
 section subsistence
 
@@ -885,6 +885,54 @@ section simplicity_lemmas
 
 end simplicity_lemmas
 
+-- We define the notions of potential part and participation.
+-- This allows us to define weaker notions of inherence and consubstantiality.
+section participation
+
+  /-- An entity is said to be a **potential part** of another entity in the following cases. -/
+  inductive entity.ppart : ω.entity → ω.entity → Prop
+  | inherence : ∀ {e₁ e₂ : ω.entity}, e₁ ≠ e₂ → e₁.subsists e₂ → entity.ppart e₁ e₂
+  | odependence : ∀ {e₁ e₂ : ω.entity}, e₁.pparticular → e₂.pparticular → e₁ :⇒ e₂ → entity.ppart e₁ e₂
+  | inter : ∀ {e₁ e₂ e₃ : ω.entity} (h : e₂.compatible e₃), entity.ppart e₂ e₁ → entity.ppart e₃ e₁ → entity.ppart h.inter e₁
+  | Union : ∀ {e : ω.entity} (S : set ω.entity) (h : ∀ s ∈ S, entity.ppart s e), entity.ppart (Sup S) e
+  | trans : ∀ {e₁ e₂ e₃ : ω.entity}, entity.ppart e₁ e₂ → entity.ppart e₂ e₃ → entity.ppart e₁ e₃
+
+  /-- An entity is said to be a **participate** of another entity in the following cases. -/
+  inductive entity.participates : ω.entity → ω.entity → Prop
+  | exemplification : ∀ {e₁ e₂ : ω.entity}, e₁.exemplifies e₂ → entity.participates e₁ e₂
+  | inherence : ∀ {e₁ e₂ : ω.entity}, e₁ ≠ e₂ → e₁.subsists e₂ → entity.participates e₁ e₂
+  | odependence : ∀ {e₁ e₂ : ω.entity}, e₁ !:⇒ e₂ → entity.participates e₁ e₂
+  | inter : ∀ {e₁ e₂ e₃ : ω.entity} (h : e₂.compatible e₃), entity.participates e₂ e₁ → entity.participates e₃ e₁ → entity.participates h.inter e₁
+  | Union : ∀ {e : ω.entity} (S : set ω.entity) (h : ∀ s ∈ S, entity.participates s e), entity.participates (Sup S) e
+  | trans : ∀ {e₁ e₂ e₃ : ω.entity}, entity.participates e₁ e₂ → entity.participates e₂ e₃ → entity.participates e₁ e₃
+
+  /-- The rigid existential **dependence** between entities `e₁` and `e₂` is said to be **founded** 
+      just in case it is possible to explain why they are dependent.
+  -/
+  inductive entity.dfounded : ω.entity → ω.entity → Prop
+  | identity : ∀ {e : ω.entity}, entity.dfounded e e
+  | exemplification : ∀ {e₁ e₂ : ω.entity}, e₁.exemplifies e₂ → entity.dfounded e₁ e₂
+  | inherence : ∀ {e₁ e₂ : ω.entity}, e₁.subsists e₂ → entity.dfounded e₁ e₂
+  | odependence : ∀ {e₁ e₂ : ω.entity}, e₁ !:⇒ e₂ → entity.dfounded e₁ e₂
+  | inter : ∀ {e₁ e₂ e₃ : ω.entity} (h : e₂.compatible e₃), entity.dfounded e₂ e₁ → entity.dfounded e₃ e₁ → entity.dfounded h.inter e₁
+  | Union : ∀ {e : ω.entity} (S : set ω.entity) (h : ∀ s ∈ S, entity.dfounded s e), entity.dfounded (Sup S) e
+  | trans : ∀ {e₁ e₂ e₃ : ω.entity}, entity.dfounded e₁ e₂ → entity.dfounded e₂ e₃ → entity.dfounded e₁ e₃
+
+  variables (e₁ e₂ : ω.entity)
+
+  /-- The rigid existential **dependence** between two entities is said to be **brute** if it is unfounded.
+      We say that an entity `e₁` **brutely depends** on an entity `e₂` if and only if
+      `e₁ ⇒ e₂` and this dependence is not founded. -/
+  def entity.bdepends := e₁ ⇒ e₂ ∧ ¬ e₁.dfounded e₂
+
+  -- TODO: prove the soundness of the previously defined notions with respect to `⇒`.
+  -- To do this, prove `e₁.ppart e₂ → e₁.participates e₂`, `e₁.participates e₂ → e₁.dfounded e₂` 
+  -- and `e₁.dfounded e₂ → e₁ ⇒ e₂`. Completeness should be unprovable, but we leave it as 
+  -- an open problem to discover necessary and sufficient conditions of completeness which
+  -- can be imposed on our ontology `ω`, i.e. for which class of ontologies, if any, is our 
+  -- foundation theory of dependence complete?.
+
+end participation
 -- We also define the related notions for intensional entities:
 namespace iontology
 

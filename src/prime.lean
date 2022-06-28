@@ -1,4 +1,4 @@
-import substances
+import ontology
 open set topological_space classical
 set_option pp.generalized_field_notation true
 local attribute [instance] prop_decidable
@@ -8,12 +8,13 @@ namespace ontology
 
 variable {ω : ontology}
 
--- We discuss prime entities, topological basis, subbasis and some definitions involving compact sets.
+-- We discuss prime entities, topological subbasis, basis, open covers and some definitions involving compact sets.
 section prime
 
   variables (e : ω.entity)
 
-  /-- An entity `e` is said to be **meet prime** if 
+  /-- An entity `e` is said to be **meet prime**, 
+      or **meet irreducible**, if 
       for any entities `e₁, e₂` whose
       nonempty conjunction entails `e`,
       one of them must entail `e`. 
@@ -23,7 +24,8 @@ section prime
     ∀ ⦃e₁ e₂ : ω.entity⦄ ⦃h : e₁.compatible e₂⦄,
     (h.inter ⇒ e) → (e₁ ⇒ e ∨ e₂ ⇒ e)
 
-  /-- An entity `e` is said to be **join prime** if 
+  /-- An entity `e` is said to be **join prime**, 
+      or **join irreducible**, if 
       for any entities `e₁, e₂` whose
       disjunction is entailed by `e`,
       `e` must entail one of them. 
@@ -31,7 +33,8 @@ section prime
       in the partial order of opens being prime. -/
   def entity.jprime := ∀ ⦃e₁ e₂ : ω.entity⦄, (e ⇒ e₁ ⊔ e₂) → (e ⇒ e₁ ∨ e ⇒ e₂)
 
-  /-- An entity is **completely join prime** if it is join prime and compact. -/
+  /-- An entity is **completely join prime** if it is join prime and compact.
+      This is also occasionally known as the property of being **supercompact**. -/
   def entity.cjprime := e.jprime ∧ e.compact
 
   /-- An entity `e` is said to be **prime** if it is both join prime and meet prime. -/
@@ -47,35 +50,68 @@ section prime
   /-- An entity is said to be **absolutely sub-basic** if it belongs to every `subbasis` -/
   def entity.asubasic := ∀ {B : set ω.event}, is_subbasis B → e.exists ∈ B
   
+  /-- Definition of **open cover**. -/
+  def entity.cover (S : set ω.event) : Prop := 
+    (∀ (ev : ω.event), ev ∈ S → ev.entitative) ∧
+    e ⇒ ⋃₀ S
+  
+  /-- Definition of **Minimal open cover**. -/
+  def entity.mcover (S : set ω.event) : Prop := 
+    e.cover S ∧ ∀ ev ∈ S, ¬ e.cover (S-{ev})
+
+  
+  /-- Definition of **Exact Minimal open cover**. -/
+  def entity.emcover (S : set ω.event) : Prop := 
+    e.mcover S ∧ ⋃₀ S ⇒ e
+
+  -- TODO: change the definitions below to use covers.
+  -- Also consider getting rid of the uncoverable' definition.
+  -- In order to do that, it is necessary to change some proofs that need it,
+  -- and they become more annoying due to the necessity of casting 
+  -- entitative events to entities.
+
   /-- An entity `e` is said to be **uncoverable** if all of its open covers contain a superset of `e`.
       Notice that if the cover is a subset cover this implies that the cover must contain `e`,
       so any cover of `e` by its subsets must be trivial in this sense. -/
   def entity.uncoverable := ∀ ⦃S : set ω.event⦄, (∀ (ev : ω.event), ev ∈ S → ev.entitative) → S.nonempty → e ⇒ ⋃₀ S → ∃ e₂ ∈ S, e ⇒ e₂
   def entity.uncoverable' := ∀ ⦃S : set ω.entity⦄, S.nonempty → e ⇒ Sup S → ∃ e₂ ∈ S, e ⇒ e₂
 
-  -- The following definitions concern entities which are prime in a substantial sense:
+  
+  /-- An entity `e` is said to be **minimally uncoverable** if all of its minimal open covers contain a superset of `e`.
+      Notice that if the cover is a subset cover this implies that the cover must contain `e`,
+      so any minimal cover of `e` by its subsets must be trivial in this sense. -/
+  def entity.muncoverable := ∀ ⦃S : set ω.event⦄, e.mcover S → ∃ ev ∈ S, e ⇒ ev
 
-  /-- An entity `e` is said to be **substantially meet prime** if 
+  /-! # The following definitions concern entities which are prime in a substantial sense: -/
+
+  /-- Definition of a **Minimal Substantial Cover** of an entity. -/
+  def entity.mscover (S : set ω.event) : Prop :=
+    e.mcover S ∧ ∀ (s : ω.event), s ∈ S → s.dense
+
+  /-- An entity `e` is said to be **substantially meet prime**,
+      or **substantially meet irreducible**, if 
       for any substances `s₁, s₂` whose
       conjunction entails `e`,
       one of them must entail `e`. -/
   def entity.smprime := 
-    ∀ ⦃s₁ s₂ : ω.substance⦄,
-    (s₁.meet s₂ ⇒ e) → (s₁ ⇒ e ∨ s₂ ⇒ e)
+    ∀ ⦃e₁ e₂ : ω.entity⦄, e₁.exists.dense → e₂.exists.dense →
+    (e₁.exists ∩ e₂ ⇒ e) → (e₁ ⇒ e ∨ e₂ ⇒ e)
 
-  /-- An entity `e` is said to be **substantially join prime** if 
+  /-- An entity `e` is said to be **substantially join prime**,
+      or **substantially join irreducible**, if 
       for any substances `s₁, s₂` whose
       disjunction is entailed by `e`,
       `e` must entail one of them. -/
-  def entity.sjprime := ∀ ⦃s₁ s₂ : ω.substance⦄, (e ⇒ s₁.exists ∪ s₂.exists) → (e ⇒ s₁ ∨ e ⇒ s₂)
+  def entity.sjprime := 
+    ∀ ⦃e₁ e₂ : ω.entity⦄, e₁.exists.dense → e₂.exists.dense →
+    (e ⇒ e₁.exists ∪ e₂.exists) → (e ⇒ e₁ ∨ e ⇒ e₂)
 
   /-- An entity `e` is said to be **substantially prime** if it is both substantially join prime and substantially meet prime. -/
   def entity.sprime := e.sjprime ∧ e.smprime
 
-
 end prime
 
--- We prove important properties concerning the previous notions and relate them to iontologies. 
+-- We prove important properties concerning prime entities and basis and relate them to iontologies. 
 section prime_lemmas
   variables (e : ω.entity)
 
@@ -154,6 +190,64 @@ section prime_lemmas
       specialize h₅ h₀,
       obtain ⟨x, hx₁, hx₂⟩ := h₅,
       exact ⟨x, by simp [hx₁], hx₂⟩,
+    end
+
+  lemma jprime_iff_muncoverable : e.jprime ↔ e.muncoverable := 
+    begin
+      constructor; intro h,
+        rintros S ⟨⟨h₁,h₂⟩, h₃⟩,
+        have ne : S.nonempty, admit,
+        obtain ⟨ev, hev⟩ := ne,
+        by_cases c₀ : (S-{ev}).nonempty, swap,
+          admit,
+        by_cases c₁ : e ⇒ ev,
+          exact ⟨ev, hev, c₁⟩,
+        have c : ⋃₀ S = ev ∪ ⋃₀ (S-{ev}),
+          admit,
+        rw c at h₂, clear c,
+        exfalso,
+        specialize h₃ ev hev, simp [entity.cover] at h₃,
+        apply h₃; clear h₃,
+          intros ev' hev' aux, clear aux,
+          exact h₁ ev' hev',
+        have c₁ := h₁ ev hev,
+        have c₂ : event.entitative (⋃₀ (S-{ev})), admit,
+        let e₁ : ω.entity := ⟨ev, c₁.1, c₁.2⟩,
+        let e₂ : ω.entity := ⟨⋃₀ (S-{ev}), c₂.1, c₂.2⟩,
+        specialize @h e₁ e₂ h₂, cases h;
+        simp [e₁, e₂, has_entailment.entails] at h, clear e₁ e₂,
+          contradiction,
+        exact h,
+      intros e₁ e₂ h₀,
+      by_contradiction contra, push_neg at contra,
+      obtain ⟨h₁, h₂⟩ := contra,
+      let S : set ω.event := {e₁, e₂},
+      suffices c : e.mcover S,
+        specialize h c,
+        simp [S] at h,
+        obtain ⟨ev, ⟨rfl⟩|⟨rfl⟩, absurd⟩ := h;
+        contradiction,
+      clear h, constructor, constructor;
+        simp [S], rintros ev (⟨rfl⟩|⟨rfl⟩);
+        unfold_coes; simp, unfold_coes,
+        simp [has_sup.sup, entity_sup, has_entailment.entails] at h₀,
+        convert h₀ using 1, exact sup_comm,
+      simp [S], rintros ev (⟨rfl⟩|⟨rfl⟩);
+      intros h; unfold_coes at h; replace h := h.2,
+      -- by_cases c : e₁ = e₂;
+      --     try {
+      --       cases c,
+      --       simp [has_entailment.entails, has_sup.sup, entity_sup] at h₀,
+      --       contradiction,
+      --     },
+      replace h : e ⇒ e₁,
+        admit,
+        -- simp [has_entailment.entails] at h,
+        -- simp [has_entailment.entails],
+        -- convert h using 1,
+        -- simp [ext_iff],
+      swap, replace h : e ⇒ e₂, admit,
+      all_goals {contradiction},
     end
 
   lemma cjprime_iff_uncoverable' : e.cjprime ↔ e.uncoverable' :=
@@ -321,6 +415,7 @@ section prime_lemmas
   --   end
 end prime_lemmas
 
+-- lemmas involving prime entities and the necessary being
 section nb_lemmas
 
   lemma nbe.mprime : ω.nbe.mprime := sorry
@@ -383,6 +478,114 @@ section nb_lemmas
 
 
 end nb_lemmas
+
+-- We discuss particulars, universals, optional entities, and some unique notions of covering related to them; 
+-- in terms of which the notions of exemplification and subjective parthood can be defined.
+section particulars
+  
+  variable (e : ω.entity)
+
+  /-- An entity is **particular** if it is substantially join prime. -/
+  @[reducible, simp]
+  def entity.particular := e.sjprime
+  /-- An entity is a **(Neo-Aristotelian) universal** if it is not particular. -/
+  @[reducible, simp]
+  def entity.universal := ¬ e.sjprime
+  /-- An entity is said to be a **proper particular** if it is substantially prime. -/
+  @[reducible, simp]
+  def entity.pparticular := e.sprime
+  /-- An entity is said to be an **aggregate**, or an **improper particular**,
+      if it is particular but not a proper particular. -/
+  @[reducible, simp]
+  def entity.aggregate := e.sjprime ∧ ¬ e.smprime
+  /-- An entity is said to be an **ultra-particular** if it is prime. -/
+  @[reducible, simp]
+  def entity.uparticular := e.prime
+  /-- An entity is said to be **monadic**, or **point-like**, if it is 
+      completely prime. -/
+  @[reducible, simp]
+  def entity.monadic := e.cprime
+  /-- An entity is said to be **angelic (or Divine)** if it is 
+      both monadic and dense. -/
+  @[reducible, simp]
+  def entity.angelic := e.monadic ∧ e.exists.dense
+
+   /-- An entity `e` is said to be **(strictly) directly covered** by an entity `e'`
+      if `e ⇒' e'` and for every entity `e''` in between `e` and `e'`, 
+       `e''` is either equal to `e` or to `e'`. -/
+  def entity.dcovered (e' : ω.entity) := 
+    e ⇒' e' ∧ ∀ e'' : ω.entity, 
+    e ⇒ e'' → e'' ⇒ e' → e'' = e ∨ e'' = e'
+
+  infixr ` :⇒ `:50 := entity.dcovered
+
+  /-- An entity `e` is said to be **optionally covered** by an entity `e'` 
+      if it is uniquely pre-covered by `e'`, i.e. if it is pre-coverd by `e'` but
+      not pre-covered by anything else. -/
+  def entity.ocovered (e' : ω.entity) := 
+    e :⇒ e' ∧ ∀ e'', e :⇒ e'' → e'' = e'
+
+  infixr ` !:⇒ `:50 := entity.ocovered
+
+  /-- An entity is said to be **optional** if it is optionally covered by another. -/
+  def entity.optional := ∃ e', e !:⇒ e'
+
+  /-- Definition of **Particular Exact Minimal open cover**. -/
+  def entity.pemcover (S : set ω.event) : Prop := 
+    e.emcover S ∧ ∀ (s : ω.event), s ∈ S → 
+    ∃ e' : ω.entity, e.particular ∧ e'.exists = s
+  
+  /-- Definition of **Infinite Particular Exact Minimal open cover**. -/
+  def entity.ipemcover (S : set ω.event) : Prop := 
+    e.pemcover S ∧ S.infinite
+
+  /-- A particular entity `e` is said to **exemplify** another 
+      universal entity `u`, just in case there is an unique ipemcover of
+      `u` containing `e` which has only perfect elements if `e` is perfect,
+      and only imperfect elements if `e` is imperfect. -/
+  def entity.exemplifies (u : ω.entity) : Prop := 
+    e.particular ∧ u.universal ∧
+    ∃! S, u.ipemcover S ∧ e.exists ∈ S ∧
+    (e.exists.dense → ∀ s : ω.event, s ∈ S → s.dense) ∧
+    (¬ e.exists.dense → ∀ s : ω.event, s ∈ S → ¬ s.dense)
+
+  /-- A particular entity `e` is said to be a **subjective part** of another 
+      universal entity `u`, just in case there is an unique pemcover of
+      `u` containing `e` which has only perfect elements if `e` is perfect,
+      and only imperfect elements if `e` is imperfect.
+      "Subjective" comes from the fact that `e` is the subject of
+      a predication. -/
+  def entity.spart (u : ω.entity) : Prop := 
+    e.particular ∧ u.universal ∧
+    ∃! S, u.pemcover S ∧ e.exists ∈ S ∧
+    (e.exists.dense → ∀ s : ω.event, s ∈ S → s.dense) ∧
+    (¬ e.exists.dense → ∀ s : ω.event, s ∈ S → ¬ s.dense)
+  
+  /-- An entity is said to be a **true universal** if it can be exemplified. -/
+  def entity.tuniversal := ∃ e' : ω.entity, e'.exemplifies e
+
+  /-- An universal is said to be a **subjective whole (collection, or set)** 
+      if it has subjective parts. -/
+  def entity.swhole := ∃ e' : ω.entity, e'.spart e
+
+end particulars
+
+-- lemmas about direct coverings and optional entities
+section dcovered_lemmas
+
+  variables (e₁ e₂ : ω.entity) (h₁ : e₁.exists.dense) (h₂ : e₂.exists.dense)
+  include h₁ h₂
+
+  lemma ocovered_of_dcovered_smprime : e₁.smprime → e₁ :⇒ e₂ → e₁ !:⇒ e₂ :=
+    begin
+      intros h₃ h₄,
+      refine ⟨h₄, _⟩, 
+      intros e₃ h₅,
+      admit,
+    end
+
+
+end dcovered_lemmas
 
 
 end ontology
