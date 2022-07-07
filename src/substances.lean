@@ -887,6 +887,7 @@ end simplicity_lemmas
 
 -- We define the notions of potential part and participation.
 -- This allows us to define weaker notions of inherence and consubstantiality.
+-- THIS SECTION IS A WORK IN PROGRESS.
 section participation
 
   /-- An entity is said to be a **potential part** of another entity in the following cases. -/
@@ -930,7 +931,7 @@ section participation
   -- and `e₁.dfounded e₂ → e₁ ⇒ e₂`. Completeness should be unprovable, but we leave it as 
   -- an open problem to discover necessary and sufficient conditions of completeness which
   -- can be imposed on our ontology `ω`, i.e. for which class of ontologies, if any, is our 
-  -- foundation theory of dependence complete?.
+  -- foundation theory of dependence complete.
 
 end participation
 -- We also define the related notions for intensional entities:

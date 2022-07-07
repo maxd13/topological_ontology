@@ -7,106 +7,6 @@ namespace ontology
 
 variables {ω : ontology} (c : ω.cause)
 
-structure event.factor (e : ω.event) :=
-  (begins : ω.event)
-  (continues : ω.event)
-  (disjoint : begins ∩ continues = ∅)
-  (factor : begins ∪ continues = e)
-  (nontrivial₁ : ⋄begins)
-  (nontrivial₂ : ⋄continues)
-
-def cause.dircauses (e₁ : ω.event) {e₂ : ω.event} (f : e₂.factor) := c.simcauses e₁ f.begins
-
-def event.factor.direct {e₂ : ω.event} (f : e₂.factor) (c : ω.cause) := c.substratum f.begins
-
-def cause.indcauses (e₁ : ω.event) {e₂ : ω.event} (f : e₂.factor) := 
-  (c.causes e₁ f.begins) ∩ -(c.simcauses e₁ f.begins)
-
-def cause.sindcauses (e₁ : ω.event) {e₂ : ω.event} (f : e₂.factor) := 
-  { w | c.causes e₁ f.continues w ∧ ¬ c.simcauses e₁ f.continues w ∧ ⋄c.indcauses e₁ f }
-
-def cause.wnoninertial (c : ω.cause) {e : ω.event} (f : e.factor) : Prop := c.substratum f.continues
-
-def cause.noninertial (c : ω.cause) {e : ω.event} (f : e.factor) : Prop := 
-  c.substratum f.continues ∧ f.continues ⇒ c.caused f.continues
-
-def cause.inertial (c : ω.cause) {e : ω.event} (f : e.factor) : Prop := ¬ c.noninertial f
-
-structure cause.tfactor (c : ω.cause) {e : ω.event} (f : e.factor) : Prop:=
-  (axiom₁ : ∀ ca, f.begins ⇒ c.causes ca f.begins ⟷ c.causes ca e)
-  (axiom₂ : ∀ ca, f.continues ⇒ c.causes ca f.continues ⟷ c.causes ca e)
-
-def cause.pind₁ {e : ω.event} (f : e.factor) : Prop := 
-  c.tfactor f ∧
-  ∀ (ca : ω.event), c.causes ca e ∩ -ca ⇒ c.sindcauses ca f ∪ c.indcauses ca f
-
--- def cause.pind₂ : Prop := 
-
-def cause.pcem (c : ω.cause) {c' : ω.cause} (mc : c'.mcause) : ω.event :=
-  {w | ∀ e : ω.entity, c'.caused e w → ∃ f : e.exists.factor, c.tfactor f ∧ f.direct c ∧
-    ∀ ca mca, c.causes ca f.continues ⇒ c'.causes mca e ⟶ c.causes ca mca
-  }
-
-/-- An event is said to be **Weakly Directly Non-Inertially Temporally Factorizable**
-    if it admits a direct weakly non-inertial temporal factorization (Duh). -/
-def cause.wdnitf (c : ω.cause) (e : ω.event) := ∃ f : e.factor, f.direct c ∧ c.tfactor f ∧ c.wnoninertial f
-
-/-- An event is said to be **Directly Non-Inertially Temporally Factorizable**
-    if it admits a direct non-inertial temporal factorization (Duh). -/
-def cause.dnitf (c : ω.cause) (e : ω.event) := ∃ f : e.factor, f.direct c ∧ c.tfactor f ∧ c.noninertial f
-
-/-- An event is said to be **Directly Temporally Factorizable**
-    if it admits a direct temporal factorization (Duh). -/
-def cause.dtf (c : ω.cause) (e : ω.event) := ∃ f : e.factor, f.direct c ∧ c.tfactor f
-
-def cause.direct' : ω.event :=
-  {w | ∀ e : ω.event, e.occurs w → c.dtf e}
-
-def cause.direct : ω.event :=
-  {w | ∀ e : ω.entity, e.exists w → c.dtf e}
-
-def cause.nidirect : ω.event :=
-  {w | ∀ e : ω.entity, e.exists w → c.dnitf e}
-
-def cause.wdnidirect : ω.event :=
-  {w | ∀ e : ω.entity, e.exists w → c.wdnitf e}
-
-
--- lemma wdnitf_lemma : c.ps (λe, c.wnitf e) :=
---   begin
-
---   end
-
--- lemma quasi_simultaneity_of_wnidirect : □c.wdnidirect → c.ps univ :=
---   begin
---     intro h,
---     simp [ext_iff] at h,
---     simp [cause.ps, ext_iff, cause.eps],
---     intros w₁ e₁ aux h₁ e₂ w₂ h₂,
---     clear aux h₁ w₁,
---     have c₀ := c.occured_causes h₂,
---     specialize h w₂ e₁ c₀,
---     obtain ⟨f, hf₁, hf₂⟩ := h,
---     unfold_coes at h₂,
---     by_cases h : f.begins w₂,
---       have c := hf₁.axiom₂ e₂ h,
---       replace c := c.2,
---       unfold_coes at c,
---       simp [h₂] at c,
---       replace c := hf₁.axiom₁ e₂ c,
---       exact c,
---     rw ←f.factor at c₀,
---     simp at c₀,
---     cases c₀, contradiction,
---     clear h,
---     replace c₀ := hf₁.axiom₃ e₂ c₀,
---     replace c₀ := c₀.2,
---     unfold_coes at c₀,
---     simp [h₂] at c₀,
---     replace hf₂ := hf₂ e₂ c₀,
---     exact hf₂,
---   end
-
 lemma eps_stronger : c.eps ⇒ c.epcs ∩ c.epsc :=
   begin
     intros w hw,
@@ -584,114 +484,119 @@ theorem ctheism_of_contingency : ω.contingency_contingent → ω.ctheism :=
 
 -/
 
-/-- Aquinas's fourth way. -/
-theorem aquinas_fourth : ω.participated → ω.viable → ω.ctheism :=
-  begin
-    intros participated viable,
-    obtain ⟨b, comp, h₁, h₂⟩ := participated,
-    obtain ⟨viable⟩ := viable,
-    -- the following step already concludes the proof that
-    -- the necessary being is maximally perfect (`entity.absolutely_exemplary`)
-    -- which is what the original
-    -- argument probably sough to show.
-    -- check the lemma for the proof.
-    have he := abs_exemplary_intro h₁ h₂,
-    clear h₁ h₂,
-    -- for simplicity, we ditch the "absolutely examplary/maximally perfect" conclusion
-    -- and work with the hardcoded number `1`.
-    replace he := nbe_eq1_of_abs_exemplary he,
-    dunfold ctheism,
-    -- suppose the classical theistic God doesn't exist.
-    by_contradiction c,
-    push_neg at c,
-    -- then in any possible world there must be
-    -- something contingent
-    replace c : ∀ w, ∃ e : ω.entity, e.contingent ∧ e.exists w,
-      intro w,
-      specialize c w,
-      obtain ⟨e₁,e₂,he₁,he₂,neq⟩ := c,
-      dunfold entity.contingent,
-      simp [nbe],
-      by_cases h : e₁.necessary;
-      simp [nbe] at h, swap,
-        exact ⟨e₁,h, he₁⟩,
-      rw ←h,
-      replace neq := ne.symm neq,
-      simp [entity_ext_iff] at neq,
-      exact ⟨e₂, neq, he₂⟩,
-    -- it then also follows that the necessary being 
-    -- can be expressed as the supremum of the set of all
-    -- contingent things. I.e. the necessary being's
-    -- existence is logically equivalent to "there exists something contingent",
-    -- so it can be thought of as the collection
-    -- of contingent things, or "the universe".
-    replace c : ω.nbe = Sup entity.contingent := sorry,
-    -- we can then specialize the compositionality of being
-    -- to the set of contingent entities and to the necessary being:
-    specialize comp (set_of $ @entity.contingent ω) ω.nbe,
-    -- We derive an auxiliary result before proceeding,
-    -- this was needed for purely bureocratic reasons.
-    have c' : ω.nbe ∉ (set_of $ @entity.contingent ω),
-      simp [set_of, has_mem.mem, set.mem],
-    -- We analyse the consequences of this for a single
-    -- possible world `w`:
-    obtain ⟨w⟩ := ω.wne,
-    -- because the ontology is viable, this world could be
-    -- made larger or smaller by some world `w'`.
-    -- This generates 2 proof goals for us corresponding to the
-    -- "larger" and "smaller" cases, respectively:
-    specialize viable w,
-    obtain ⟨w', ⟨hw'₁, hw'₂⟩|⟨hw'₁, hw'₂⟩⟩ := viable;
-    push_neg at hw'₂; simp [specialization] at hw'₂;
-    obtain ⟨s, open_s, hs₁, hs₂⟩ := hw'₂,
-    -- we then seek to prove that the degree of perfection of the
-    -- necessary being varies across worlds.
-    -- for the case w < w':
-      specialize comp w w',
-      swap,
-    -- for the case w' < w:
-    specialize comp w' w,
-    all_goals {
-      specialize comp c' c,
-      specialize comp _, swap,
-        constructor,
-          rintros e ⟨he₁,he₂⟩,
-          simp [world.entities] at he₁,
-          specialize hw'₁ e.exists e.existential he₁,
-          exact ⟨hw'₁, he₂⟩,
-        simp [world.entities, has_subset.subset, set.subset],
-        have ps : ⋄s, 
-          simp [has_diamond.diamond],
-          exact nonempty_of_mem hs₁,
-        let es : ω.entity := ⟨s, open_s, ps⟩,
-        use es,
-        constructor, simp [es, hs₁],
-        constructor, swap, simp [es, hs₂],
-        simp [ontology.nbe, es],
-        intro h, simp [ext_iff] at h,
-    },
-    specialize h w', contradiction,
-    swap,
-    specialize h w, contradiction,
-    -- finished specializing comp.
-    -- We have shown roughly that the perfection
-    -- of the necessary being varies across worlds,
-    -- now we need to show that, because the necessary
-    -- being is maximally perfect, this is impossible
-    all_goals {
-      have h := he w,
-      have h' := he w',
-      clear he,
-      rw h at comp,
-      rw h' at comp,
-      norm_num at comp,
-    },
-  end
+-- WORK IN PROGRESS. ALMOST DONE.
+-- MOST OF IT TYPE CHECKS AND CAN BE PROFITABLY READ.
+-- INCOMPLETE PARTS ARE EXPLICIT. 
+-- UNCOMMENT `ω.participated` IN `god.lean` AND THIS TO FOLLOW THE ARGUMENT.
+-- /-- Aquinas's fourth way. -/
+-- theorem aquinas_fourth : ω.participated → ω.viable → ω.ctheism :=
+--   begin
+--     intros participated viable,
+--     obtain ⟨b, comp, h₁, h₂⟩ := participated,
+--     obtain ⟨viable⟩ := viable,
+--     -- the following step already concludes the proof that
+--     -- the necessary being is maximally perfect (`entity.absolutely_exemplary`)
+--     -- which is what the original
+--     -- argument probably sough to show.
+--     -- check the lemma for the proof.
+--     have he := abs_exemplary_intro h₁ h₂,
+--     clear h₁ h₂,
+--     -- for simplicity, we ditch the "absolutely examplary/maximally perfect" conclusion
+--     -- and work with the hardcoded number `1`.
+--     replace he := nbe_eq1_of_abs_exemplary he,
+--     dunfold ctheism,
+--     -- suppose the classical theistic God doesn't exist.
+--     by_contradiction c,
+--     push_neg at c,
+--     -- then in any possible world there must be
+--     -- something contingent
+--     replace c : ∀ w, ∃ e : ω.entity, e.contingent ∧ e.exists w,
+--       intro w,
+--       specialize c w,
+--       obtain ⟨e₁,e₂,he₁,he₂,neq⟩ := c,
+--       dunfold entity.contingent,
+--       simp [nbe],
+--       by_cases h : e₁.necessary;
+--       simp [nbe] at h, swap,
+--         exact ⟨e₁,h, he₁⟩,
+--       rw ←h,
+--       replace neq := ne.symm neq,
+--       simp [entity_ext_iff] at neq,
+--       exact ⟨e₂, neq, he₂⟩,
+--     -- it then also follows that the necessary being 
+--     -- can be expressed as the supremum of the set of all
+--     -- contingent things. I.e. the necessary being's
+--     -- existence is logically equivalent to "there exists something contingent",
+--     -- so it can be thought of as the collection
+--     -- of contingent things, or "the universe".
+--     replace c : ω.nbe = Sup entity.contingent := sorry,
+--     -- we can then specialize the compositionality of being
+--     -- to the set of contingent entities and to the necessary being:
+--     specialize comp (set_of $ @entity.contingent ω) ω.nbe,
+--     -- We derive an auxiliary result before proceeding,
+--     -- this was needed for purely bureocratic reasons.
+--     have c' : ω.nbe ∉ (set_of $ @entity.contingent ω),
+--       simp [set_of, has_mem.mem, set.mem],
+--     -- We analyse the consequences of this for a single
+--     -- possible world `w`:
+--     obtain ⟨w⟩ := ω.wne,
+--     -- because the ontology is viable, this world could be
+--     -- made larger or smaller by some world `w'`.
+--     -- This generates 2 proof goals for us corresponding to the
+--     -- "larger" and "smaller" cases, respectively:
+--     specialize viable w,
+--     obtain ⟨w', ⟨hw'₁, hw'₂⟩|⟨hw'₁, hw'₂⟩⟩ := viable;
+--     push_neg at hw'₂; simp [specialization] at hw'₂;
+--     obtain ⟨s, open_s, hs₁, hs₂⟩ := hw'₂,
+--     -- we then seek to prove that the degree of perfection of the
+--     -- necessary being varies across worlds.
+--     -- for the case w < w':
+--       specialize comp w w',
+--       swap,
+--     -- for the case w' < w:
+--     specialize comp w' w,
+--     all_goals {
+--       specialize comp c' c,
+--       specialize comp _, swap,
+--         constructor,
+--           rintros e ⟨he₁,he₂⟩,
+--           simp [world.entities] at he₁,
+--           specialize hw'₁ e.exists e.existential he₁,
+--           exact ⟨hw'₁, he₂⟩,
+--         simp [world.entities, has_subset.subset, set.subset],
+--         have ps : ⋄s, 
+--           simp [has_diamond.diamond],
+--           exact nonempty_of_mem hs₁,
+--         let es : ω.entity := ⟨s, open_s, ps⟩,
+--         use es,
+--         constructor, simp [es, hs₁],
+--         constructor, swap, simp [es, hs₂],
+--         simp [ontology.nbe, es],
+--         intro h, simp [ext_iff] at h,
+--     },
+--     specialize h w', contradiction,
+--     swap,
+--     specialize h w, contradiction,
+--     -- finished specializing comp.
+--     -- We have shown roughly that the perfection
+--     -- of the necessary being varies across worlds,
+--     -- now we need to show that, because the necessary
+--     -- being is maximally perfect, this is impossible
+--     all_goals {
+--       have h := he w,
+--       have h' := he w',
+--       clear he,
+--       rw h at comp,
+--       rw h' at comp,
+--       norm_num at comp,
+--     },
+--   end
 
-/-- Using `being.axiom₄` we can also show 
-    composability + viability → nogap₂.
-    meaning classical theism follows from these assumptions under
-    the further assumption of theism. -/
-theorem aquinas_fourth_nogap₂ : ω.composable → ω.viable → ω.nogap₂ := sorry
+-- WORK IN PROGRESS
+-- /-- Using `being.axiom₄` we can also show 
+--     composability + viability → nogap₂.
+--     meaning classical theism follows from these assumptions under
+--     the further assumption of theism. -/
+-- theorem aquinas_fourth_nogap₂ : ω.composable → ω.viable → ω.nogap₂ := sorry
 
 end ontology

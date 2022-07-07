@@ -3,6 +3,10 @@ universe u
 open set topological_space classical
 local attribute [instance] prop_decidable
 
+-- THIS FILE IS A WORK IN PROGRESS. 
+-- FOR NOW IT IS ONLY USED TO "EXPORT" FILES
+-- IN THIS MODULE JOINTLY TO OTHER MODULES.
+
 namespace ontology
     
   variables {ω : ontology} (s : ω.substance)

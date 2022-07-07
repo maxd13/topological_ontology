@@ -3,6 +3,9 @@ universe u
 open set topological_space classical
 local attribute [instance] prop_decidable
 
+-- THIS FILE IS A WORK IN PROGRESS.
+-- WE HAD ORIGINALLY 
+
 namespace ontology
 
 variable (ω : ontology)

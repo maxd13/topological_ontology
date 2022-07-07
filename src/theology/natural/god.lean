@@ -17,12 +17,6 @@ section theism
   @[reducible, simp]
   def atheism := ¬ ω.theism
         
-  -- Have to check whether this is actually true. 
-  -- the `→` side depends on the converse of `simple_of_connected`,
-  -- which at this point I think is probably false:
-  /-- strong Platonism is logically equivalent to theism. -/
-  lemma splatonism_iff_theism :  ω.splatonism ↔ ω.theism := sorry
-
   /-- **Classical Theism** is an extension of theism which 
       furthermore claims that there is a possible world 
       in which the necessary being exists alone. -/
@@ -52,10 +46,17 @@ section theism
 
   -- All 4 positions are logically consistent:
 
-  lemma atheism_consistent : ∃ ω : ontology, ω.atheism := sorry
-  lemma theism_consistent : ∃ ω : ontology, ω.theism := sorry
-  lemma ctheism_consistent : ∃ ω : ontology, ω.ctheism := sorry
-  lemma greek_theism_consistent : ∃ ω : ontology, ω.greek_theism := sorry
+  -- lemma atheism_consistent : ∃ ω : ontology, ω.atheism := sorry
+  -- lemma theism_consistent : ∃ ω : ontology, ω.theism := sorry
+  -- lemma ctheism_consistent : ∃ ω : ontology, ω.ctheism := sorry
+  -- lemma greek_theism_consistent : ∃ ω : ontology, ω.greek_theism := sorry
+
+  -- It is actually considerably annoying to formally prove the previous results even though they are absolutely trivial,
+  -- so we leave them commented out. But consider that, given our lemma `nb_simple_iff_space_connected`
+  -- in substances.lean, any connected space is a model of theism, and any disconnected space a model of atheism. 
+  -- Any connected space without a focal point is a model of greek theism (e.g. a sphere), and a
+  -- space is a model of classical theism if and only if it has a focal point. Every partial order with a least
+  -- element is a model of classical theism when given its Alexandroff topology.
 
   /-- The *second gap problem* is showing that God satisfies
       the properties prescribed to Him by classical theism
@@ -69,7 +70,8 @@ section theism
       `ω.nogap₂` proposition, and may be also called **(secondary) gap fillers**. -/
   def nogap₂ : Prop := ω.theism → ω.ctheism
 
-  theorem qparticipated_of_theism : ω.theism → (∀ b : ω.being, b.qparticipated) := sorry
+  -- WORK IN PROGRESS (RELATED TO 4TH WAY).
+  -- theorem qparticipated_of_theism : ω.theism → (∀ b : ω.being, b.qparticipated) := sorry
 
   theorem theism_iff_connected : ω.theism ↔ ω.connected := sorry
 
@@ -197,18 +199,20 @@ section theos
       rw g_necessary,
       rw g'_necessary,
     end
+  
+  -- WORK IN PROGRESS (RELATED TO 4TH WAY).
+  -- /-- God is a fixed point of any possessed property He may possibly exemplify.
+  --     As such we say that He is his Omnipotence, His Omniscience, His benevolence,
+  --     and whatever else is predicated of Him, *in the precise and non-paradoxical sense*
+  --     that the *event* of God being (e.g.) Omnipotent is the *event* of God existing,
+  --     and also the *event* of Him being Omniscient, etc...
+  --     This would actually be valid for any simple substance as well.
+  --     -/
+  -- theorem divine_simplicity : ∀ p : ω.predicate, p.possessed → ⋄p g.s → p g.s = g.s.exists := sorry
 
-  /-- God is a fixed point of any possessed property He may possibly exemplify.
-      As such we say that He is his Omnipotence, His Omniscience, His benevolence,
-      and whatever else is predicated of Him, *in the precise and non-paradoxical sense*
-      that the *event* of God being (e.g.) Omnipotent is the *event* of God existing,
-      and also the *event* of Him being Omniscient, etc...
-      This would actually be valid for any simple substance as well.
-      -/
-  theorem divine_simplicity : ∀ p : ω.predicate, p.possessed → ⋄p g.s → p g.s = g.s.exists := sorry
-
-  /-- God is maximally perfect w.r.t. any analogy of being. -/
-  theorem theos.maximally_perfect : ∀ (g : ω.theos) (b : ω.being), g.s.up.mperfect b.is := sorry
+  -- WORK IN PROGRESS (RELATED TO 4TH WAY).
+  -- /-- God is maximally perfect w.r.t. any analogy of being. -/
+  -- theorem theos.maximally_perfect : ∀ (g : ω.theos) (b : ω.being), g.s.up.mperfect b.is := sorry
 
 end theos
 
@@ -277,8 +281,9 @@ section god
   /-- God is a purely actual substance. -/
   lemma god.purely_actual : g.s.purely_actual := g.up.purely_actual
 
-  /-- God is maximally perfect w.r.t. any analogy of being. -/
-  theorem god.maximally_perfect : ∀ (g : ω.god) (b : ω.being), g.s.up.mperfect b.is := sorry
+  -- WORK IN PROGRESS (RELATED TO 4TH WAY).
+  -- /-- God is maximally perfect w.r.t. any analogy of being. -/
+  -- theorem god.maximally_perfect : ∀ (g : ω.god) (b : ω.being), g.s.up.mperfect b.is := sorry
 
   /-- God is absolutely real. -/
   theorem god.absolutely_real : g.s.up.absolutely_real := sorry
@@ -319,10 +324,10 @@ section god
       have c' := ctheism_of_no_universe c,
       simp [c'],
       simp [set.nonempty, has_mem.mem, set.mem] at c,
-      exact c,
+      right, exact c,
         constructor; intro h,
           cases h,
-            simp [entity_Sup, ext_iff] at h,
+            simp [has_Sup.Sup, c, entity_Sup, ext_iff] at h,
             obtain ⟨w, hw⟩ := h,
             simp [nbe] at hw,
             use w, intros e₁ e₂ h₁ h₂,
@@ -339,7 +344,7 @@ section god
           apply entity_ext,
           exact h e,
         left,
-        simp [entity_Sup, nbe, ext_iff],
+        simp [has_Sup.Sup, c, entity_Sup, nbe, ext_iff],
         obtain ⟨w, hw⟩ := h,
         use w, intros e he insanity,
         simp [has_mem.mem, set.mem, -entity_ext_iff] at he,
@@ -347,7 +352,7 @@ section god
         contradiction,
     end
 
-
+  -- THIS SECTION IS A WORK IN PROGRESS.
   section power_and_will
 
     variables (c : ω.cause) (e : ω.entity)
@@ -356,10 +361,10 @@ section god
     -- some plausible assumptions in order to make the following theorems true.
     -- Figure out which assumptions before doing the proofs.
 
-    theorem god.omnipotent : c.omnipotent g.s.up := sorry
-    theorem to_be_is_to_be_caused_by_god : c.causes g.s e = e := sorry
-    theorem creation_preceeds_matter : ¬∃ context : ω.event, c.causes g.s e ⇒ context ∧
-                                        c.causes g.s e ≠ context ∧ ¬□context := sorry
+    -- theorem god.omnipotent : c.omnipotent g.s.up := sorry
+    -- theorem to_be_is_to_be_caused_by_god : c.causes g.s e = e := sorry
+    -- theorem creation_preceeds_matter : ¬∃ context : ω.event, c.causes g.s e ⇒ context ∧
+    --                                     c.causes g.s e ≠ context ∧ ¬□context := sorry
     -- theorem god.free : c.is_free g.s := sorry
 
 

@@ -3,7 +3,8 @@ open set topological_space classical
 local attribute [instance] prop_decidable
 noncomputable theory
 
--- TODO: rename this file to essence.lean
+-- TODO: rename this file to essence.lean (maybe)
+-- THIS FILE IS A WORK IN PROGRESS.
 
 namespace ontology
 

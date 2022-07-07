@@ -6,6 +6,10 @@ noncomputable theory
 
 namespace ontology
 
+-- WORK IN PROGRESS. WAS TRYING TO PROVE CONSISTENCY OF VIRTUAL FINITISM.
+-- IT TURNS OUT TO BE INCONSISTENT. STILL CONCEPTS HERE MAY BE INTERESTING
+-- IN THE FUTURE. SO FAR THEY DESCRIBE AN ONTOLOGICAL INTERPRETATION OF THE NATURAL NUMBERS.
+
 namespace instances
 
   instance platonic_chain : topological_space ℕ := alexandroff₀_of infer_instance

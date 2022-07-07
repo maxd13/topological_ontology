@@ -1,4 +1,4 @@
-import properties metaphysics.counterfactuals
+import metaphysics.counterfactuals states
 open set topological_space classical
 set_option pp.generalized_field_notation true
 local attribute [instance] prop_decidable
@@ -964,97 +964,100 @@ namespace cause
       contradiction,
     end
 
--- This section is named after my friend Miguel Luis, which suggested an objection to Pruss's argument to me.
-section miguels_objection
 
-  /-- Independence principle needed in one interpretation of the cold flame argument. 
-      It reads "No contingent *not purely negative* event is necessarily impossible to cause, 
-      and the mere fact there are no causes necessitating a contingent event's occurrence 
-      does not necessitate this event's occurrence". 
-      The second part of the conjunction is analytical. -/
-  lemma miguels_independence : □c.nnacam → ∀ e : ω.event, e.contingent → e.npnegative → e ≢ c.uncaused e :=
-    begin
-      intros h e he miguel, 
-      simp only [incomparable_entailment, comparable_entailment], 
-      simp [event.contingent, event.necessary, ext_iff] at he,
-      obtain ⟨he, ⟨w, hw⟩⟩ := he,
-      push_neg, constructor; intro absurd,
-        simp [event.contingent, event.necessary, ext_iff, cause.nnacam] at h,
-        specialize h w e miguel,
-        simp [hw, cause.cground, set_of] at h,
-        obtain ⟨C, h₁, ⟨w', hw'⟩⟩ := h,
-        have c₀ := c.axiom₀ ⟨C, hw'⟩,
-        specialize absurd c₀,
-        simp [cause.uncaused, cause.caused] at absurd,
-        specialize absurd C, contradiction,
-      -- the second part doesn't need nnacam, 
-      -- and is in fact analytical
-      suffices c₀ : c.uncaused e w,
-        specialize absurd c₀, contradiction, 
-        clear absurd,
-      simp [cause.uncaused, cause.caused, has_neg.neg, compl], 
-      simp [set_of],
-      intros C absurd, 
-      replace absurd := c.axiom₀ ⟨C, absurd⟩,
-      contradiction,
-    end
+  -- This section is named after my friend Miguel Luis, which suggested an objection to Pruss's argument to me.
+  section miguels_objection
+
+    /-- Independence principle needed in one interpretation of the cold flame argument. 
+        It reads "No contingent *not purely negative* event is necessarily impossible to cause, 
+        and the mere fact there are no causes necessitating a contingent event's occurrence 
+        does not necessitate this event's occurrence". 
+        The second part of the conjunction is analytical. -/
+    lemma miguels_independence : □c.nnacam → ∀ e : ω.event, e.contingent → e.npnegative → e ≢ c.uncaused e :=
+      begin
+        intros h e he miguel, 
+        simp only [incomparable_entailment, comparable_entailment], 
+        simp [event.contingent, event.necessary, ext_iff] at he,
+        obtain ⟨he, ⟨w, hw⟩⟩ := he,
+        push_neg, constructor; intro absurd,
+          simp [event.contingent, event.necessary, ext_iff, cause.nnacam] at h,
+          specialize h w e miguel,
+          simp [hw, cause.cground, set_of] at h,
+          obtain ⟨C, h₁, ⟨w', hw'⟩⟩ := h,
+          have c₀ := c.axiom₀ ⟨C, hw'⟩,
+          specialize absurd c₀,
+          simp [cause.uncaused, cause.caused] at absurd,
+          specialize absurd C, contradiction,
+        -- the second part doesn't need nnacam, 
+        -- and is in fact analytical
+        suffices c₀ : c.uncaused e w,
+          specialize absurd c₀, contradiction, 
+          clear absurd,
+        simp [cause.uncaused, cause.caused, has_neg.neg, compl], 
+        simp [set_of],
+        intros C absurd, 
+        replace absurd := c.axiom₀ ⟨C, absurd⟩,
+        contradiction,
+      end
 
 
-  /-- The **Principle of Non-Negative Uncaused Existence** claims
-      that the uncaused existence of any entity is not a purely negative event. -/
-  def pnnue : Prop := ∀ (e : ω.entity), (↑e ∩ c.uncaused e).npnegative
+    /-- The **Principle of Non-Negative Uncaused Existence** claims
+        that the uncaused existence of any entity is not a purely negative event. -/
+    def pnnue : Prop := ∀ (e : ω.entity), (↑e ∩ c.uncaused e).npnegative
 
-/-- This is a weaker version of Pruss's argument restricted to non-purely-negative states of affairs, concluding the pc.
-    It indeed appears possible to conclude here something stronger than the `pc`, namely a `psr` restricted
-    to non-purely-negative events. --/
-theorem cold_flame_argument : c.econjunctive₁'' → c.pnnue → □c.nnacam → c.pc :=
-  begin
-      intros conj pnnue h, simp [cause.pc, cause.epc, ext_iff, nbe], 
-      have indep := c.miguels_independence h,
-      intros w, by_contradiction contra,
-      push_neg at contra,
-      obtain ⟨E, w', h₂, ⟨h₃, h₄⟩⟩ := contra,
-      let «E*» := ↑E ∩ (c.uncaused E),
-      simp [cause.nnacam, ext_iff] at h,
-      have c₀ : «E*».npnegative, 
-        simp [«E*»],
-        exact pnnue E,
-      specialize h w' «E*» c₀,
-      cases h, replace h := h.1, contradiction,
-      simp [cause.cground, set_of] at h,
-      obtain ⟨C, h₅, ⟨w'', h₆⟩⟩ := h,
-      simp [«E*»] at h₆,
-      specialize conj C E (c.uncaused E) E.entitative _, swap,
-        apply (indep E), 
-        simp [event.contingent, event.necessary, ext_iff],
-        exact ⟨⟨w, h₃⟩,⟨w', h₂⟩⟩,
-          by_contradiction contra,
+    /-- This is a weaker version of Pruss's argument restricted to non-purely-negative states of affairs, concluding the pc.
+        It indeed appears possible to conclude here something stronger than the `pc`, namely a `psr` restricted
+        to non-purely-negative events. --/
+    theorem cold_flame_argument : c.econjunctive₁'' → c.pnnue → □c.nnacam → c.pc :=
+      begin
+          intros conj pnnue h, simp [cause.pc, cause.epc, ext_iff, nbe], 
+          have indep := c.miguels_independence h,
+          intros w, by_contradiction contra,
           push_neg at contra,
-          apply contra.2,
-          exact ⟨E.existential, contra.1⟩,
-      specialize conj h₆, 
-      replace h₆ := c.axiom₀ ⟨C, h₆⟩,
-      simp [cause.uncaused, cause.caused] at h₆,
-      replace h₆ := h₆.2,
-      specialize h₆ C,
-      contradiction,
-    end
+          obtain ⟨E, w', h₂, ⟨h₃, h₄⟩⟩ := contra,
+          let «E*» := ↑E ∩ (c.uncaused E),
+          simp [cause.nnacam, ext_iff] at h,
+          have c₀ : «E*».npnegative, 
+            simp [«E*»],
+            exact pnnue E,
+          specialize h w' «E*» c₀,
+          cases h, replace h := h.1, contradiction,
+          simp [cause.cground, set_of] at h,
+          obtain ⟨C, h₅, ⟨w'', h₆⟩⟩ := h,
+          simp [«E*»] at h₆,
+          specialize conj C E (c.uncaused E) E.entitative _, swap,
+            apply (indep E), 
+            simp [event.contingent, event.necessary, ext_iff],
+            exact ⟨⟨w, h₃⟩,⟨w', h₂⟩⟩,
+              by_contradiction contra,
+              push_neg at contra,
+              apply contra.2,
+              exact ⟨E.existential, contra.1⟩,
+          specialize conj h₆, 
+          replace h₆ := c.axiom₀ ⟨C, h₆⟩,
+          simp [cause.uncaused, cause.caused] at h₆,
+          replace h₆ := h₆.2,
+          specialize h₆ C,
+          contradiction,
+        end
 
-/-! The idea behind the name of this argument is that if we reject the `psr` for negative events,
-    we could still endorse `nnacam` instead of `acam'`, since it looks like something such as a cold flame,
-    i.e. a flame devoid of heat, is not a purely negative event (if possible), and hence should be 
-    require to be causable, or actual, in order to be possible. Even if it is insisted that 
-    the absence of heat is a negative event which, as such, is not caused, 
-    via `econjunctive₁''` at least the flame as such should be caused, from the fact 
-    the cold flame as a whole is caused; the flame is both caused and devoid of heat.
-    If the principle of causality is false, then generalizing this idea 
-    from a cold flame to an uncaused flame, we obtain,
-    by the same logic, a caused flame devoid of cause, which is absurd. -/
+    /-! The idea behind the name of this argument is that if we reject the `psr` for negative events,
+        we could still endorse `nnacam` instead of `acam'`, since it looks like something such as a cold flame,
+        i.e. a flame devoid of heat, is not a purely negative event (if possible), and hence should be 
+        require to be causable, or actual, in order to be possible. Even if it is insisted that 
+        the absence of heat is a negative event which, as such, is not caused, 
+        via `econjunctive₁''` at least the flame as such should be caused, from the fact 
+        the cold flame as a whole is caused; the flame is both caused and devoid of heat.
+        If the principle of causality is false, then generalizing this idea 
+        from a cold flame to an uncaused flame, we obtain,
+        by the same logic, a caused flame devoid of cause, which is absurd. -/
 
 
 
-end miguels_objection
+  end miguels_objection
 end cause
+
+-- ALL FOLLOWING SECTIONS ARE VERY MUCH A WORK IN PROGRESS.
 
 section counterfactuals
 
@@ -1076,8 +1079,6 @@ section counterfactuals
 
 end counterfactuals
 
--- The following sections are very much a work in progress.
-
 section four_causes
   -- variable {ω}
   
@@ -1091,7 +1092,7 @@ section four_causes
     (axiom₆ : ∀ (s : ω.substance), ⋄c.caused s → s.composite)
     (axiom₇ : c.conjunctive₂')
     (axiom₈ : c.pp)
-    (axiom₉ : ∀ (s₁ s₂ : ω.substance) w, c.causes s₁ s₂ w → s₂.equiv w ⇒ s₁.equiv w)
+    (axiom₉ : ∀ (s₁ s₂ : ω.substance) w, c.causes s₁ s₂ w → s₂.equiv w ≤ s₁.equiv w)
     (axiom₁₀ : ∀ s₁ s₂ : ω.substance, ⋄(-c.causes s₁ s₂ ∩ s₁ ∩ s₂))
 
   def cause.uhylemorphism (c : ω.cause) : ω.event := { w | c.mcause ∧ c.epc (λe, e.perfect ∧ e.contingent) w}
@@ -1124,39 +1125,39 @@ section four_causes
   -- def ecause.aristotelian : Prop := 
     
 
---   variables (s : ω.substance) (e : ω.entity)
+  --   variables (s : ω.substance) (e : ω.entity)
 
---   -- integral parthood
---   def substance.part_of (s₁ s₂ : ω.substance) : ω.event := sorry
+  --   -- integral parthood
+  --   def substance.part_of (s₁ s₂ : ω.substance) : ω.event := sorry
 
---   -- efficient vertical causation
---   def substance.ecauses : ω.event := 
---     s.causes e.exists ∩
---     -s.part_of e.substance ∩
---     -e.substance.part_of s
+  --   -- efficient vertical causation
+  --   def substance.ecauses : ω.event := 
+  --     s.causes e.exists ∩
+  --     -s.part_of e.substance ∩
+  --     -e.substance.part_of s
 
 
---   -- compositional causation (we say s "compositionally causes" e)
---   def substance.ccauses : ω.event := 
---     s.causes e.exists ∩
---     s.part_of e.substance ∩
---     -e.substance.part_of s
+  --   -- compositional causation (we say s "compositionally causes" e)
+  --   def substance.ccauses : ω.event := 
+  --     s.causes e.exists ∩
+  --     s.part_of e.substance ∩
+  --     -e.substance.part_of s
 
---   -- formal causation
---   def substance.forcauses : ω.event := 
---     s.ccauses e ∩
---     s.causes e.substance.exists
+  --   -- formal causation
+  --   def substance.forcauses : ω.event := 
+  --     s.ccauses e ∩
+  --     s.causes e.substance.exists
 
---   -- material causation
---   def substance.mcauses : ω.event := 
---     s.ccauses e ∩
---     -s.causes e.substance.exists
+  --   -- material causation
+  --   def substance.mcauses : ω.event := 
+  --     s.ccauses e ∩
+  --     -s.causes e.substance.exists
 
---   -- final causation
---   def substance.fincauses : ω.event := 
---     s.causes e.exists ∩
---     -s.part_of e.substance ∩
---     e.substance.part_of s
+  --   -- final causation
+  --   def substance.fincauses : ω.event := 
+  --     s.causes e.exists ∩
+  --     -s.part_of e.substance ∩
+  --     e.substance.part_of s
 
 end four_causes
 
@@ -1180,5 +1181,111 @@ section principles
   --   in ∃ c : ω.substance, c.ecauses r w
 
 end principles
+
+section time
+
+  variables {ω} (c : ω.cause)
+
+  structure event.factor (e : ω.event) :=
+    (begins : ω.event)
+    (continues : ω.event)
+    (disjoint : begins ∩ continues = ∅)
+    (factor : begins ∪ continues = e)
+    (nontrivial₁ : ⋄begins)
+    (nontrivial₂ : ⋄continues)
+
+  def cause.dircauses (e₁ : ω.event) {e₂ : ω.event} (f : e₂.factor) := c.simcauses e₁ f.begins
+
+  def event.factor.direct {e₂ : ω.event} (f : e₂.factor) (c : ω.cause) := c.substratum f.begins
+
+  def cause.indcauses (e₁ : ω.event) {e₂ : ω.event} (f : e₂.factor) := 
+    (c.causes e₁ f.begins) ∩ -(c.simcauses e₁ f.begins)
+
+  def cause.sindcauses (e₁ : ω.event) {e₂ : ω.event} (f : e₂.factor) := 
+    { w | c.causes e₁ f.continues w ∧ ¬ c.simcauses e₁ f.continues w ∧ ⋄c.indcauses e₁ f }
+
+  def cause.wnoninertial (c : ω.cause) {e : ω.event} (f : e.factor) : Prop := c.substratum f.continues
+
+  def cause.noninertial (c : ω.cause) {e : ω.event} (f : e.factor) : Prop := 
+    c.substratum f.continues ∧ f.continues ⇒ c.caused f.continues
+
+  def cause.inertial (c : ω.cause) {e : ω.event} (f : e.factor) : Prop := ¬ c.noninertial f
+
+  structure cause.tfactor (c : ω.cause) {e : ω.event} (f : e.factor) : Prop:=
+    (axiom₁ : ∀ ca, f.begins ⇒ c.causes ca f.begins ⟷ c.causes ca e)
+    (axiom₂ : ∀ ca, f.continues ⇒ c.causes ca f.continues ⟷ c.causes ca e)
+
+  def cause.pind₁ {e : ω.event} (f : e.factor) : Prop := 
+    c.tfactor f ∧
+    ∀ (ca : ω.event), c.causes ca e ∩ -ca ⇒ c.sindcauses ca f ∪ c.indcauses ca f
+
+  -- def cause.pind₂ : Prop := 
+
+  def cause.pcem (c : ω.cause) {c' : ω.cause} (mc : c'.mcause) : ω.event :=
+    {w | ∀ e : ω.entity, c'.caused e w → ∃ f : e.exists.factor, c.tfactor f ∧ f.direct c ∧
+      ∀ ca mca, c.causes ca f.continues ⇒ c'.causes mca e ⟶ c.causes ca mca
+    }
+
+  /-- An event is said to be **Weakly Directly Non-Inertially Temporally Factorizable**
+      if it admits a direct weakly non-inertial temporal factorization (Duh). -/
+  def cause.wdnitf (c : ω.cause) (e : ω.event) := ∃ f : e.factor, f.direct c ∧ c.tfactor f ∧ c.wnoninertial f
+
+  /-- An event is said to be **Directly Non-Inertially Temporally Factorizable**
+      if it admits a direct non-inertial temporal factorization (Duh). -/
+  def cause.dnitf (c : ω.cause) (e : ω.event) := ∃ f : e.factor, f.direct c ∧ c.tfactor f ∧ c.noninertial f
+
+  /-- An event is said to be **Directly Temporally Factorizable**
+      if it admits a direct temporal factorization (Duh). -/
+  def cause.dtf (c : ω.cause) (e : ω.event) := ∃ f : e.factor, f.direct c ∧ c.tfactor f
+
+  def cause.direct' : ω.event :=
+    {w | ∀ e : ω.event, e.occurs w → c.dtf e}
+
+  def cause.direct : ω.event :=
+    {w | ∀ e : ω.entity, e.exists w → c.dtf e}
+
+  def cause.nidirect : ω.event :=
+    {w | ∀ e : ω.entity, e.exists w → c.dnitf e}
+
+  def cause.wdnidirect : ω.event :=
+    {w | ∀ e : ω.entity, e.exists w → c.wdnitf e}
+
+
+  -- lemma wdnitf_lemma : c.ps (λe, c.wnitf e) :=
+  --   begin
+
+  --   end
+
+  -- lemma quasi_simultaneity_of_wnidirect : □c.wdnidirect → c.ps univ :=
+  --   begin
+  --     intro h,
+  --     simp [ext_iff] at h,
+  --     simp [cause.ps, ext_iff, cause.eps],
+  --     intros w₁ e₁ aux h₁ e₂ w₂ h₂,
+  --     clear aux h₁ w₁,
+  --     have c₀ := c.occured_causes h₂,
+  --     specialize h w₂ e₁ c₀,
+  --     obtain ⟨f, hf₁, hf₂⟩ := h,
+  --     unfold_coes at h₂,
+  --     by_cases h : f.begins w₂,
+  --       have c := hf₁.axiom₂ e₂ h,
+  --       replace c := c.2,
+  --       unfold_coes at c,
+  --       simp [h₂] at c,
+  --       replace c := hf₁.axiom₁ e₂ c,
+  --       exact c,
+  --     rw ←f.factor at c₀,
+  --     simp at c₀,
+  --     cases c₀, contradiction,
+  --     clear h,
+  --     replace c₀ := hf₁.axiom₃ e₂ c₀,
+  --     replace c₀ := c₀.2,
+  --     unfold_coes at c₀,
+  --     simp [h₂] at c₀,
+  --     replace hf₂ := hf₂ e₂ c₀,
+  --     exact hf₂,
+  --   end
+
+end time
 
 end ontology

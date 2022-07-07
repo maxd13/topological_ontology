@@ -2,6 +2,8 @@ import ontology math.fuzzy
 open set topological_space classical
 local attribute [instance] prop_decidable
 
+-- THIS FILE IS VERY MUCH A WORK IN PROGRESS.
+
 namespace ontology
 
 -- TODO: consider redefining events as observables
