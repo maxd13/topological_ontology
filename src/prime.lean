@@ -117,47 +117,103 @@ section prime_lemmas
 
   @[simp]
   lemma uncoverable'_iff_uncoverable : e.uncoverable' ↔ e.uncoverable :=
-    sorry
-    -- begin
-
-    --   -- simp [entity.uncoverable, entity.uncoverable'],
-    --   -- constructor; intros,
-    -- end
+    begin
+      simp [ entity.uncoverable
+           , entity.uncoverable'
+           , Sup
+           , has_Sup.Sup
+           , entity_Sup
+           ],
+      constructor; intros,
+        let S' := {e : ω.entity | e.exists ∈ S},
+        obtain ⟨ev, hev⟩ := a_2,
+        have c₀ := a_1 ev hev,
+        have c : S'.nonempty := ⟨⟨ev, c₀.1, c₀.2⟩, hev⟩,
+        specialize a c, simp [c, S'] at a,
+        specialize a _, swap,
+          cases e,
+          simp [has_entailment.entails],
+          convert a_3 using 1,
+          simp [ext_iff, S'],
+          clear_except a_1,
+          intros w, constructor; intro h;
+          obtain ⟨i, hi₁, hi₂⟩ := h,
+            use i.exists, tauto,
+          have c := a_1 i hi₁,
+          use ⟨i, c.1, c.2⟩, tauto,
+        obtain ⟨i, hi₁, hi₂⟩ := a,
+        use i.exists, tauto,
+      simp [a_1] at a_2,
+      let S' := entity.exists '' S,
+      obtain ⟨ev, hev⟩ := a_1,
+      have c : S'.nonempty,
+        refine ⟨ev.exists, _⟩,
+        simp [S', set.image],
+        use ev, tauto,
+      specialize a _ c, swap,
+        simp [S', set.image],
+        clear_except,
+        intros aux x _ h,
+        cases h, simp [event.entitative],
+        exact ⟨x.existential, x.possible⟩,
+      specialize a _, swap, 
+          cases e,
+          simpa [has_entailment.entails],
+      simp [S', set.image] at a, clear_except a,
+      obtain ⟨i, ⟨e', he'₁, he'₂⟩, hi₂⟩ := a,
+      cases he'₂, exact ⟨e', he'₁, hi₂⟩,
+    end
 
   lemma entity.cprime.to_cjprime {e : ω.entity} : e.cprime → e.cjprime :=
     λ h, ⟨h.1.1, h.2⟩
 
-  lemma entity.mprime.induction {e : ω.entity} : e.mprime → ∀ {S : set ω.event}, S.nonempty →
-                              finite S → (⋂₀ S).nonempty → ⋂₀ S ⇒ e → ∃ e₂ ∈ S, e₂ ⇒ e :=
-  sorry
-  -- begin
-  --   intros h₀ S ne h₁,
-  --   revert ne,
-  --   apply h₁.induction_on,
-  --     intro absurd,
-  --     simp [set.nonempty] at absurd,
-  --     contradiction,
-  --   intros e₂ s h₃ h₄ h₅ h₆ h₇, clear h₆,
-  --   by_cases c : s.nonempty, swap,
-  --     replace c := not_nonempty_iff_eq_empty.mp c,
-  --     simp [c] at h₇,
-  --     simp [c, h₇],
-  --   specialize h₅ c, clear c,
-  --   have aux : ⋂₀ insert e₂ s = e₂ ∩ ⋂₀ s,
-  --     simp [insert, set.insert, sInter, Inf, has_Inf.Inf, complete_lattice.Inf],
-  --     ext w, constructor; intro hyp; simp at *,
-  --       have c := hyp e₂, simp at c,
-  --       refine ⟨c, _⟩, intros t ht,
-  --       exact hyp t (or.inr ht),
-  --     rintros t (ht|ht),
-  --       rw ht, exact hyp.1,
-  --     apply hyp.2; assumption,
-  --   rw aux at h₇,
-  --   specialize h₅ (subset_inter_iff.mp h₇).2,
-  --   obtain ⟨e₃, H, he₃⟩ := h₅,
-  --   refine ⟨e₃, _, he₃⟩,
-  --   apply mem_insert_of_mem; assumption,
-  -- end
+  lemma entity.mprime.induction {e : ω.entity} : e.mprime → ∀ {S : set ω.entity}, S.nonempty →
+                              finite S → (⋂₀ (entity.exists '' S)).nonempty → ⋂₀ (entity.exists '' S) ⇒ e → ∃ e₂ ∈ S, e₂ ⇒ e :=
+    begin
+      intros h₀ S ne h₁,
+      revert ne,
+      apply h₁.induction_on,
+        intro absurd,
+        simp [set.nonempty] at absurd,
+        contradiction,
+      intros e₂ s h₃ h₄ h₅ h₆ h₇ h,
+      simp [has_entailment.entails] at *,
+      simp [h₆] at *, clear h₆,
+      by_cases c : s.nonempty, swap,
+        replace c := not_nonempty_iff_eq_empty.mp c,
+        rw c, rw c at h, simp [set.image] at h,
+        use e₂, tauto,
+      specialize h₅ c _, swap,
+        obtain ⟨w, _, hw⟩ := h₇,
+        exact ⟨w, hw⟩,
+      simp [entity.mprime] at h₀,
+      set e₃ : ω.event := ⋂ (x : ω.entity) (H : x ∈ s), x.exists,
+      have c₁ : event.existential e₃,
+        clear_except h₄,
+        simp [e₃],
+        apply h₄.induction_on, simp,
+        clear_except,
+        intros e s h₁ h₂ h₃,
+        set e₃ : ω.event := ⋂ (x : ω.entity) (H : x ∈ s), x.exists,
+        let aux := e.exists ∩ e₃,
+        suffices : is_open aux,
+          convert this,
+          simp [aux],
+        apply topological_space.is_open_inter,
+          exact e.existential,
+        exact h₃,
+      have := h₇,
+      obtain ⟨w, h₇₁, h₇₂⟩ := this,
+      have : e₃.nonempty := ⟨w, h₇₂⟩,
+      let e₃' : ω.entity := ⟨e₃, c₁, this⟩,
+      specialize @h₀ e₂ e₃' h₇ _, swap,
+        simpa [entity.compatible.inter, has_entailment.entails],
+      simp [has_entailment.entails] at h₀,
+      cases h₀, use e₂, simp [h₀],
+      specialize h₅ h₀, clear_except h₅,
+      obtain ⟨e', h₁, h₂⟩ := h₅,
+      use e', simp [h₁, h₂],
+    end
 
 
   lemma entity.jprime.induction {e : ω.entity} : e.jprime → ∀ {S : set ω.entity}, S.nonempty →
