@@ -167,46 +167,43 @@ section prime_lemmas
   lemma entity.cprime.to_cjprime {e : ω.entity} : e.cprime → e.cjprime :=
     λ h, ⟨h.1.1, h.2⟩
 
-  lemma entity.mprime.induction {e : ω.entity} : e.mprime → ∀ {S : set ω.entity}, S.nonempty →
-                              finite S → (⋂₀ (entity.exists '' S)).nonempty → ⋂₀ (entity.exists '' S) ⇒ e → ∃ e₂ ∈ S, e₂ ⇒ e :=
+  lemma entity.mprime.induction {e : ω.entity} : e.mprime → ∀ {S : set ω.event}, S.nonempty →
+                              (∀ ev : ω.event, ev ∈ S → ev.entitative) → finite S → (⋂₀ S).nonempty → ⋂₀ (S) ⇒ e → ∃ e₂ ∈ S, e₂ ⇒ e :=
     begin
-      intros h₀ S ne h₁,
-      revert ne,
-      apply h₁.induction_on,
+      intros h₀ S ne h₁ h₂,
+      revert ne h₁,
+      apply h₂.induction_on,
         intro absurd,
         simp [set.nonempty] at absurd,
         contradiction,
-      intros e₂ s h₃ h₄ h₅ h₆ h₇ h,
+      intros e₂ s h₃ h₄ h₅ h₆ h₁ h₇ h,
       simp [has_entailment.entails] at *,
-      simp [h₆] at *, clear h₆,
+      simp [h₆] at *, clear h₆ h₃,
       by_cases c : s.nonempty, swap,
         replace c := not_nonempty_iff_eq_empty.mp c,
         rw c, rw c at h, simp [set.image] at h,
         use e₂, tauto,
       specialize h₅ c _, swap,
+        intros ev hev,
+        apply h₁ ev, simp [hev],
+      specialize h₅ _, swap,
         obtain ⟨w, _, hw⟩ := h₇,
         exact ⟨w, hw⟩,
       simp [entity.mprime] at h₀,
-      set e₃ : ω.event := ⋂ (x : ω.entity) (H : x ∈ s), x.exists,
+      set e₃ : ω.event := ⋂₀ s,
       have c₁ : event.existential e₃,
-        clear_except h₄,
-        simp [e₃],
-        apply h₄.induction_on, simp,
-        clear_except,
-        intros e s h₁ h₂ h₃,
-        set e₃ : ω.event := ⋂ (x : ω.entity) (H : x ∈ s), x.exists,
-        let aux := e.exists ∩ e₃,
-        suffices : is_open aux,
-          convert this,
-          simp [aux],
-        apply topological_space.is_open_inter,
-          exact e.existential,
-        exact h₃,
+        clear_except h₄ h₁,
+        apply is_open_sInter, assumption,
+        intros ev hev,
+        specialize h₁ ev, simp [hev] at h₁,
+        exact h₁.1,
       have := h₇,
       obtain ⟨w, h₇₁, h₇₂⟩ := this,
       have : e₃.nonempty := ⟨w, h₇₂⟩,
       let e₃' : ω.entity := ⟨e₃, c₁, this⟩,
-      specialize @h₀ e₂ e₃' h₇ _, swap,
+      have := h₁ e₂, simp at this,
+      let e₂' : ω.entity := ⟨e₂, this.1, this.2⟩,
+      specialize @h₀ e₂' e₃' h₇ _, swap,
         simpa [entity.compatible.inter, has_entailment.entails],
       simp [has_entailment.entails] at h₀,
       cases h₀, use e₂, simp [h₀],
@@ -248,63 +245,64 @@ section prime_lemmas
       exact ⟨x, by simp [hx₁], hx₂⟩,
     end
 
-  lemma jprime_iff_muncoverable : e.jprime ↔ e.muncoverable := 
-    begin
-      constructor; intro h,
-        rintros S ⟨⟨h₁,h₂⟩, h₃⟩,
-        have ne : S.nonempty, admit,
-        obtain ⟨ev, hev⟩ := ne,
-        by_cases c₀ : (S-{ev}).nonempty, swap,
-          admit,
-        by_cases c₁ : e ⇒ ev,
-          exact ⟨ev, hev, c₁⟩,
-        have c : ⋃₀ S = ev ∪ ⋃₀ (S-{ev}),
-          admit,
-        rw c at h₂, clear c,
-        exfalso,
-        specialize h₃ ev hev, simp [entity.cover] at h₃,
-        apply h₃; clear h₃,
-          intros ev' hev' aux, clear aux,
-          exact h₁ ev' hev',
-        have c₁ := h₁ ev hev,
-        have c₂ : event.entitative (⋃₀ (S-{ev})), admit,
-        let e₁ : ω.entity := ⟨ev, c₁.1, c₁.2⟩,
-        let e₂ : ω.entity := ⟨⋃₀ (S-{ev}), c₂.1, c₂.2⟩,
-        specialize @h e₁ e₂ h₂, cases h;
-        simp [e₁, e₂, has_entailment.entails] at h, clear e₁ e₂,
-          contradiction,
-        exact h,
-      intros e₁ e₂ h₀,
-      by_contradiction contra, push_neg at contra,
-      obtain ⟨h₁, h₂⟩ := contra,
-      let S : set ω.event := {e₁, e₂},
-      suffices c : e.mcover S,
-        specialize h c,
-        simp [S] at h,
-        obtain ⟨ev, ⟨rfl⟩|⟨rfl⟩, absurd⟩ := h;
-        contradiction,
-      clear h, constructor, constructor;
-        simp [S], rintros ev (⟨rfl⟩|⟨rfl⟩);
-        unfold_coes; simp, unfold_coes,
-        simp [has_sup.sup, entity_sup, has_entailment.entails] at h₀,
-        convert h₀ using 1, exact sup_comm,
-      simp [S], rintros ev (⟨rfl⟩|⟨rfl⟩);
-      intros h; unfold_coes at h; replace h := h.2,
-      -- by_cases c : e₁ = e₂;
-      --     try {
-      --       cases c,
-      --       simp [has_entailment.entails, has_sup.sup, entity_sup] at h₀,
-      --       contradiction,
-      --     },
-      replace h : e ⇒ e₁,
-        admit,
-        -- simp [has_entailment.entails] at h,
-        -- simp [has_entailment.entails],
-        -- convert h using 1,
-        -- simp [ext_iff],
-      swap, replace h : e ⇒ e₂, admit,
-      all_goals {contradiction},
-    end
+  -- WORK IN PROGRESS. ONLY NEEDED TO DISCUSS PARTICULARS AND UNIVERSALS.
+  -- lemma jprime_iff_muncoverable : e.jprime ↔ e.muncoverable := 
+  --   begin
+  --     constructor; intro h,
+  --       rintros S ⟨⟨h₁,h₂⟩, h₃⟩,
+  --       have ne : S.nonempty, admit,
+  --       obtain ⟨ev, hev⟩ := ne,
+  --       by_cases c₀ : (S-{ev}).nonempty, swap,
+  --         admit,
+  --       by_cases c₁ : e ⇒ ev,
+  --         exact ⟨ev, hev, c₁⟩,
+  --       have c : ⋃₀ S = ev ∪ ⋃₀ (S-{ev}),
+  --         admit,
+  --       rw c at h₂, clear c,
+  --       exfalso,
+  --       specialize h₃ ev hev, simp [entity.cover] at h₃,
+  --       apply h₃; clear h₃,
+  --         intros ev' hev' aux, clear aux,
+  --         exact h₁ ev' hev',
+  --       have c₁ := h₁ ev hev,
+  --       have c₂ : event.entitative (⋃₀ (S-{ev})), admit,
+  --       let e₁ : ω.entity := ⟨ev, c₁.1, c₁.2⟩,
+  --       let e₂ : ω.entity := ⟨⋃₀ (S-{ev}), c₂.1, c₂.2⟩,
+  --       specialize @h e₁ e₂ h₂, cases h;
+  --       simp [e₁, e₂, has_entailment.entails] at h, clear e₁ e₂,
+  --         contradiction,
+  --       exact h,
+  --     intros e₁ e₂ h₀,
+  --     by_contradiction contra, push_neg at contra,
+  --     obtain ⟨h₁, h₂⟩ := contra,
+  --     let S : set ω.event := {e₁, e₂},
+  --     suffices c : e.mcover S,
+  --       specialize h c,
+  --       simp [S] at h,
+  --       obtain ⟨ev, ⟨rfl⟩|⟨rfl⟩, absurd⟩ := h;
+  --       contradiction,
+  --     clear h, constructor, constructor;
+  --       simp [S], rintros ev (⟨rfl⟩|⟨rfl⟩);
+  --       unfold_coes; simp, unfold_coes,
+  --       simp [has_sup.sup, entity_sup, has_entailment.entails] at h₀,
+  --       convert h₀ using 1, exact sup_comm,
+  --     simp [S], rintros ev (⟨rfl⟩|⟨rfl⟩);
+  --     intros h; unfold_coes at h; replace h := h.2,
+  --     -- by_cases c : e₁ = e₂;
+  --     --     try {
+  --     --       cases c,
+  --     --       simp [has_entailment.entails, has_sup.sup, entity_sup] at h₀,
+  --     --       contradiction,
+  --     --     },
+  --     replace h : e ⇒ e₁,
+  --       admit,
+  --       -- simp [has_entailment.entails] at h,
+  --       -- simp [has_entailment.entails],
+  --       -- convert h using 1,
+  --       -- simp [ext_iff],
+  --     swap, replace h : e ⇒ e₂, admit,
+  --     all_goals {contradiction},
+  --   end
 
   lemma cjprime_iff_uncoverable' : e.cjprime ↔ e.uncoverable' :=
     begin
@@ -425,14 +423,17 @@ section prime_lemmas
       simp [B', range] at H,
       obtain ⟨⟨i, hi⟩, aux⟩ := H, clear aux,
       rw ←hi at he₂, clear hi e₂,
-      clear h₁ h₃ neB' hB' B',
+      clear h₃ neB' hB' B',
+      rename h₁ h₀,
       specialize h₂ i,
       obtain ⟨h₁, h₂, h₃⟩ := h₂,
       have c : (⋂₀ S i).nonempty,
         obtain ⟨w, hw⟩ := e.possible,
         replace hw := he₂ hw,
         exact ⟨w, hw⟩,
-      replace h := h.1.2.induction h₂ h₁ c (imp_e i),
+      replace h := h.1.2.induction h₂ _ h₁ c (imp_e i), swap,
+        intros ev hev,
+        apply h₀, apply h₃, assumption,
       clear c,
       obtain ⟨e₂, H, h⟩ := h,
       have c : e ⇒ e₂,
@@ -461,7 +462,8 @@ section prime_lemmas
       simpa [entity.real, iontology.ientity.up, iontology.ientity.exists],
     end
   
-  lemma absolutely_real_iff_cprime : e.absolutely_real ↔ e.cprime := sorry
+  lemma absolutely_real_iff_cprime : e.absolutely_real ↔ e.cprime :=
+    by convert (asubasic_iff_cprime e); ext; exact absolutely_real_iff_asubasic e
 
   -- theorem abasic_iff_cjprime : e.abasic ↔ e.cjprime :=
   --   begin
@@ -474,7 +476,9 @@ end prime_lemmas
 -- lemmas involving prime entities and the necessary being
 section nb_lemmas
 
-  lemma nbe.mprime : ω.nbe.mprime := sorry
+  lemma nbe.mprime : ω.nbe.mprime :=
+    by simp [entity.mprime]; intros; 
+       simp [has_entailment.entails, nbe, set.subset]
 
   theorem weakly_parmenidean_iff₀ : ω.weakly_parmenidean ↔ ω.nbe.uncoverable :=
     begin
@@ -537,6 +541,7 @@ end nb_lemmas
 
 -- We discuss particulars, universals, optional entities, and some unique notions of covering related to them; 
 -- in terms of which the notions of exemplification and subjective parthood can be defined.
+-- THIS SECTION IS VERY MUCH A WORK IN PROGRESS.
 section particulars
   
   variable (e : ω.entity)
@@ -627,18 +632,19 @@ section particulars
 end particulars
 
 -- lemmas about direct coverings and optional entities
+-- THIS SECTION IS VERY MUCH A WORK IN PROGRESS.
 section dcovered_lemmas
 
   variables (e₁ e₂ : ω.entity) (h₁ : e₁.exists.dense) (h₂ : e₂.exists.dense)
   include h₁ h₂
 
-  lemma ocovered_of_dcovered_smprime : e₁.smprime → e₁ :⇒ e₂ → e₁ !:⇒ e₂ :=
-    begin
-      intros h₃ h₄,
-      refine ⟨h₄, _⟩, 
-      intros e₃ h₅,
-      admit,
-    end
+  -- lemma ocovered_of_dcovered_smprime : e₁.smprime → e₁ :⇒ e₂ → e₁ !:⇒ e₂ :=
+  --   begin
+  --     intros h₃ h₄,
+  --     refine ⟨h₄, _⟩, 
+  --     intros e₃ h₅,
+  --     admit,
+  --   end
 
 
 end dcovered_lemmas

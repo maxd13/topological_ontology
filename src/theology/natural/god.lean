@@ -73,7 +73,7 @@ section theism
   -- WORK IN PROGRESS (RELATED TO 4TH WAY).
   -- theorem qparticipated_of_theism : ω.theism → (∀ b : ω.being, b.qparticipated) := sorry
 
-  theorem theism_iff_connected : ω.theism ↔ ω.connected := sorry
+  theorem theism_iff_connected : ω.theism ↔ ω.connected := nb_simple_iff_space_connected
 
 end theism
 
@@ -88,7 +88,7 @@ section divine_properties
   
   /-- Only the necessary being can be purely actual, 
       in which case theism follows. -/
-  theorem eq_nb_of_purely_actual : s.purely_actual → s.necessary :=
+  theorem substance.eq_nb_of_purely_actual : s.purely_actual → s.necessary :=
   begin
       intros h,
       simp [substance.purely_actual] at h,
@@ -101,7 +101,7 @@ section divine_properties
       exact exists_iff_in_state.2 hw₂,
   end
 
-  theorem simple_of_purely_actual : s.purely_actual → s.simple :=
+  theorem substance.simple_of_purely_actual : s.purely_actual → s.simple :=
     begin
       intro h₀,
       by_contradiction h,
@@ -119,7 +119,41 @@ section divine_properties
       contradiction,
     end
 
-  theorem theism_iff_purely_actual : ω.theism ↔ ∃ s : ω.substance, s.purely_actual := sorry
+  theorem theism_iff_purely_actual : ω.theism ↔ ∃ s : ω.substance, s.purely_actual :=
+    begin
+      constructor; intro h,
+        use ω.nb,
+        intros w₁ w₂,
+        transitivity ({ω.nbe} : set  ω.entity);
+        simp [substance.state, ext_iff];
+        intro x;
+        by_cases hyp : x = ω.nbe,
+          any_goals {rw hyp,
+          simp [nb], constructor,
+            apply self_subsist.mp,
+            simp [entity.perfect, nbe], 
+          },
+          any_goals {simp [entity.perfect, nbe]},
+        any_goals {simp [nb]},
+        any_goals {
+        have : ¬ x.subsists ω.nbe,
+          intro h₀,
+          simp [theism, set.nonempty] at h,
+          have := imperfect_of_subsists_other h₀ hyp,
+          let x' : ω.accident := ⟨x, this⟩,
+          apply h x',
+          simpa [x', accident.inheres, nb],
+          simp [this],
+          simp [nbe, ext_iff] at hyp,
+          exact hyp,
+        },
+      obtain ⟨g, hg⟩ := h,
+      have c₀ := g.eq_nb_of_purely_actual hg,
+      simp [substance.necessary] at c₀,
+      replace hg := g.simple_of_purely_actual hg,
+      simp only [theism],
+      rwa ←c₀ at *,
+    end
 
   -- Then we discuss causal properties which properly belong to the divine being:
   variable (c : ω.cause)
@@ -189,7 +223,17 @@ section theos
   def theos.theism := theos_iff_theism.mp ⟨g⟩
 
   /-- God is a purely actual substance. -/
-  lemma theos.purely_actual : g.s.purely_actual := sorry
+  lemma theos.purely_actual : g.s.purely_actual :=
+    begin
+      have c := g.theism,
+      replace c := theism_iff_purely_actual.mp c,
+      obtain ⟨s, hs⟩ := c,
+      have c := g.necessary,
+      simp [substance.necessary] at c, rw c, clear c,
+      have c := s.eq_nb_of_purely_actual hs,
+      simp [substance.necessary] at c, 
+      rwa ←c,
+    end
   
   theorem monotheism : ∀ g g' : ω.theos, g = g' :=
     begin
@@ -285,8 +329,27 @@ section god
   -- /-- God is maximally perfect w.r.t. any analogy of being. -/
   -- theorem god.maximally_perfect : ∀ (g : ω.god) (b : ω.being), g.s.up.mperfect b.is := sorry
 
+  lemma weakly_parmenidean_iff₄ : ω.weakly_parmenidean ↔ ω.ctheism :=
+    begin
+      simp [weakly_parmenidean, ctheism, set.nonempty, parmenidean],
+      constructor; rintros ⟨w, hw⟩; use w; intros,
+        transitivity ω.nbe.exists, apply hw, assumption,
+        symmetry, apply hw, assumption,
+      apply hw, assumption,
+      simp [nbe, ext_iff],
+    end
+
   /-- God is absolutely real. -/
-  theorem god.absolutely_real : g.s.up.absolutely_real := sorry
+  theorem god.absolutely_real : g.s.up.absolutely_real :=
+    begin
+      convert weakly_parmenidean_iff₃.mp _,
+        have := g.necessary,
+        cases g.to_theos.s,
+        simp [substance.necessary, nb] at this,
+        simpa,
+      apply weakly_parmenidean_iff₄.2,
+      exact g.ctheism,
+    end
 
   theorem ctheism_of_no_universe : (¬∃ e : ω.entity, e.contingent) → ω.ctheism :=
     begin
@@ -375,7 +438,22 @@ end god
 section atheism
 
   /-- Atheism is committed to the existence of complemented entities. -/
-  theorem atheism_positive_commitments : ω.atheism ↔ ∃ e : ω.entity, e.complemented := sorry
+  theorem atheism_positive_commitments : ω.atheism ↔ ∃ e : ω.entity, e.complemented :=
+    begin
+      simp [atheism, theism, set.nonempty],
+      constructor; rintro ⟨a, ha⟩,
+        have := compl_iff_inheres_nb.mp ha,
+        exact ⟨a, this⟩,
+      have : a.imperfect,
+        have c := closure_eq_of_is_closed ha.2.2,
+        replace ha := ha.1,
+        simp [entity.contingent, nbe] at ha,
+        simp [entity.imperfect, entity.perfect],
+        rwa c,
+      use ⟨a, this⟩,
+      apply compl_iff_inheres_nb.2 _, 
+      assumption,
+    end
 
   lemma atheism_has_universe : ω.atheism → ∃ e : ω.entity, e.contingent :=
     by contrapose; intro h; simp; exact theism_of_ctheism (ctheism_of_no_universe h)
