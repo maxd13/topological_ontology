@@ -166,6 +166,9 @@ section prime_lemmas
 
   lemma entity.cprime.to_cjprime {e : ω.entity} : e.cprime → e.cjprime :=
     λ h, ⟨h.1.1, h.2⟩
+  
+  lemma entity.cjprime_to_cjprime (e : ω.entity) : (e.cjprime ∧ e.mprime) → e.cprime :=
+    λ ⟨h₁, h₂⟩, ⟨⟨h₁.1, h₂⟩, h₁.2⟩
 
   lemma entity.mprime.induction {e : ω.entity} : e.mprime → ∀ {S : set ω.event}, S.nonempty →
                               (∀ ev : ω.event, ev ∈ S → ev.entitative) → finite S → (⋂₀ S).nonempty → ⋂₀ (S) ⇒ e → ∃ e₂ ∈ S, e₂ ⇒ e :=
@@ -359,10 +362,179 @@ section prime_lemmas
   lemma cjprime_iff_uncoverable : e.cjprime ↔ e.uncoverable :=
     by convert cjprime_iff_uncoverable' e; ext; symmetry; exact uncoverable'_iff_uncoverable e
 
+  lemma entity.non_disjoint_cover_of_uncoverable : ¬e.uncoverable → ∃ (S : set ω.event),
+                                            (∀ (ev : ω.event), ev ∈ S → ev.entitative) ∧ 
+                                            (∀ (ev : ω.event), ev ∈ S → (ev ∩ e.exists).nonempty) ∧
+                                            S.nonempty ∧ e ⇒ ⋃₀ S ∧ 
+                                            ∀ (x_1 : ω.event), x_1 ∈ S → ¬(e ⇒ x_1) :=
+  begin
+    intro h,
+    simp [entity.uncoverable] at h,
+    obtain ⟨S, h₁, neS, h₂, h₃⟩ := h,
+    let S' := {ev : ω.event | ev ∈ S ∧ (ev ∩ e.exists).nonempty},
+    use S', constructor,
+      intros ev hev, specialize h₁ ev,
+      apply h₁, exact hev.1,
+    constructor, simp [S'],
+    constructor,
+      by_contradiction contra,
+      unfold set.nonempty at contra,
+      push_neg at contra,
+      simp [S'] at contra,
+      have : ⋃₀ S ∩ e = ∅,
+        rw [sUnion_eq_bUnion, Union_inter],
+        simp [ext_iff],
+        intros w s hs h,
+        specialize contra s hs,
+        simp [set.nonempty] at contra,
+        specialize contra w h,
+        exact contra,
+      obtain ⟨w, hw⟩ := e.possible,
+      suffices c : e.exists ⊆ ⋃₀ S ∩ e.exists,
+        unfold_coes at this, rw this at c,
+        apply c hw,
+      simp only [has_entailment.entails] at h₂,
+      simp, exact ⟨h₂, by refl⟩,
+    constructor,
+      simp [has_entailment.entails],
+      intros w hw,
+      specialize h₂ hw, simp at h₂, simp,
+      obtain ⟨ev, h₁, h₂⟩ := h₂,
+      use ev, refine ⟨⟨h₁,_⟩, h₂⟩,
+      exact ⟨w, ⟨h₂, hw⟩⟩,
+    intros ev hev, apply h₃,
+    exact hev.1,
+  end
+
+  /-! # Theorem Description. 
+      The following is probably one of the hardest,
+      if not the hardest, theorem we currently have in 
+      our project. Hence for readability we provide here
+      a sketch of how the proof works:
+
+      **Theorem:** An entity `e` is absolutely sub-basic if and only if it is completely prime.  
+
+      **Proof:** To prove the `→` side, assume `e` belongs to every subbasis, then supposing that `e`
+      were not completely prime we can prove that `B = {e' : ω.entity | e' ≠ e}` 
+      is a subbasis for the space, but this is absurd since `e` was assumed to belong to every subbasis.
+
+      To prove that `B` is a subbasis, it suffices to show that there is some family of finite 
+      intersections of entities distinct from `e` which exactly cover `e`, 
+      for in this manner every entity would either belong to `B` or be exactly 
+      covered by finite intersections of entities belonging to `B`, making `B` a subbasis. 
+      Next we consider that if `e` is not completely prime, this must be either because 
+      it is not meet prime or not uncoverable, and this is because "completely prime" 
+      is equivalent to "meet prime and uncoverable" via the equivalence we 
+      have proven between "completely join prime" and "uncoverable" via the `cjprime_iff_uncoverable'` 
+      lemma, and the trivial equivalence between "completely prime" and "meet prime and completely join prime";
+      we then proceed by cases. In what follows remember that `⊓ = ∩` and `⊔ = ∪` for the domain of entities, 
+      i.e. when the sets being intersected or united are nonempty and open.
+
+      If `e` is not meet prime, this entails that there are entities `e₁, e₂` such that `e₁ ⊓ e₂` 
+      is nonempty and `e₁ ⊓ e₂ ⇒ e` but neither `e₁ ⇒ e` nor `e₂ ⇒ e`. 
+      In particular it also follows that `(e₁ ⊔ e) ≠ e` and `e₂ ⊔ e ≠ e`, 
+      for otherwise we would have `e₁ ⇒ e` and `e₂ ⇒ e`; 
+      therefore both `e₁ ⊔ e` and `e₂ ⊔ e` belong to `B`. 
+      Hence, because the singleton family `{(e₁ ⊔ e) ⊓ (e₂ ⊔ e)}` 
+      exactly covers `e`, `B` is a subbasis. 
+      The exact cover follows from `(e₁ ⊔ e) ⊓ (e₂ ⊔ e) = (e₁ ⊓ e₂) ⊔ e = e`,
+      where the second equality is proven via `e₁ ⊓ e₂ ⇒ e`.
+
+      If `e` is not uncoverable, this entails there is a nonempty cover `S` of `e` 
+      such that for all `e' ∈ S` it is not the case that `e ⇒ e'`. 
+      Without loss of generality (guaranteed by `non_disjoint_cover_of_uncoverable`), 
+      we can also assume that `e' ⊓ e ≠ ∅` for all `e' ∈ S`. 
+      Now, notice that it not being the case that`e ⇒ e'` implies `e' ⊓ e ≠ e`, 
+      for otherwise we would have `e ⇒ e' ⊓ e`, and hence `e ⇒ e'`;
+      hence `e' ⊓ e ∈ B` for all `e' ∈ S`. Then notice that `e = (⋃ S) ⊓ e = ⋃ e' ⊓ e`, 
+      hence there is a union of elements of `B` which exactly cover `e`, 
+      which proves that `B` is a subbasis. The first equality is obtained 
+      from the fact `S` is a cover, while the second by distributing `⊓` over `⋃`.
+      This concludes the first side of the proof.
+
+      To prove the (`←`) side, assume `e` is completely prime and let `B` be an arbitrary subbasis, then we know
+      there is a family `{Sᵢ}` of intersections of elements of `B`, such that `e = ⋃ i, Sᵢ`. 
+      Since we know via `cjprime_iff_uncoverable'` that `e` is uncoverable, 
+      it follows that there is some `i` such that `e ⇒ Sᵢ`, but we also know that `S_i ⇒ e`, as `Sᵢ ⇒ ⋃ i, Sᵢ = e`, 
+      therefore `e = Sᵢ`. Furthermore, since `Sᵢ` is an intersection of a finite number of sets and 
+      `e` is meet prime, we know via `entity.mprime.induction` that there is a `e'ᵢ ∈ Sᵢ` such that 
+      `e'ᵢ ⇒ e`, and because `e = Sᵢ` we have also that `e ⇒ e'ᵢ`, as `Sᵢ ⇒ e'ᵢ` follows from the fact 
+      `Sᵢ` is an intersection. As such we have `e = e'ᵢ`, but recall that `e'ᵢ ∈ B`, therefore `e ∈ B`.  
+      `∎`
+  -/
+  
   theorem asubasic_iff_cprime : e.asubasic ↔ e.cprime :=
     begin
       constructor; intro h,
-        admit,
+        by_contradiction contra,
+        let B := {e' : ω.event | e' ≠ e ∧ e'.entitative},
+        suffices c : is_subbasis B,
+          specialize h c,
+          simp [B] at h, unfold_coes at h,
+          simp at h, contradiction,
+        simp [is_subbasis],
+        intros e', 
+        by_cases hyp : e' = e, swap,
+          use punit, use punit.star,
+          use λ _, {e'}, unfold_coes, 
+          simp [Union_const], unfold_coes,
+          cases e, cases e', simp at hyp,
+          simpa,
+        cases hyp, clear hyp,
+        have := e.cjprime_to_cjprime,
+        simp only [contra, cjprime_iff_uncoverable'] at this,
+        change ¬ (e.uncoverable' ∧ e.mprime) at this,
+        push_neg at this, cases this, swap,
+          simp [entity.mprime] at this,
+          obtain ⟨e₁, e₂, ⟨h₁, h₂⟩, h₃⟩ := this,
+          push_neg at h₃,
+          obtain ⟨h₃, h₄⟩ := h₃,
+          let x := (e₁ ⊔ e),
+          let y := (e₂ ⊔ e),
+          simp [has_entailment.entails] at h₃ h₄,
+          use punit, use punit.star,
+          use λ _, {x, y}, unfold_coes,
+          constructor;
+          simp [ Union_const, x, y], swap, 
+            change (e₂.exists ∪ e.exists) ∩ (e₁.exists ∪ e.exists) = e.exists,
+            rw ←inter_union_distrib_right,
+            simp [has_entailment.entails, entity.compatible.inter] at h₂,
+            apply union_eq_self_of_subset_left,
+            rwa inter_comm,
+          refine ⟨⟨x, _⟩, _⟩,
+            unfold_coes, simp [x],
+          simp [B, has_subset.subset, set.subset],
+          rintro a (ha | ha); rw ha; simp; clear ha a;
+          intros h; unfold_coes at h; rw ←h at *,
+            change ¬set.subset e₂.exists (e₂.exists ∪ e.exists) at h₄,
+            apply h₄, apply subset_union_left,
+          change ¬set.subset e₁.exists (e₁.exists ∪ e.exists) at h₃,
+          apply h₃, apply subset_union_left,
+        simp [uncoverable'_iff_uncoverable] at this,
+        replace this := e.non_disjoint_cover_of_uncoverable this,
+        obtain ⟨S, h₁, h₂, neS, h₃, h₄⟩ := this,
+        have : ∀ e' ∈ S, e' ∩ e.exists ≠ e.exists,
+          intros e' he' absurdity,
+          apply h₄; try{assumption},
+          simp [has_entailment.entails, set.subset],
+          rw ←absurdity, simp, tauto,
+        obtain ⟨s, hs⟩ := neS,
+        use S, use ⟨s, hs⟩,
+        use λ s, {s.val ∩ e.exists},
+        simp [this], constructor, 
+          intros e' he', simp,
+          refine ⟨this e' he', _⟩,
+          refine ⟨_, h₂ e' he'⟩,
+          apply topological_space.is_open_inter, swap,
+            exact e.existential,
+          exact (h₁ e' he').1,
+        simp [has_entailment.entails] at h₃,
+        rw ←Union_inter, apply eq_of_subset_of_subset,
+          apply inter_subset_right,
+        set aux := (⋃ (i : S), i.val),
+        unfold_coes, simp,
+        refine ⟨_, by refl⟩,
+        convert h₃, simp [ext_iff],
       intros B h,
       obtain ⟨h₁, h₂⟩ := h,
       specialize h₂ e,
