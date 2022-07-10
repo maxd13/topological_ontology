@@ -3,6 +3,11 @@ universe u
 open set topological_space classical
 local attribute [instance] prop_decidable
 
+-- ALL FILES IN THIS FOLDER ARE A WORK IN PROGRESS.
+-- THE TERMINOLOGY AND IDEAS DEFINED HERE ALSO DIFFER
+-- MARKEDLY FROM ONTOLOGY.LEAN. 
+
+
 namespace ontology
 
   variables {ω : ontology}

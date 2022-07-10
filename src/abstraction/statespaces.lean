@@ -4,10 +4,15 @@ import
     -- measure_theory.borel_space
     -- measure_theory.measure_space
     states
-
 universe u
 open set topological_space classical
 local attribute [instance] prop_decidable
+
+
+-- ALL FILES IN THIS FOLDER ARE A WORK IN PROGRESS.
+-- THE TERMINOLOGY AND IDEAS DEFINED HERE ALSO DIFFER
+-- MARKEDLY FROM ONTOLOGY.LEAN. 
+-- THIS FILE USED TO BE THE ROOT OF THE PROJECT.
 
 /-! # State Spaces
 
@@ -72,7 +77,7 @@ namespace ontology
  
  -- Accidents of a substance are perfections of the same substance.
  -- The most important step in this proof is to show that they are open.
- lemma state_open_of_accident : ∀ (a: ω.accident), a.inheres s → is_open (s.State_at '' a.val.exists) := sorry
+ lemma state_open_of_accident : ∀ (a: ω.accident), a.inheres s → is_open (s.State_at '' a.exists) := sorry
 --  begin
 --     intros a H,
 --     apply is_open_coinduced.2,
@@ -100,15 +105,15 @@ namespace ontology
 --  end
  
  -- It should then be easier to prove that it is not empty
- lemma state_ne_of_accident : ∀ (a: ω.accident), a.inheres s → (s.State_at '' a.val.exists).nonempty :=
+ lemma state_ne_of_accident : ∀ (a: ω.accident), a.inheres s → (s.State_at '' a.exists).nonempty :=
  begin
     intros a H,
     simp [preimage],
-    exact a.val.possible,
+    exact a.possible,
  end
  
  -- But it is a little bit harder to prove it is not univ
- lemma state_nuniv_of_accident : ∀ (a: ω.accident), a.inheres s → (s.State_at '' a.val.exists) ≠ univ := sorry
+ lemma state_nuniv_of_accident : ∀ (a: ω.accident), a.inheres s → (s.State_at '' a.exists) ≠ univ := sorry
 --  begin
 --     intros a H,
 --     simp [preimage, image, quotient.mk],
@@ -142,7 +147,7 @@ namespace ontology
  
  -- Finally we can construct the perfection.
  def substance.Perfection_of (a ∈ s.accidents) : s.Perfection :=
-    ⟨ s.State_at '' a.val.exists
+    ⟨ s.State_at '' a.exists
     , state_open_of_accident s a H
     , state_ne_of_accident s a H
     , state_nuniv_of_accident s a H
@@ -178,7 +183,7 @@ namespace ontology
         -- and has some accident, the associated perfection of which
         -- will be our neighborhood. If no such world exists, we
         -- will just use univ.
-        by_cases w : ∃w, ⟦w⟧ = x ∧ (∃a : ω.accident, a.inheres s ∧ a.val ∈ w),
+        by_cases w : ∃w, ⟦w⟧ = x ∧ (∃a : ω.accident, a.inheres s ∧ a.up ∈ w),
         swap,
             exact ⟨univ, is_open_univ, by simp⟩,
         replace w := nonempty_subtype.2 w,

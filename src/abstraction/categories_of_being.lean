@@ -7,6 +7,10 @@ universe u
 open set topological_space classical
 local attribute [instance] prop_decidable
 
+-- ALL FILES IN THIS FOLDER ARE A WORK IN PROGRESS.
+-- THE TERMINOLOGY AND IDEAS DEFINED HERE ALSO DIFFER
+-- MARKEDLY FROM ONTOLOGY.LEAN. 
+
 namespace ontology
 
   variable {ω : ontology}
@@ -21,8 +25,6 @@ namespace ontology
   -- map from states of the concept to the reals.
   def concept.quantity := subtype {f : c.state → ℝ | continuous f }
  
-  --  For some reason which is mind boggling, we couldn't
-  --  find the definition of a probability measure in mathlib.
   instance concept.borel : measurable_space c.state := borel c.state
   def concept.probability_measure := {μ : measure_theory.measure c.state | μ.measure_of univ = 1} 
  

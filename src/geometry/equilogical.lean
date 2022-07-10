@@ -5,6 +5,7 @@ local attribute [instance] prop_decidable
 noncomputable theory
 universes u v
 
+-- THIS FILE IS A WORK IN PROGRESS
 
 /-- An **equilogical space** is a `T₀`-space and a setoid. -/
 structure equispace (α : Type*) extends topological_space α, setoid α := 

@@ -500,7 +500,7 @@ section being
    unless artificial means are used to keep them alive.
    In the limit, this ontological dependencies would grow to become full existential dependencies,
    so that it would be impossible to distinguish a substance from its parts by extensional means,
-   and we could simply say that the substance has no parts, because it has "absorved" all of its "parts"
+   and we could simply say that the substance has no parts, because it has "absorbed" all of its "parts"
    within itself. A substance of this sort would exhibit greater unification than any natural
    entity, even though it would be absolutely simple.
 
@@ -508,17 +508,14 @@ section being
    is but to be limited to a particular (compact, connected) region of space, outside of which 
    the substance has no existence, while a substance without extension can be said to exist in all points
    of space without limits, as we shall later formalize (in geometry.lean). Furthermore it is obvious
-   that simple substances, which have no accidents, are more perfect than composite substances, not only
-   because of the provable facts that (1) no simple substance existentially depends on a composite, (2)
-   if a simple substance can possibly exist, 
-   all composite substances will depend on at least one simple substance (i.e. God), 
-   but also due to the consideration that being the multiplicity of states the origin of a multiplicity
+   that simple substances, which have no accidents, are more perfect than composite substances 
+   due to the the multiplicity of states being the origin of a multiplicity
    of different ways of existing and of passive potentiality, and being the multiplicity of possible accidents
    the origin of the multiplicity of states, it is clear that a substance without accidents has no 
    passive potentiality (outside perhaps of a potentiality for existence or non-existence) and no multiplicity
    of ways of existing, hence being much more unified and actual than any substance with accidents.
 
-   At last, metaphysical entities which are necessary are clearly more perfect than contingent ones, 
+   Finally, metaphysical entities which are necessary are clearly more perfect than contingent ones, 
    just as any substance which depends on another, should be less perfect than this other. 
    These considerations suffice to show then that even among metaphysical substances,
    or when comparing metaphysical substances to natural ones, there are differing degrees of
@@ -528,8 +525,8 @@ section being
       which gives to every possible entity in every possible world the degree of being,
       or degree of perfection, that the entity has in that world.
       This perfection, or degree of being, is also a measurement of the degree of actuality of an entity,
-      as it varies across possible worlds. Entities which are invariant with respect to
-      being, are less fleeting, and as such more actual, while entities which vary greatly in being
+      as it varies across possible worlds. Substances which are invariant with respect to
+      being, are less fleeting, and as such more actual, while substances which vary greatly in being
       are more fleeting, more potential and, hence, less perfect in being. They are also less unified, 
       less truthful, less good, less beautiful, etc... for all the so called *transcendentals of being*. -/
   structure being (ω : ontology) := 
@@ -571,9 +568,7 @@ section being
     -- than all composite substances existing in the same world.
     -- Note: this does not assume that it is possible for simple substances to exist,
     -- only that **if** they do exist, they are more perfect than the composites.
-    -- We will show later that the possible existence of simple substances is logically 
-    -- equivalent to the existence of a (possibly non-classical) God. We however
-    -- do not need this axiom to show that God is more perfect than composite things,
+    -- We also do not need this axiom to show that God is more perfect than composite things,
     -- for this follows from axiom 2, but rather we only need it to show that other, contingent,
     -- simple substances are more perfect than composite substances.
     (axiom₇ : ∀ (s₁ : ω.substance) (w), s₁.simple → s₁.exists w → 

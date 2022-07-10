@@ -5,6 +5,8 @@ local attribute [instance] prop_decidable
 noncomputable theory
 universe u
 
+-- THIS FILE IS A WORK IN PROGRESS
+
 namespace ontology
 
 variable {ω : ontology}

@@ -3,6 +3,9 @@ universe u
 open set topological_space classical
 local attribute [instance] prop_decidable
 
+-- THIS FILE IS A WORK IN PROGRESS
+-- TERMINOLOGY HERE DIFFERS FROM THE REST OF THE PROJECT
+
 namespace ontology
   variables (ω : ontology)
   section matter
@@ -12,7 +15,7 @@ namespace ontology
     -- or a `body`.
     
     @[reducible]
-    def substance.physical {ω : ontology} (s : ω.substance) := composite s.val
+    def substance.physical {ω : ontology} (s : ω.substance) := s.composite
     def cosmos_set := {s : ω.substance | s.physical}
     def body := subtype ω.cosmos_set
     

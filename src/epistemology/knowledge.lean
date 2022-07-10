@@ -1,8 +1,10 @@
-import metaphysics.causality
+import metaphysics.causality properties
 open set topological_space classical
 set_option pp.generalized_field_notation true
 local attribute [instance] prop_decidable
 noncomputable theory
+
+-- THIS FILE IS A WORK IN PROGRESS
 
 namespace ontology
 
